@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "date-fns": "^4.4.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
@@ -24,6 +26,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "nanoid": "^5.1.16",
     "resend": "^6.17.2",
     "winston": "^3.17.0",
     "zod": "^3.24.1"
