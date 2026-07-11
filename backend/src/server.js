@@ -26,13 +26,19 @@ const startServer = async () => {
     });
 
     // 4. Graceful Shutdown Handlers
-    const gracefulShutdown = (signal) => {
+    const gracefulShutdown = async (signal) => {
       logger.info(`[SHUTDOWN] Received ${signal}. Shutting down gracefully...`);
       
       server.close(async () => {
         logger.info('[SHUTDOWN] HTTP server closed.');
         await closeDB();
-        process.exit(0);
+        
+        // Disconnect Redis
+        import('./jobs/queues.js').then(async ({ redisConnection }) => {
+          await redisConnection.quit();
+          logger.info('[SHUTDOWN] Redis connections closed.');
+          process.exit(0);
+        }).catch(() => process.exit(0));
       });
 
       // Force shutdown after 10s

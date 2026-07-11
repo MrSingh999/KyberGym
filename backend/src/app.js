@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
-import rateLimit from 'express-rate-limit';
+import { rateLimit } from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
 import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 
@@ -13,37 +13,43 @@ import { logger } from './config/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import apiRoutes from './routes/index.js';
+import { HealthCheckController } from './modules/health/health.controller.js';
+import { redisConnection } from './jobs/queues.js';
 
 const app = express();
 
-// Trust reverse proxy (e.g., Nginx, Vercel, Heroku) for correct client IP in rate limiting
+// Trust reverse proxy (e.g., Dokploy, Nginx, Vercel)
 app.set('trust proxy', 1);
 
 // 1. Security Middleware
-app.use(helmet()); // Set secure HTTP headers
+app.use(helmet()); 
 app.use(cors({
   origin: env.FRONTEND_URL,
   credentials: true,
 }));
 
-// Rate limiting: max 100 requests per 15 minutes per IP
+// Rate limiting backed by Redis
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.',
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  standardHeaders: true, 
+  legacyHeaders: false,
+  store: new RedisStore({
+    sendCommand: (...args) => redisConnection.call(...args),
+  }),
+  message: { success: false, message: 'Too many requests from this IP, please try again later.' },
 });
+
 app.use('/api', limiter);
 
 // 2. Parsers & Compression
 app.use(cookieParser());
-// Body parser with 10kb limit to prevent payload overload
 app.use(express.json({ limit: '10kb' })); 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-app.use(compression()); // Compress response bodies
+app.use(compression()); 
 
 // 3. Data Sanitization
-app.use(mongoSanitize()); // Prevent NoSQL injection by stripping $ from inputs
-app.use(xss()); // Sanitize user input to prevent XSS
+app.use(mongoSanitize());
 
 // 4. Logging
 if (env.NODE_ENV !== 'test') {
@@ -52,11 +58,15 @@ if (env.NODE_ENV !== 'test') {
   }));
 }
 
-// 5. Routes Registration
+// 5. Health Checks
+app.get('/health', HealthCheckController.liveness);
+app.get('/health/ready', HealthCheckController.readiness);
+
+// 6. Routes Registration
 app.use('/api/v1', apiRoutes);
 
-// 6. Error Handling
-app.use(notFoundHandler); // Catch 404s
-app.use(errorHandler); // Global error handler
+// 7. Error Handling
+app.use(notFoundHandler); 
+app.use(errorHandler); 
 
 export default app;
