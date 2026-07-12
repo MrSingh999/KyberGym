@@ -1,5 +1,5 @@
 import { DashboardService } from './dashboard.service.js';
-import { ApiResponse } from '../../../shared/ApiResponse.js';
+import { ApiResponse } from '../../shared/ApiResponse.js';
 import httpStatus from 'http-status';
 
 export class DashboardController {

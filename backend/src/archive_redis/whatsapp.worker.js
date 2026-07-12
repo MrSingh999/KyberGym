@@ -2,7 +2,7 @@ import { Worker } from 'bullmq';
 import { QUEUE_NAMES, redisConnection } from './queues.js';
 import { WhatsappService } from '../services/whatsapp.service.js';
 import { DeliveryLog } from '../modules/deliveryLog/models/DeliveryLog.model.js';
-import { logger } from '../utils/logger.js';
+import { logger } from '../config/logger.js';
 
 export const whatsappWorker = new Worker(
   QUEUE_NAMES.WHATSAPP,

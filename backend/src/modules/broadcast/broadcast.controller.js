@@ -1,5 +1,5 @@
 import { BroadcastService } from './broadcast.service.js';
-import { ApiResponse } from '../../../shared/ApiResponse.js';
+import { ApiResponse } from '../../shared/ApiResponse.js';
 import httpStatus from 'http-status';
 
 export class BroadcastController {

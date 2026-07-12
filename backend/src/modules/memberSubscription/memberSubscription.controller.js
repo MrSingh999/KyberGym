@@ -1,5 +1,5 @@
 import { MemberSubscriptionService } from './memberSubscription.service.js';
-import { ApiResponse } from '../../../shared/ApiResponse.js';
+import { ApiResponse } from '../../shared/ApiResponse.js';
 import httpStatus from 'http-status';
 
 export class MemberSubscriptionController {

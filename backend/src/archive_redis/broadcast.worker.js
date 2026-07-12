@@ -4,7 +4,7 @@ import { BroadcastRepository } from '../modules/broadcast/broadcast.repository.j
 import { Member } from '../modules/member/models/Member.model.js';
 import { MemberSubscription } from '../modules/memberSubscription/models/MemberSubscription.model.js';
 import { DeliveryLog } from '../modules/deliveryLog/models/DeliveryLog.model.js';
-import { logger } from '../utils/logger.js';
+import { logger } from '../config/logger.js';
 import { startOfDay, endOfDay, addDays } from 'date-fns';
 
 export const broadcastWorker = new Worker(

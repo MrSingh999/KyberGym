@@ -3,7 +3,7 @@ import { MemberRepository } from '../member/member.repository.js';
 import createError from 'http-errors';
 import QRCode from 'qrcode';
 import crypto from 'crypto';
-import { env } from '../config/env.js';
+import { env } from '../../config/env.js';
 
 export class MemberQrService {
   /**

@@ -1,4 +1,4 @@
-import { logger } from '../utils/logger.js';
+import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
 // import { Resend } from 'resend';
 // const resend = new Resend(env.RESEND_API_KEY);

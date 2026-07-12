@@ -1,3 +1,4 @@
+import { useLocation } from "react-router";
 import { ChevronRight, Menu, Moon, Sun, Search } from "lucide-react";
 import { useSearchStore } from "../../store/search.store";
 import { useSidebarStore } from "../../store/sidebar.store";

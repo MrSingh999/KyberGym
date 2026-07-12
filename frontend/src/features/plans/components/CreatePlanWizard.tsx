@@ -1,0 +1,260 @@
+import React, { useState, useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Check, Plus, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { createPlanStep1Schema, CreatePlanStep1, createPlanStep2Schema, CreatePlanStep2, createPlanStep3Schema, CreatePlanStep3, createPlanStep4Schema, CreatePlanStep4, CreatePlanData } from '../schemas/plan.schema';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../../components/forms/Form';
+import { Input } from '../../../../components/ui/Input';
+import { cn } from '../../../../lib/utils';
+import { DEFAULT_PLAN_FEATURES, DURATION_TYPE_LABELS } from '../types';
+
+type WizardStep = 1 | 2 | 3 | 4;
+
+const STEPS = [
+  { id: 1, label: 'Basic' },
+  { id: 2, label: 'Pricing' },
+  { id: 3, label: 'Duration' },
+  { id: 4, label: 'Features' },
+];
+
+const DRAFT_KEY = 'kybergym_plan_draft';
+
+const ACCENT_COLORS = [
+  '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e',
+  '#f59e0b', '#10b981', '#3b82f6', '#14b8a6',
+];
+
+interface CreatePlanWizardProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps) {
+  const [step, setStep] = useState<WizardStep>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step1Data, setStep1Data] = useState<Partial<CreatePlanStep1>>({});
+  const [step2Data, setStep2Data] = useState<Partial<CreatePlanStep2>>({});
+  const [step3Data, setStep3Data] = useState<Partial<CreatePlanStep3>>({});
+
+  const s1 = useForm<CreatePlanStep1>({ resolver: zodResolver(createPlanStep1Schema) });
+  const s2 = useForm<CreatePlanStep2>({ resolver: zodResolver(createPlanStep2Schema), defaultValues: { price: 0, joiningFee: 0, isDefault: false, isPopular: false } });
+  const s3 = useForm<CreatePlanStep3>({ resolver: zodResolver(createPlanStep3Schema), defaultValues: { duration: 1, durationType: 'months' } });
+  const s4 = useForm<CreatePlanStep4>({
+    resolver: zodResolver(createPlanStep4Schema),
+    defaultValues: {
+      features: DEFAULT_PLAN_FEATURES.map((f, i) => ({ ...f, id: `feat-${i}` })),
+    },
+  });
+  const { fields, append, remove } = useFieldArray({ control: s4.control, name: 'features' });
+
+  // Draft recovery
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.step1) { setStep1Data(d.step1); s1.reset(d.step1); }
+      if (d.step2) { setStep2Data(d.step2); s2.reset(d.step2); }
+      if (d.step3) { setStep3Data(d.step3); s3.reset(d.step3); }
+      if (d.currentStep) setStep(d.currentStep);
+    } catch { /* ignore */ }
+  }, []);
+
+  // Autosave
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ step1: step1Data, step2: step2Data, step3: step3Data, currentStep: step }));
+  }, [step1Data, step2Data, step3Data, step]);
+
+  const handleFinalSubmit = async (s4d: CreatePlanStep4) => {
+    setIsSubmitting(true);
+    try {
+      const payload: CreatePlanData = { ...step1Data as CreatePlanStep1, ...step2Data as CreatePlanStep2, ...step3Data as CreatePlanStep3, ...s4d };
+      // await useCreatePlan().mutateAsync(payload);
+      await new Promise((r) => setTimeout(r, 1000));
+      localStorage.removeItem(DRAFT_KEY);
+      onSuccess();
+    } catch { } finally { setIsSubmitting(false); }
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Step indicator */}
+      <div className="flex items-center mb-8 px-1">
+        {STEPS.map((s, i) => (
+          <React.Fragment key={s.id}>
+            <div className="flex flex-col items-center gap-1">
+              <div className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold border-2 transition-all',
+                step > s.id ? 'bg-primary border-primary text-primary-foreground' :
+                step === s.id ? 'bg-primary/10 border-primary text-primary' :
+                'bg-surface-hover border-default text-muted',
+              )}>
+                {step > s.id ? <Check className="w-4 h-4" /> : s.id}
+              </div>
+              <span className={cn('text-[10px] font-medium hidden sm:block', step === s.id ? 'text-primary' : 'text-muted')}>{s.label}</span>
+            </div>
+            {i < STEPS.length - 1 && <div className={cn('flex-1 h-px mx-2', step > s.id ? 'bg-primary' : 'bg-subtle')} />}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Step content */}
+      <div className="flex-1 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.18 }}>
+
+            {/* Step 1 – Basic Info */}
+            {step === 1 && (
+              <Form {...s1}>
+                <form id="wizard-step-1" onSubmit={s1.handleSubmit((d) => { setStep1Data(d); setStep(2); })} className="space-y-5">
+                  <FormField control={s1.control} name="name" render={({ field }) => (
+                    <FormItem><FormLabel>Plan Name *</FormLabel><FormControl><Input placeholder="e.g. Pro Monthly" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={s1.control} name="description" render={({ field }) => (
+                    <FormItem><FormLabel>Description</FormLabel><FormControl>
+                      <textarea {...field} rows={3} placeholder="What's included in this plan..." className="flex w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary placeholder:text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary resize-none" />
+                    </FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div>
+                    <label className="text-sm font-medium text-primary mb-2 block">Accent Color</label>
+                    <div className="flex gap-2 flex-wrap">
+                      {ACCENT_COLORS.map((c) => (
+                        <button key={c} type="button" onClick={() => s1.setValue('color', c)}
+                          className={cn('w-7 h-7 rounded-full border-2 transition-all', s1.watch('color') === c ? 'border-primary scale-110' : 'border-transparent hover:scale-105')}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            )}
+
+            {/* Step 2 – Pricing */}
+            {step === 2 && (
+              <Form {...s2}>
+                <form id="wizard-step-2" onSubmit={s2.handleSubmit((d) => { setStep2Data(d); setStep(3); })} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={s2.control} name="price" render={({ field }) => (
+                      <FormItem><FormLabel>Price ($) *</FormLabel><FormControl>
+                        <Input type="number" min={0} step={0.01} placeholder="39.00" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                      </FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={s2.control} name="joiningFee" render={({ field }) => (
+                      <FormItem><FormLabel>Joining Fee ($)</FormLabel><FormControl>
+                        <Input type="number" min={0} step={0.01} placeholder="0.00" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                      </FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                  <div className="flex gap-6">
+                    <FormField control={s2.control} name="isPopular" render={({ field }) => (
+                      <FormItem className="flex items-center gap-2.5 space-y-0">
+                        <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary" /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Mark as Popular</FormLabel>
+                      </FormItem>
+                    )} />
+                    <FormField control={s2.control} name="isDefault" render={({ field }) => (
+                      <FormItem className="flex items-center gap-2.5 space-y-0">
+                        <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary" /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Set as Default</FormLabel>
+                      </FormItem>
+                    )} />
+                  </div>
+                </form>
+              </Form>
+            )}
+
+            {/* Step 3 – Duration */}
+            {step === 3 && (
+              <Form {...s3}>
+                <form id="wizard-step-3" onSubmit={s3.handleSubmit((d) => { setStep3Data(d); setStep(4); })} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={s3.control} name="duration" render={({ field }) => (
+                      <FormItem><FormLabel>Duration *</FormLabel><FormControl>
+                        <Input type="number" min={1} {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 1)} />
+                      </FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={s3.control} name="durationType" render={({ field }) => (
+                      <FormItem><FormLabel>Duration Type *</FormLabel><FormControl>
+                        <select {...field} className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
+                          {Object.entries(DURATION_TYPE_LABELS).map(([val, label]) => (
+                            <option key={val} value={val}>{label}</option>
+                          ))}
+                        </select>
+                      </FormControl><FormMessage /></FormItem>
+                    )} />
+                  </div>
+                  <div className="p-4 rounded-xl bg-surface-hover border border-subtle">
+                    <p className="text-sm text-muted">Preview: <span className="font-semibold text-primary">{s3.watch('duration')} {DURATION_TYPE_LABELS[s3.watch('durationType')]}</span></p>
+                  </div>
+                </form>
+              </Form>
+            )}
+
+            {/* Step 4 – Features + Review */}
+            {step === 4 && (
+              <Form {...s4}>
+                <form id="wizard-step-4" onSubmit={s4.handleSubmit(handleFinalSubmit)} className="space-y-6">
+                  <div className="space-y-2">
+                    {fields.map((field, i) => (
+                      <div key={field.id} className="flex items-center gap-3 p-3 rounded-xl border border-default bg-surface hover:border-hover transition-colors">
+                        <input type="checkbox" {...s4.register(`features.${i}.included`)} className="w-4 h-4 accent-primary flex-shrink-0" />
+                        <input {...s4.register(`features.${i}.label`)} className="flex-1 bg-transparent text-sm text-primary focus:outline-none" placeholder="Feature label..." />
+                        <button type="button" onClick={() => remove(i)} className="text-muted hover:text-destructive transition-colors p-1">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => append({ id: `feat-${Date.now()}`, label: '', included: false })}
+                      className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors mt-1">
+                      <Plus className="w-4 h-4" /> Add feature
+                    </button>
+                  </div>
+
+                  {/* Review summary */}
+                  <div className="rounded-xl border border-default bg-surface-hover p-4 space-y-2.5 text-sm">
+                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Review</p>
+                    {[
+                      ['Name', step1Data.name],
+                      ['Price', `$${step2Data.price}`],
+                      ['Duration', `${step3Data.duration} ${step3Data.durationType ? DURATION_TYPE_LABELS[step3Data.durationType] : ''}`],
+                    ].map(([label, value]) => (
+                      <div key={String(label)} className="flex justify-between">
+                        <span className="text-muted">{label}</span>
+                        <span className="font-medium text-primary">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </form>
+              </Form>
+            )}
+
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Navigation footer */}
+      <div className="flex items-center justify-between pt-5 mt-5 border-t border-subtle">
+        <button
+          onClick={step === 1 ? onCancel : () => setStep((p) => (p - 1) as WizardStep)}
+          className="px-4 py-2.5 text-sm font-medium border border-default rounded-xl hover:bg-surface-hover transition-colors"
+        >
+          {step === 1 ? 'Cancel' : '← Back'}
+        </button>
+
+        {step < 4 ? (
+          <button type="submit" form={`wizard-step-${step}`} className="px-5 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity">
+            Continue →
+          </button>
+        ) : (
+          <button type="submit" form="wizard-step-4" disabled={isSubmitting}
+            className="px-5 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center gap-2">
+            {isSubmitting && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+            {isSubmitting ? 'Creating…' : 'Create Plan'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

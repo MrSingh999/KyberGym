@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { logger } from '../utils/logger.js';
+import { logger } from '../config/logger.js';
 import { BroadcastRepository } from '../modules/broadcast/broadcast.repository.js';
 import { BroadcastService } from '../modules/broadcast/broadcast.service.js';
 

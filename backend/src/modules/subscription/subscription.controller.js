@@ -1,5 +1,5 @@
 import { GymSubscription } from './models/GymSubscription.model.js';
-import { ApiResponse } from '../../../shared/ApiResponse.js';
+import { ApiResponse } from '../../shared/ApiResponse.js';
 import httpStatus from 'http-status';
 import createError from 'http-errors';
 

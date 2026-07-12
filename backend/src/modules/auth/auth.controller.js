@@ -1,7 +1,7 @@
 import { AuthService } from './auth.service.js';
-import { ApiResponse } from '../../../shared/ApiResponse.js';
+import { ApiResponse } from '../../shared/ApiResponse.js';
 import httpStatus from 'http-status';
-import { env } from '../../../config/env.js';
+import { env } from '../../config/env.js';
 
 // Helper to set HTTP-only cookie
 const setRefreshTokenCookie = (res, token) => {

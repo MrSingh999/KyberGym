@@ -5,7 +5,7 @@ import { resolveTenant } from '../../middleware/tenant.middleware.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requireRoles } from '../../middleware/role.middleware.js';
 import { requireActiveSubscription } from '../../middleware/subscription.middleware.js';
-import { ROLES } from '../../../shared/constants.js';
+import { ROLES } from '../../shared/constants.js';
 
 const router = Router();
 

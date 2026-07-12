@@ -4,9 +4,9 @@ import { Gym } from '../gyms/models/Gym.model.js';
 import { User } from '../users/models/User.model.js';
 import { SaasPlan } from '../saasPlan/models/SaasPlan.model.js';
 import { GymSubscription } from '../subscription/models/GymSubscription.model.js';
-import { ROLES } from '../../../shared/constants.js';
+import { ROLES } from '../../shared/constants.js';
 import { hashData, compareData, generateOTP, generateAccessToken, generateRefreshToken, verifyToken } from './auth.utils.js';
-import { logger } from '../../../config/logger.js';
+import { logger } from '../../config/logger.js';
 import { Resend } from 'resend';
 
 // The user will provide the API key, we should check it exists eventually

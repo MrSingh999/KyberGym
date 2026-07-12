@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
@@ -39,6 +39,39 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
   const step2Form = useForm<CreateMemberStep2Data>({ resolver: zodResolver(createMemberStep2Schema), defaultValues: { planId: "", membershipStartDate: "", membershipEndDate: "" } });
   const step3Form = useForm<CreateMemberStep3Data>({ resolver: zodResolver(createMemberStep3Schema) });
 
+  // Draft Recovery: Load saved draft on mount
+  useEffect(() => {
+    const draft = localStorage.getItem("kybergym_member_draft");
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.step1) {
+          setStep1Data(parsed.step1);
+          step1Form.reset(parsed.step1);
+        }
+        if (parsed.step2) {
+          setStep2Data(parsed.step2);
+          step2Form.reset(parsed.step2);
+        }
+        if (parsed.step3) {
+          setStep3Data(parsed.step3);
+          step3Form.reset(parsed.step3);
+        }
+        if (parsed.currentStep) {
+          setCurrentStep(parsed.currentStep);
+        }
+      } catch (e) {
+        // invalid draft
+      }
+    }
+  }, []);
+
+  // Autosave: Save to localStorage whenever data changes
+  useEffect(() => {
+    const draft = { step1: step1Data, step2: step2Data, step3: step3Data, currentStep };
+    localStorage.setItem("kybergym_member_draft", JSON.stringify(draft));
+  }, [step1Data, step2Data, step3Data, currentStep]);
+
   const handleStep1Submit = (data: CreateMemberStep1Data) => {
     setStep1Data(data);
     setCurrentStep(2);
@@ -58,6 +91,8 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
       // const fullData = { ...step1Data, ...step2Data, ...step3Data };
       // await apiClient.post('/members', { ...fullData, gymId: selectedGymId });
       await new Promise((r) => setTimeout(r, 1200));
+      // Clear draft on success
+      localStorage.removeItem("kybergym_member_draft");
       onSuccess();
     } catch {
     } finally {
