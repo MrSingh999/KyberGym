@@ -10,8 +10,6 @@ const envSchema = z.object({
   
   MONGO_URI: z.string().url({ message: 'MONGO_URI must be a valid URL' }),
   
-  REDIS_URL: z.string().url({ message: 'REDIS_URL must be a valid Redis connection string' }),
-  
   JWT_SECRET: z.string().min(32, { message: 'JWT_SECRET must be at least 32 characters long' }),
   JWT_EXPIRES_IN: z.string().default('1d'),
   
@@ -27,7 +25,6 @@ const envSchema = z.object({
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
-  // If logger is not initialized, we fall back to console
   if (logger && logger.error) {
     logger.error('❌ Invalid environment variables:', _env.error.format());
   } else {
@@ -46,10 +43,6 @@ export const appConfig = {
 
 export const dbConfig = {
   uri: env.MONGO_URI,
-};
-
-export const redisConfig = {
-  url: env.REDIS_URL,
 };
 
 export const authConfig = {

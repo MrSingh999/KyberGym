@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
 import mongoSanitize from 'express-mongo-sanitize';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
@@ -14,7 +13,6 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import apiRoutes from './routes/index.js';
 import { HealthCheckController } from './modules/health/health.controller.js';
-import { redisConnection } from './jobs/queues.js';
 
 const app = express();
 
@@ -28,15 +26,13 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting backed by Redis
+// In-memory rate limiting (Simplified for MVP, max 50 gyms)
+// TODO: Reintroduce RedisStore if horizontal scaling across multiple Node instances is needed.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, // Limit each IP to 1000 requests per windowMs
   standardHeaders: true, 
   legacyHeaders: false,
-  store: new RedisStore({
-    sendCommand: (...args) => redisConnection.call(...args),
-  }),
   message: { success: false, message: 'Too many requests from this IP, please try again later.' },
 });
 

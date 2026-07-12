@@ -6,13 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "worker": "node src/worker.js",
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "bullmq": "^5.80.2",
     "cloudinary": "^2.10.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
@@ -25,7 +23,6 @@
     "helmet": "^8.0.0",
     "http-errors": "^2.0.1",
     "http-status": "^2.1.0",
-    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
@@ -33,7 +30,6 @@
     "nanoid": "^5.1.16",
     "node-cron": "^4.6.0",
     "qrcode": "^1.5.4",
-    "rate-limit-redis": "^5.0.0",
     "resend": "^6.17.2",
     "winston": "^3.17.0",
     "zod": "^3.24.1"

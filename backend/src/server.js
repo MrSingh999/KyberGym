@@ -3,6 +3,7 @@ import { connectDB, closeDB } from './database/index.js';
 import { seedDefaultSaasPlan } from './database/seeder.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
+import { setupCronJobs } from './jobs/cron.js';
 
 // Handle synchronous uncaught exceptions
 process.on('uncaughtException', (err) => {
@@ -25,20 +26,17 @@ const startServer = async () => {
       logger.info(`Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
     });
 
-    // 4. Graceful Shutdown Handlers
+    // 4. Setup in-process Cron Jobs (Replacing external worker)
+    setupCronJobs();
+
+    // 5. Graceful Shutdown Handlers
     const gracefulShutdown = async (signal) => {
       logger.info(`[SHUTDOWN] Received ${signal}. Shutting down gracefully...`);
       
       server.close(async () => {
         logger.info('[SHUTDOWN] HTTP server closed.');
         await closeDB();
-        
-        // Disconnect Redis
-        import('./jobs/queues.js').then(async ({ redisConnection }) => {
-          await redisConnection.quit();
-          logger.info('[SHUTDOWN] Redis connections closed.');
-          process.exit(0);
-        }).catch(() => process.exit(0));
+        process.exit(0);
       });
 
       // Force shutdown after 10s

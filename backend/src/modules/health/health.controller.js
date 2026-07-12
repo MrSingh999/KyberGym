@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { redisConnection } from '../jobs/queues.js';
 
 export class HealthCheckController {
   
@@ -11,7 +10,6 @@ export class HealthCheckController {
   // Deep readiness probe
   static async readiness(req, res) {
     let mongoStatus = 'DOWN';
-    let redisStatus = 'DOWN';
     let isReady = true;
 
     try {
@@ -22,26 +20,13 @@ export class HealthCheckController {
         isReady = false;
       }
 
-      // Check Redis
-      if (redisConnection.status === 'ready') {
-        const ping = await redisConnection.ping();
-        if (ping === 'PONG') {
-          redisStatus = 'UP';
-        } else {
-          isReady = false;
-        }
-      } else {
-        isReady = false;
-      }
-
       const statusCode = isReady ? 200 : 503;
       
       res.status(statusCode).json({
         status: isReady ? 'READY' : 'NOT_READY',
         timestamp: new Date(),
         checks: {
-          mongo: mongoStatus,
-          redis: redisStatus
+          mongo: mongoStatus
         }
       });
     } catch (error) {

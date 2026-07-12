@@ -1,7 +1,7 @@
 import cron from 'node-cron';
-import { BroadcastRepository } from '../modules/broadcast/broadcast.repository.js';
-import { broadcastQueue } from './queues.js';
 import { logger } from '../utils/logger.js';
+import { BroadcastRepository } from '../modules/broadcast/broadcast.repository.js';
+import { BroadcastService } from '../modules/broadcast/broadcast.service.js';
 
 /**
  * Setup global cron jobs for the backend
@@ -22,10 +22,9 @@ export function setupCronJobs() {
           // Update status immediately so another cron tick doesn't pick it up
           await BroadcastRepository.update(broadcast._id, broadcast.gymId, { status: 'processing', sentAt: now });
           
-          // Drop it into the bullmq broadcast fan-out queue
-          await broadcastQueue.add('process-scheduled-broadcast', {
-            broadcastId: broadcast._id,
-            gymId: broadcast.gymId
+          // Process directly via service without queue
+          BroadcastService.processBroadcastInBackground(broadcast._id, broadcast.gymId).catch(err => {
+            logger.error(`[Cron] Broadcast processing failed: ${err.message}`);
           });
         }
       }
