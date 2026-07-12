@@ -2,16 +2,17 @@ import { useState, useEffect } from "react";
 import { Command } from "cmdk";
 import { Search, User, CreditCard, Dumbbell, Building2 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useSearchStore } from "../../store/search.store";
 
 export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+  const { isOpen: open, setOpen, toggleOpen } = useSearchStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        toggleOpen();
       }
     };
     document.addEventListener("keydown", down);

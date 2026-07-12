@@ -1,6 +1,6 @@
 import { ChevronRight, Menu, Moon, Sun, Search } from "lucide-react";
-import { useLocation } from "react-router";
-import { useUIStore } from "../../store/ui";
+import { useSearchStore } from "../../store/search.store";
+import { useSidebarStore } from "../../store/sidebar.store";
 import { NotificationCenter } from "./NotificationCenter";
 import { useTheme } from "../../providers/ThemeProvider";
 
@@ -29,7 +29,8 @@ export function Breadcrumbs() {
 }
 
 export function Navbar() {
-  const { setMobileDrawerOpen } = useUIStore();
+  const { setMobileDrawerOpen } = useSidebarStore();
+  const { setOpen: setSearchOpen } = useSearchStore();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -47,7 +48,7 @@ export function Navbar() {
       <div className="flex items-center space-x-2 sm:space-x-4">
         {/* Global Search Trigger */}
         <button 
-          onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+          onClick={() => setSearchOpen(true)}
           className="hidden sm:flex items-center text-sm text-muted bg-surface border border-default hover:border-hover px-3 py-1.5 rounded-md transition-all shadow-sm w-64"
         >
           <Search className="w-4 h-4 mr-2" />
@@ -58,7 +59,10 @@ export function Navbar() {
         </button>
 
         {/* Mobile Search Icon */}
-        <button className="sm:hidden p-2 text-muted hover:text-primary rounded-full hover:bg-surface-hover transition-colors">
+        <button 
+          onClick={() => setSearchOpen(true)}
+          className="sm:hidden p-2 text-muted hover:text-primary rounded-full hover:bg-surface-hover transition-colors"
+        >
           <Search className="w-5 h-5" />
         </button>
 

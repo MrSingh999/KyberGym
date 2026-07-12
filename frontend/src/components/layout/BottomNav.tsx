@@ -2,14 +2,14 @@ import { NavLink, useLocation } from "react-router";
 import { cn } from "../../lib/utils";
 import { NavGroup } from "../../constants/navigation";
 import { MoreHorizontal } from "lucide-react";
-import { useUIStore } from "../../store/ui";
+import { useSidebarStore } from "../../store/sidebar.store";
 
 interface BottomNavProps {
   groups: NavGroup[];
 }
 
 export function BottomNav({ groups }: BottomNavProps) {
-  const { setMobileDrawerOpen } = useUIStore();
+  const { setMobileDrawerOpen } = useSidebarStore();
   const location = useLocation();
 
   // Extract the top 4 most important primary links across all groups

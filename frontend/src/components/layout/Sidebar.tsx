@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router";
 import { cn } from "../../lib/utils";
-import { useUIStore } from "../../store/ui";
+import { useSidebarStore } from "../../store/sidebar.store";
 import { NavGroup } from "../../constants/navigation";
 import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 
@@ -10,7 +10,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ groups, role }: SidebarProps) {
-  const { sidebarCollapsed, toggleSidebar, mobileDrawerOpen, setMobileDrawerOpen } = useUIStore();
+  const { isCollapsed: sidebarCollapsed, toggleSidebar, isMobileDrawerOpen: mobileDrawerOpen, setMobileDrawerOpen } = useSidebarStore();
   const location = useLocation();
 
   const brandName = role === "superadmin" ? "KyberGym Admin" : role === "owner" ? "KyberGym" : "My Gym Portal";

@@ -1,9 +1,8 @@
 import { Bell } from "lucide-react";
-import { useState } from "react";
+import { useNotificationStore } from "../../store/notification.store";
 
 export function NotificationCenter() {
-  const [open, setOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const { isOpen: open, setOpen, unreadCount, markAllAsRead } = useNotificationStore();
 
   return (
     <div className="relative">
@@ -23,7 +22,7 @@ export function NotificationCenter() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-subtle">
               <h3 className="font-semibold text-small text-primary">Notifications</h3>
               <button 
-                onClick={() => setUnreadCount(0)}
+                onClick={markAllAsRead}
                 className="text-xs text-primary hover:underline font-medium"
               >
                 Mark all read
