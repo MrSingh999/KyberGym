@@ -12,7 +12,7 @@ const gymBrandingSchema = new mongoose.Schema(
     
     supportEmail: { type: String },
     timezone: { type: String, default: 'UTC' }, 
-    currency: { type: String, default: 'USD' }, 
+    currency: { type: String, default: 'INR' }, 
     language: { type: String, default: 'en' },
     dateFormat: { type: String, default: 'dd/MM/yyyy' }
   },
