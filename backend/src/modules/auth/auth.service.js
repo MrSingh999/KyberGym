@@ -2,18 +2,15 @@ import mongoose from 'mongoose';
 import createError from 'http-errors';
 import { Gym } from '../gyms/models/Gym.model.js';
 import { User } from '../users/models/User.model.js';
-import { SaasPlan } from '../saasPlan/models/SaasPlan.model.js';
-import { GymSubscription } from '../subscription/models/GymSubscription.model.js';
 import { ROLES } from '../../shared/constants.js';
 import { hashData, compareData, generateOTP, generateAccessToken, generateRefreshToken, verifyToken } from './auth.utils.js';
 import { logger } from '../../config/logger.js';
 import { Resend } from 'resend';
 
-// The user will provide the API key, we should check it exists eventually
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
 export class AuthService {
-  
+
   static async registerOwner(data) {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -25,35 +22,22 @@ export class AuthService {
         throw createError.Conflict('Subdomain is already taken');
       }
 
-      // 1.5 Fetch default SaaS Plan
-      const plan = await SaasPlan.findOne({ slug: 'starter-trial' }).session(session);
-      if (!plan) {
-        throw createError.InternalServerError('Default subscription plan not found');
-      }
-
-      // 2. Create Gym (Copying features from the plan)
+      // 2. Create Gym with default MVP feature flags
       const gym = new Gym({
         name: data.gymName,
         slug: data.subdomain,
         subdomain: data.subdomain,
-        ownerId: new mongoose.Types.ObjectId(), // Placeholder
-        features: plan.features
+        ownerId: new mongoose.Types.ObjectId(), // Placeholder, updated after user creation
+        features: {
+          members:       true,
+          workouts:      true,
+          notifications: true,
+          attendance:    false,
+          branding:      false,
+        },
       });
 
       await gym.save({ session });
-
-      // 2.5 Create Gym Subscription
-      const now = new Date();
-      const trialEnds = new Date(now.getTime() + (plan.trialDays * 24 * 60 * 60 * 1000));
-      
-      const subscription = new GymSubscription({
-        gymId: gym._id,
-        planId: plan._id,
-        status: 'trial',
-        startDate: now,
-        trialEndsAt: trialEnds
-      });
-      await subscription.save({ session });
 
       // 3. Hash password
       const hashedPassword = await hashData(data.password);
@@ -62,7 +46,7 @@ export class AuthService {
       const user = new User({
         _id: gym.ownerId, // Set ID to match placeholder
         gymId: gym._id,
-        role: ROLES.GYM_ADMIN, // Using constant from Phase 1
+        role: ROLES.GYM_ADMIN,
         name: data.ownerName,
         email: data.email,
         password: hashedPassword,
@@ -82,9 +66,9 @@ export class AuthService {
 
       logger.info(`New Gym Registered: ${gym._id}, Owner: ${user._id}`);
 
-      // 6. Send OTP (Don't await to avoid blocking response)
+      // 6. Send OTP email (non-blocking)
       resend.emails.send({
-        from: 'GymSaaS <noreply@yourdomain.com>',
+        from: 'KyberGym <noreply@kyberfitness.com>',
         to: user.email,
         subject: 'Verify your email address',
         html: `<p>Your verification code is: <strong>${otp}</strong></p>`
@@ -137,7 +121,7 @@ export class AuthService {
 
     try {
       const decoded = verifyToken(oldRefreshToken);
-      
+
       const user = await User.findById(decoded.userId);
       if (!user) {
         throw createError.Unauthorized('User not found');
@@ -160,7 +144,7 @@ export class AuthService {
   static async forgotPassword(email, gymId) {
     const user = await User.findOne({ email, gymId });
     if (!user) {
-      // Don't leak whether the email exists, just return success
+      // Don't leak whether the email exists
       return true;
     }
 
@@ -172,7 +156,7 @@ export class AuthService {
     logger.info(`Password reset requested for: ${email}`);
 
     resend.emails.send({
-      from: 'GymSaaS <noreply@yourdomain.com>',
+      from: 'KyberGym <noreply@kyberfitness.com>',
       to: user.email,
       subject: 'Password Reset Request',
       html: `<p>Your password reset code is: <strong>${otp}</strong>. It expires in 15 minutes.</p>`
@@ -194,7 +178,7 @@ export class AuthService {
 
     // Update password & invalidate all existing sessions
     user.password = await hashData(newPassword);
-    user.tokenVersion += 1; 
+    user.tokenVersion += 1;
     user.passwordChangedAt = new Date();
     user.passwordResetOTP = undefined;
     user.passwordResetExpires = undefined;

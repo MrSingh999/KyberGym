@@ -6,14 +6,12 @@ import { asyncHandler } from '../../middleware/asyncHandler.js';
 import { resolveTenant } from '../../middleware/tenant.middleware.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requireRoles } from '../../middleware/role.middleware.js';
-import { requireActiveSubscription } from '../../middleware/subscription.middleware.js';
 import { ROLES } from '../../shared/constants.js';
 
 const router = Router();
 
 router.use(asyncHandler(resolveTenant));
 router.use(authenticate);
-router.use(asyncHandler(requireActiveSubscription));
 
 // Access: Owner, Staff
 const allowedRoles = [ROLES.GYM_ADMIN, ROLES.STAFF];

@@ -13,12 +13,17 @@ import { PaymentsPage } from "../features/payments/pages/PaymentsPage";
 import { PaymentDetailPage } from "../features/payments/pages/PaymentDetailPage";
 import { CollectPaymentPage } from "../features/payments/pages/CollectPaymentPage";
 
+import { DashboardPage } from "../features/dashboard/pages/DashboardPage";
+import { MembersPage } from "../features/members/pages/MembersPage";
+import { MemberProfilePage } from "../features/members/pages/MemberProfilePage";
+
 // Temporary dummy components for routing
 import { EmptyState } from "../components/feedback/ErrorState";
 
 // Guards & Store
 import { ProtectedRoute, PublicRoute } from "../features/auth/guards/ProtectedRoute";
 import { Login } from "../features/auth/components/Login";
+import { ForgotPasswordForm } from "../features/auth/components/ForgotPasswordForm";
 import { RoleGuard } from "../features/auth/guards/RoleGuard";
 import { Unauthorized } from "../features/auth/components/Unauthorized";
 import { useAuthStore } from "../store/auth.store";
@@ -87,10 +92,10 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { index: true, element: <DummyComponent title="Gym Dashboard" /> },
-          { path: "dashboard", element: <DummyComponent title="Gym Dashboard" /> },
-          { path: "members", element: <DummyComponent title="Manage Members" /> },
-          { path: "members/:memberId", element: <DummyComponent title="Member Profile" /> },
+          { index: true, element: <DashboardPage /> },
+          { path: "dashboard", element: <DashboardPage /> },
+          { path: "members", element: <MembersPage /> },
+          { path: "members/:memberId", element: <MemberProfilePage /> },
           // ── Plans ─────────────────────────────────────────────────────────────
           { path: "plans", element: <PlansPage /> },
           { path: "plans/new", element: <CreatePlanPage /> },
@@ -143,6 +148,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "login", element: <Login /> },
       { path: "register", element: <DummyComponent title="Register" /> },
+      { path: "forgot-password", element: <ForgotPasswordForm /> },
     ],
   },
   {

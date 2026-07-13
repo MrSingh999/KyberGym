@@ -1,6 +1,6 @@
 import app from './app.js';
 import { connectDB, closeDB } from './database/index.js';
-import { seedDefaultSaasPlan } from './database/seeder.js';
+import { runSeeders } from './database/seeder.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { setupCronJobs } from './jobs/cron.js';
@@ -18,21 +18,21 @@ const startServer = async () => {
     // 1. Connect to Database
     await connectDB();
 
-    // 2. Run initial seeders
-    await seedDefaultSaasPlan();
+    // 2. Run startup seeders (no-op in MVP)
+    await runSeeders();
 
     // 3. Start Express App
     const server = app.listen(env.PORT, () => {
       logger.info(`Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
     });
 
-    // 4. Setup in-process Cron Jobs (Replacing external worker)
+    // 4. Setup in-process Cron Jobs
     setupCronJobs();
 
     // 5. Graceful Shutdown Handlers
     const gracefulShutdown = async (signal) => {
       logger.info(`[SHUTDOWN] Received ${signal}. Shutting down gracefully...`);
-      
+
       server.close(async () => {
         logger.info('[SHUTDOWN] HTTP server closed.');
         await closeDB();

@@ -16,3 +16,6 @@ export function WidgetContainer({ children, className, ...props }: WidgetContain
     </Card>
   );
 }
+
+export { WidgetHeader } from "./WidgetHeader";
+export { WidgetBody } from "./WidgetBody";

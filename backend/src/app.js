@@ -55,8 +55,7 @@ if (env.NODE_ENV !== 'test') {
 }
 
 // 5. Health Checks
-app.get('/health', HealthCheckController.liveness);
-app.get('/health/ready', HealthCheckController.readiness);
+app.get('/health', HealthCheckController.check);
 
 // 6. Routes Registration
 app.use('/api/v1', apiRoutes);

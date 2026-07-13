@@ -1,49 +1,54 @@
 import React from "react";
-import CountUp from "react-countup";
-import { Users, Activity, DollarSign, CalendarCheck } from "lucide-react";
+import reactCountUp from "react-countup";
+import { Users, AlertTriangle, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/data-display/StatCard";
 import { useDashboardStats } from "../hooks/useDashboardStats";
+import { useDashboardDues } from "../hooks/useDashboardDues";
+
+const CountUp = (reactCountUp as any).default || reactCountUp;
 
 export function KpiGrid() {
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data: stats, isLoading: isStatsLoading } = useDashboardStats();
+  const { data: dues, isLoading: isDuesLoading } = useDashboardDues();
+
+  const isLoading = isStatsLoading || isDuesLoading;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
       <StatCard
         title="Total Members"
-        value={
-          <CountUp end={stats?.totalMembers || 0} duration={2} separator="," />
-        }
-        icon={<Users className="h-5 w-5" />}
-        trend={stats?.trends.members}
-        trendLabel="vs last month"
+        value={<CountUp end={stats?.totalMembers || 0} duration={1.5} separator="," />}
+        icon={<Users className="h-3.5 w-3.5" />}
         loading={isLoading}
+        className="border-l-[3px] border-l-zinc-500 dark:border-l-zinc-400"
       />
       <StatCard
-        title="Active Members"
-        value={
-          <CountUp end={stats?.activeMembers || 0} duration={2} separator="," />
-        }
-        icon={<Activity className="h-5 w-5 text-success" />}
+        title="Active"
+        value={<CountUp end={stats?.activeMembers || 0} duration={1.5} separator="," />}
+        icon={<CheckCircle className="h-3.5 w-3.5 text-emerald-500" />}
         loading={isLoading}
+        className="border-l-[3px] border-l-zinc-300 dark:border-l-zinc-200"
       />
       <StatCard
-        title="Monthly Revenue"
-        value={
-          <CountUp prefix="$" end={stats?.monthlyRevenue || 0} duration={2.5} separator="," />
-        }
-        icon={<DollarSign className="h-5 w-5" />}
-        trend={stats?.trends.revenue}
-        trendLabel="vs last month"
+        title="Overdue"
+        value={<CountUp end={stats?.expiredMembers || 0} duration={1.5} separator="," />}
+        icon={<AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
         loading={isLoading}
+        className="border-l-[3px] border-l-red-500"
       />
       <StatCard
-        title="Pending Renewals"
-        value={
-          <CountUp end={stats?.pendingRenewals || 0} duration={1.5} />
-        }
-        icon={<CalendarCheck className="h-5 w-5 text-warning" />}
+        title="Due in 7d"
+        value={<CountUp end={dues?.dueIn7Days.length || 0} duration={1.5} separator="," />}
+        icon={<Clock className="h-3.5 w-3.5 text-amber-500" />}
         loading={isLoading}
+        className="border-l-[3px] border-l-amber-500"
+      />
+      <StatCard
+        title="Monthly Rev"
+        value={<CountUp prefix="₹" end={stats?.monthlyCollection || 0} duration={2} separator="," />}
+        icon={<TrendingUp className="h-3.5 w-3.5" />}
+        loading={isLoading}
+        className="border-l-[3px] border-l-zinc-800 dark:border-l-zinc-600 col-span-2 md:col-span-1 lg:col-span-1"
       />
     </div>
   );

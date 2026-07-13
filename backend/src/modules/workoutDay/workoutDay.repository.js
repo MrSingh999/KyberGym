@@ -5,22 +5,23 @@ export class WorkoutDayRepository {
     return WorkoutDay.create(data);
   }
 
-  static async findById(id, gymId) {
-    return WorkoutDay.findOne({ _id: id, gymId })
-      .populate('exercises.exerciseId', 'name slug muscleGroup thumbnail');
+  static async findByWorkoutId(workoutId) {
+    return WorkoutDay.find({ workoutId }).sort({ dayNumber: 1 });
   }
 
-  static async findByTemplateId(workoutTemplateId, gymId) {
-    return WorkoutDay.find({ workoutTemplateId, gymId })
-      .sort({ dayNumber: 1 })
-      .populate('exercises.exerciseId', 'name slug muscleGroup thumbnail');
+  static async findById(id, workoutId) {
+    return WorkoutDay.findOne({ _id: id, workoutId });
   }
 
-  static async update(id, gymId, updateData) {
-    return WorkoutDay.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true });
+  static async update(id, workoutId, data) {
+    return WorkoutDay.findOneAndUpdate(
+      { _id: id, workoutId },
+      data,
+      { new: true, runValidators: true }
+    );
   }
 
-  static async delete(id, gymId) {
-    return WorkoutDay.findOneAndDelete({ _id: id, gymId });
+  static async delete(id, workoutId) {
+    return WorkoutDay.findOneAndDelete({ _id: id, workoutId });
   }
 }

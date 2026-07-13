@@ -1,6 +1,7 @@
 import React from "react";
 import { ColumnDef, PaginationState, SortingState, RowSelectionState } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Eye } from "lucide-react";
+import { useNavigate } from "react-router";
 import { DataTable } from "@/components/data-display/DataTable";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
@@ -50,13 +51,15 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
       const member = row.original;
       return (
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 border border-border-default">
             <AvatarImage src={member.profilePhoto} />
-            <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="bg-surface text-text-secondary text-xs font-mono font-bold">
+              {member.name.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="font-medium text-primary text-sm">{member.name}</span>
-            <span className="text-xs text-secondary">{member.email}</span>
+            <span className="font-semibold text-text-primary text-sm">{member.name}</span>
+            <span className="text-[11px] text-text-muted font-mono">{member.email}</span>
           </div>
         </div>
       );
@@ -65,12 +68,29 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
   {
     accessorKey: "memberCode",
     header: "Code",
-    cell: ({ row }) => <span className="text-sm font-medium text-secondary">{row.getValue("memberCode")}</span>,
+    cell: ({ row }) => (
+      <span className="text-[11px] font-bold text-text-secondary font-mono uppercase tracking-wider">
+        {row.getValue("memberCode")}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "phone",
+    header: "Phone",
+    cell: ({ row }) => (
+      <span className="text-xs text-text-secondary font-mono">
+        {row.getValue("phone") || "—"}
+      </span>
+    ),
   },
   {
     accessorKey: "planName",
     header: "Plan",
-    cell: ({ row }) => <span className="text-sm text-primary">{row.getValue("planName") || "-"}</span>,
+    cell: ({ row }) => (
+      <span className="text-xs text-text-primary font-mono">
+        {row.getValue("planName") || "—"}
+      </span>
+    ),
   },
   {
     accessorKey: "membershipStatus",
@@ -82,20 +102,39 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     header: "Joined",
     cell: ({ row }) => {
       const date = new Date(row.getValue("joiningDate"));
-      return <span className="text-sm text-secondary">{date.toLocaleDateString()}</span>;
+      return (
+        <span className="text-[11px] text-text-muted font-mono">
+          {isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+        </span>
+      );
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
+      const member = row.original;
       return (
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <MoreHorizontal className="h-4 w-4 text-muted" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <ActionButton memberId={member.id} />
+        </div>
       );
     },
   },
 ];
+
+function ActionButton({ memberId }: { memberId: string }) {
+  const navigate = useNavigate();
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      onClick={() => navigate(`/admin/members/${memberId}`)}
+      className="text-text-muted hover:text-text-primary"
+    >
+      <Eye className="h-3.5 w-3.5" />
+    </Button>
+  );
+}
 
 export function MembersTable({
   data,

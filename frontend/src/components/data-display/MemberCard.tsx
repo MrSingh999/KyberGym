@@ -3,7 +3,6 @@ import { MapPin, Mail, Phone, Calendar } from "lucide-react"
 import { Card, CardContent } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "../data-display/Avatar"
-import { Stack } from "../layout/Stack"
 import { cn } from "../../lib/utils"
 
 export interface MemberCardProps extends React.HTMLAttributes<HTMLDivElement> {
