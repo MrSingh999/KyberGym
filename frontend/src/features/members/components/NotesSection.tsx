@@ -4,9 +4,9 @@ import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
 import { WidgetEmptyState } from "../../dashboard/widgets/WidgetEmptyState";
-import { Button } from "../../../../components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { MemberNote } from "../types/profile";
-import { cn } from "../../../../lib/utils";
+import { cn } from "@/lib/utils";
 
 interface NotesSectionProps {
   notes?: MemberNote[];

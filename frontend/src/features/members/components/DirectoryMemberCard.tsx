@@ -1,7 +1,7 @@
 import React from "react";
 import { MoreVertical, Phone, ChevronRight } from "lucide-react";
-import { Card, CardContent } from "../../../../components/ui/Card";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../components/data-display/Avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
 

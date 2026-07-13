@@ -1,20 +1,47 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../../store/auth.store";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { apiClient } from "../../../lib/apiClient";
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  const { data: user, isLoading, isError } = useCurrentUser();
+  const { token, login, logout } = useAuthStore();
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // If the backend says the user is unauthorized/invalid, logout and clear state
-    if (isError && isAuthenticated) {
-      useAuthStore.getState().logout();
-    }
-  }, [isError, isAuthenticated]);
+    let active = true;
 
-  if (isAuthenticated && isLoading) {
-    // Render full page auth loader while we verify the session
+    const initializeAuth = async () => {
+      if (!token) {
+        if (active) {
+          logout();
+          setIsInitializing(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await apiClient.get(`/auth/me`);
+        const user = response.data.data.user;
+        if (active) {
+          login(user, token);
+          setIsInitializing(false);
+        }
+      } catch (error: any) {
+        console.error("Session restoration failed:", error);
+        if (active) {
+          logout();
+          setIsInitializing(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  if (isInitializing) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas">
         <div className="flex flex-col items-center gap-4">

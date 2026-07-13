@@ -1,6 +1,6 @@
 import React from "react";
-import { EmptyState, EmptyStateProps } from "../../../../components/feedback/EmptyState";
-import { cn } from "../../../../lib/utils";
+import { EmptyState, EmptyStateProps } from "@/components/feedback/EmptyState";
+import { cn } from "@/lib/utils";
 
 export function WidgetEmptyState({ className, ...props }: EmptyStateProps) {
   return (

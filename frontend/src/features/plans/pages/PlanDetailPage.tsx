@@ -3,7 +3,7 @@ import { ArrowLeft, Edit3, Copy, Archive, ToggleLeft, ToggleRight } from 'lucide
 import { toast } from 'sonner';
 import { usePlan, useDuplicatePlan, useArchivePlan, useSetPlanStatus } from '../hooks/usePlans';
 import { PlanOverviewCard } from '../components/PlanOverviewCard';
-import { Skeleton } from '../../../../components/feedback/Skeleton';
+import { Skeleton } from '@/components/feedback/Skeleton';
 
 export function PlanDetailPage() {
   const { planId = '' } = useParams<{ planId: string }>();
@@ -31,7 +31,7 @@ export function PlanDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <p className="text-muted">Plan not found.</p>
-        <button onClick={() => navigate('/dashboard/plans')} className="text-sm text-primary underline">
+        <button onClick={() => navigate('/admin/plans')} className="text-sm text-primary underline">
           Back to Plans
         </button>
       </div>
@@ -45,7 +45,7 @@ export function PlanDetailPage() {
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-surface/90 border-b border-default backdrop-blur-md">
         <button
-          onClick={() => navigate('/dashboard/plans')}
+          onClick={() => navigate('/admin/plans')}
           className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -55,7 +55,7 @@ export function PlanDetailPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              duplicate(planId, { onSuccess: (copy) => { toast.success('Plan duplicated'); navigate(`/dashboard/plans/${copy.id}`); } });
+              duplicate(planId, { onSuccess: (copy) => { toast.success('Plan duplicated'); navigate(`/admin/plans/${copy.id}`); } });
             }}
             disabled={duplicating}
             className="flex items-center gap-2 px-3 py-2 text-sm text-muted border border-default rounded-xl hover:border-hover hover:text-primary transition-colors"
@@ -78,7 +78,7 @@ export function PlanDetailPage() {
           </button>
 
           <button
-            onClick={() => navigate(`/dashboard/plans/${planId}/edit`)}
+            onClick={() => navigate(`/admin/plans/${planId}/edit`)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity"
           >
             <Edit3 className="w-4 h-4" />
@@ -111,7 +111,7 @@ export function PlanDetailPage() {
 
             {plan.status !== 'archived' && (
               <button
-                onClick={() => archive(undefined, { onSuccess: () => { toast.success('Plan archived'); navigate('/dashboard/plans'); } })}
+                onClick={() => archive(undefined, { onSuccess: () => { toast.success('Plan archived'); navigate('/admin/plans'); } })}
                 disabled={archiving}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-destructive border border-destructive/30 rounded-xl hover:bg-destructive/5 transition-colors"
               >

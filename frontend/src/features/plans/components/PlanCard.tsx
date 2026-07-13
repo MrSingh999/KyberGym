@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { MoreVertical, Edit3, Copy, Archive, Star, Users } from 'lucide-react';
 import { PlanListItem, DURATION_TYPE_LABELS } from '../types';
 import { PlanStatusBadge } from './PlanStatusBadge';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 interface PlanCardProps {
   plan: PlanListItem;
@@ -22,7 +22,7 @@ export function PlanCard({ plan, onDuplicate, onArchive, index = 0 }: PlanCardPr
       transition={{ duration: 0.22, delay: index * 0.04 }}
       whileHover={{ y: -2, transition: { duration: 0.15 } }}
       className="group relative bg-surface border border-default rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:border-hover transition-all cursor-pointer"
-      onClick={() => navigate(`/dashboard/plans/${plan.id}`)}
+      onClick={() => navigate(`/admin/plans/${plan.id}`)}
     >
       {/* Accent stripe */}
       {plan.color && (
@@ -60,7 +60,7 @@ export function PlanCard({ plan, onDuplicate, onArchive, index = 0 }: PlanCardPr
               </summary>
               <div className="absolute right-0 top-8 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-40 text-sm">
                 <button
-                  onClick={() => navigate(`/dashboard/plans/${plan.id}/edit`)}
+                  onClick={() => navigate(`/admin/plans/${plan.id}/edit`)}
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-surface-hover text-primary transition-colors"
                 >
                   <Edit3 className="w-4 h-4" /> Edit

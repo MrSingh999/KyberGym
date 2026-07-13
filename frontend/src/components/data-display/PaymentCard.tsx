@@ -1,7 +1,7 @@
 import * as React from "react"
 import { CheckCircle2, Clock, XCircle, FileText, ArrowRight } from "lucide-react"
-import { Card, CardContent } from "../ui/Card"
-import { Badge } from "../ui/Badge"
+import { Card, CardContent } from "../ui/card"
+import { Badge } from "../ui/badge"
 import { cn } from "../../lib/utils"
 
 export interface PaymentCardProps extends React.HTMLAttributes<HTMLDivElement> {

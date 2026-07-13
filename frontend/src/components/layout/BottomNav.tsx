@@ -22,9 +22,7 @@ export function BottomNav({ groups }: BottomNavProps) {
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-[64px] pb-safe bg-surface/90 backdrop-blur-md border-t border-subtle flex items-center justify-around z-40">
       {primaryLinks.map((item) => {
         const isActive = location.pathname.startsWith(item.href) && 
-                         (item.href !== "/dashboard" || location.pathname === "/dashboard") &&
-                         (item.href !== "/admin" || location.pathname === "/admin") &&
-                         (item.href !== "/portal" || location.pathname === "/portal");
+                         (!["/super-admin", "/admin", "/member"].includes(item.href) || location.pathname === item.href);
 
         return (
           <NavLink

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "../../../../lib/apiClient";
-import { useGymStore } from "../../../../store/gym.store";
+import { apiClient } from "@/lib/apiClient";
+import { useGymStore } from "@/store/gym.store";
 
 export interface RevenueDataPoint {
   date: string;

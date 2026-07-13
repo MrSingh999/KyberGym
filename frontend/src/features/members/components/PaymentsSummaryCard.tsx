@@ -5,8 +5,8 @@ import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
 import { WidgetEmptyState } from "../../dashboard/widgets/WidgetEmptyState";
 import { PaymentSummaryItem } from "../types/profile";
-import { Button } from "../../../../components/ui/Button";
-import { cn } from "../../../../lib/utils";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface PaymentsSummaryCardProps {
   payments?: PaymentSummaryItem[];

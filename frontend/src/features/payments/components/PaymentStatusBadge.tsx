@@ -1,4 +1,4 @@
-import { Badge } from '../../../../components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { PaymentStatus, PAYMENT_STATUS_LABELS } from '../types';
 
 interface PaymentStatusBadgeProps {

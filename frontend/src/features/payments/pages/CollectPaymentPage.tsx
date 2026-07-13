@@ -7,11 +7,11 @@ export function CollectPaymentPage() {
   const navigate = useNavigate();
 
   const handleClose = () => {
-    navigate('/dashboard/payments');
+    navigate('/admin/payments');
   };
 
   const handleSuccess = (id: string) => {
-    navigate(`/dashboard/payments/${id}`);
+    navigate(`/admin/payments/${id}`);
   };
 
   return (

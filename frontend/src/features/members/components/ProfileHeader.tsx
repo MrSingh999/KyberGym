@@ -1,11 +1,11 @@
 import React from "react";
 import { Phone, MoreVertical, CalendarCheck, RefreshCw, PauseCircle, PlayCircle, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../components/data-display/Avatar";
-import { Button } from "../../../../components/ui/Button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
+import { Button } from "@/components/ui/button";
 import { MemberStatusBadge } from "./MemberStatusBadge";
 import { MemberProfile } from "../types/profile";
-import { cn } from "../../../../lib/utils";
+import { cn } from "@/lib/utils";
 
 interface ProfileHeaderProps {
   member: MemberProfile;

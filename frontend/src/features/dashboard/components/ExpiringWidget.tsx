@@ -1,8 +1,8 @@
 import React from "react";
 import { WidgetContainer, WidgetHeader, WidgetBody } from "../widgets/WidgetContainer";
-import { Badge } from "../../../../components/ui/Badge";
-import { Avatar, AvatarFallback } from "../../../../components/data-display/Avatar";
-import { Button } from "../../../../components/ui/Button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/data-display/Avatar";
+import { Button } from "@/components/ui/button";
 
 const expiringMock = [
   { id: "1", name: "David Kim", plan: "Pro Monthly", days: 1 },

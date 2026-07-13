@@ -3,7 +3,7 @@ import { Plus, Filter, SlidersHorizontal, LayoutList, Table2, ChevronDown } from
 import { usePaymentStore } from '../store/usePaymentStore';
 import { PaymentsSearch } from './PaymentsSearch';
 import { PaymentSortField, SortDir } from '../types';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 const SORT_OPTIONS: { label: string; field: PaymentSortField; dir: SortDir }[] = [
   { label: 'Newest first', field: 'paymentDate', dir: 'desc' },
@@ -101,7 +101,7 @@ export function PaymentsToolbar({ totalCount }: PaymentsToolbarProps) {
 
         {/* CTA */}
         <button
-          onClick={() => navigate('/dashboard/payments/collect')}
+          onClick={() => navigate('/admin/payments/collect')}
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap"
         >
           <Plus className="w-4 h-4" />

@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router';
 import { AlertCircle, Clock, CalendarDays, ArrowRight } from 'lucide-react';
 import { usePaymentDues } from '../hooks/usePayments';
 import { DueCategory, DUE_CATEGORY_LABELS, DueEntry } from '../types';
-import { Skeleton } from '../../../../components/feedback/Skeleton';
+import { Skeleton } from '@/components/feedback/Skeleton';
 import { EmptyPaymentsState } from './EmptyPaymentsState';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 const CATEGORY_CONFIG: Record<
   DueCategory,
@@ -80,7 +80,7 @@ export function DueWidget() {
                       </p>
                     </div>
                     <button
-                      onClick={() => navigate('/dashboard/payments/collect')}
+                      onClick={() => navigate('/admin/payments/collect')}
                       className={cn(
                         'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ml-3',
                         cat === 'overdue' ? 'bg-destructive text-destructive-foreground hover:opacity-90' : 'bg-surface border border-default text-primary hover:bg-surface-hover'

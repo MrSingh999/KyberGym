@@ -27,7 +27,7 @@ export function Sidebar({ groups, role }: SidebarProps) {
           <div className="space-y-1">
             {group.items.map((item) => {
               const isActive = location.pathname.startsWith(item.href) && 
-                               (item.href !== "/dashboard" || location.pathname === "/dashboard");
+                               (!["/super-admin", "/admin", "/member"].includes(item.href) || location.pathname === item.href);
               
               return (
                 <NavLink

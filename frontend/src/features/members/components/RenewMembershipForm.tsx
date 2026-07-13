@@ -2,9 +2,9 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/forms/Form";
-import { Input } from "../../../../components/ui/Input";
-import { LoadingButton } from "../../../../components/ui/Button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/forms/Form";
+import { Input } from "@/components/ui/input";
+import { LoadingButton } from "@/components/ui/button";
 import { renewMembershipSchema, RenewMembershipData } from "../schemas/member.schema";
 import { useRenewMembership } from "../hooks/useMemberProfile";
 

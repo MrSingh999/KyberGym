@@ -26,7 +26,7 @@ export function PaymentCard({ payment, index = 0 }: PaymentCardProps) {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.035 }}
-      onClick={() => navigate(`/dashboard/payments/${payment.id}`)}
+      onClick={() => navigate(`/admin/payments/${payment.id}`)}
       className="bg-surface border border-default rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-hover transition-all cursor-pointer group"
     >
       <div className="flex items-start gap-3">
@@ -61,7 +61,7 @@ export function PaymentCard({ payment, index = 0 }: PaymentCardProps) {
             {/* Actions */}
             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <button
-                onClick={() => navigate(`/dashboard/payments/${payment.id}`)}
+                onClick={() => navigate(`/admin/payments/${payment.id}`)}
                 className="p-1.5 rounded-lg hover:bg-surface-hover text-muted hover:text-primary transition-colors"
                 title="View Details"
               >

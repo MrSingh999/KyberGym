@@ -1,8 +1,8 @@
 import * as React from "react"
 import { Dumbbell, Clock, Flame, Play } from "lucide-react"
-import { Card, CardContent } from "../ui/Card"
-import { Badge } from "../ui/Badge"
-import { Button } from "../ui/Button"
+import { Card, CardContent } from "../ui/card"
+import { Badge } from "../ui/badge"
+import { Button } from "../ui/button"
 import { cn } from "../../lib/utils"
 
 export interface WorkoutCardProps extends React.HTMLAttributes<HTMLDivElement> {

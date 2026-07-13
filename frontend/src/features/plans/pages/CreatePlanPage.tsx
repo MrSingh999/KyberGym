@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
-import { ResponsiveModal } from '../../../../components/ui/ResponsiveModal';
+import { ResponsiveModal } from '@/components/ui/responsive-modal';
 import { CreatePlanWizard } from '../components/CreatePlanWizard';
 
 export function CreatePlanPage() {
@@ -10,7 +10,7 @@ export function CreatePlanPage() {
 
   const handleClose = () => {
     setOpen(false);
-    navigate('/dashboard/plans');
+    navigate('/admin/plans');
   };
 
   return (
@@ -29,7 +29,7 @@ export function CreatePlanPage() {
           <h1 className="font-heading font-bold text-xl text-primary mb-6">Create Membership Plan</h1>
           <CreatePlanWizard
             onSuccess={() => {
-              navigate('/dashboard/plans');
+              navigate('/admin/plans');
             }}
             onCancel={handleClose}
           />

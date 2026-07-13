@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPlanStep1Schema, CreatePlanStep1, createPlanStep2Schema, CreatePlanStep2, createPlanStep3Schema, CreatePlanStep3, createPlanStep4Schema, CreatePlanStep4, CreatePlanData } from '../schemas/plan.schema';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../../components/forms/Form';
-import { Input } from '../../../../components/ui/Input';
-import { cn } from '../../../../lib/utils';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/forms/Form';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import { DEFAULT_PLAN_FEATURES, DURATION_TYPE_LABELS } from '../types';
 
 type WizardStep = 1 | 2 | 3 | 4;

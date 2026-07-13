@@ -4,7 +4,7 @@ import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
 import { MemberProfile } from "../types/profile";
-import { Skeleton } from "../../../../components/feedback/Skeleton";
+import { Skeleton } from "@/components/feedback/Skeleton";
 
 interface MemberOverviewCardProps {
   member?: MemberProfile;

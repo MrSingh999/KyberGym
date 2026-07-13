@@ -1,7 +1,7 @@
 import React from "react";
 import CountUp from "react-countup";
 import { Users, Activity, DollarSign, CalendarCheck } from "lucide-react";
-import { StatCard } from "../../../../components/data-display/StatCard";
+import { StatCard } from "@/components/data-display/StatCard";
 import { useDashboardStats } from "../hooks/useDashboardStats";
 
 export function KpiGrid() {

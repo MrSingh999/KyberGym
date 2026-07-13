@@ -1,4 +1,4 @@
-import { Skeleton } from '../../../../components/feedback/Skeleton';
+import { Skeleton } from '@/components/feedback/Skeleton';
 
 function PlanCardSkeleton() {
   return (

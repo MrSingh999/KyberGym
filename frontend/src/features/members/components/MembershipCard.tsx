@@ -5,7 +5,7 @@ import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
 import { MemberStatusBadge } from "./MemberStatusBadge";
 import { MemberProfile } from "../types/profile";
-import { MetricCard } from "../../../../components/data-display/MetricCard";
+import { MetricCard } from "@/components/data-display/MetricCard";
 
 interface MembershipCardProps {
   member?: MemberProfile;

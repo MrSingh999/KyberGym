@@ -1,7 +1,7 @@
 import React from "react";
 import { Search, Filter, Plus, SlidersHorizontal } from "lucide-react";
-import { Button } from "../../../../components/ui/Button";
-import { SearchInput } from "../../../../components/ui/SearchInput";
+import { Button } from "@/components/ui/button";
+import { SearchInput } from "@/components/ui/search-input";
 import { useMemberDirectoryStore } from "../store/useMemberDirectoryStore";
 
 export function MembersToolbar() {

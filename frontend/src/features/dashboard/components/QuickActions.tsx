@@ -1,6 +1,6 @@
 import React from "react";
 import { UserPlus, CreditCard, RefreshCw, Dumbbell, BarChart3 } from "lucide-react";
-import { cn } from "../../../../lib/utils";
+import { cn } from "@/lib/utils";
 
 const actions = [
   { label: "Add Member", icon: UserPlus, color: "text-primary", bg: "bg-primary/10" },

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { usePlan, useUpdatePlan } from '../hooks/usePlans';
 import { EditPlanForm } from '../components/EditPlanForm';
 import { EditPlanData } from '../schemas/plan.schema';
-import { Skeleton } from '../../../../components/feedback/Skeleton';
+import { Skeleton } from '@/components/feedback/Skeleton';
 
 export function EditPlanPage() {
   const { planId = '' } = useParams<{ planId: string }>();
@@ -16,14 +16,14 @@ export function EditPlanPage() {
   const handleSubmit = async (data: EditPlanData) => {
     await updatePlan(data);
     toast.success('Plan updated successfully');
-    navigate(`/dashboard/plans/${planId}`);
+    navigate(`/admin/plans/${planId}`);
   };
 
   return (
     <div className="min-h-full bg-canvas">
       <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-default bg-surface">
         <button
-          onClick={() => navigate(`/dashboard/plans/${planId}`)}
+          onClick={() => navigate(`/admin/plans/${planId}`)}
           className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

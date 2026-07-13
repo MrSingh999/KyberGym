@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/forms/Form";
-import { Input } from "../../../../components/ui/Input";
-import { Button, LoadingButton } from "../../../../components/ui/Button";
-import { cn } from "../../../../lib/utils";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/forms/Form";
+import { Input } from "@/components/ui/input";
+import { Button, LoadingButton } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   createMemberStep1Schema, CreateMemberStep1Data,
   createMemberStep2Schema, CreateMemberStep2Data,

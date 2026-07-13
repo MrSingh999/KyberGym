@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -13,9 +13,16 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: any, token: string) => void;
+  setUser: (user: any) => void;
   logout: () => void;
 }
+
+const normalizeRole = (role: string): "superadmin" | "owner" | "member" => {
+  if (role === "super_admin" || role === "superadmin") return "superadmin";
+  if (role === "gym_admin" || role === "owner") return "owner";
+  return "member";
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -23,7 +30,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      login: (user, token) => set({ user, token, isAuthenticated: true }),
+      login: (user, token) => {
+        const normalizedUser = user ? { ...user, role: normalizeRole(user.role) } : null;
+        set({ user: normalizedUser, token, isAuthenticated: true });
+      },
+      setUser: (user) => {
+        const normalizedUser = user ? { ...user, role: normalizeRole(user.role) } : null;
+        set({ user: normalizedUser });
+      },
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
     }),
     {

@@ -3,7 +3,7 @@ import { Plus, Filter, SlidersHorizontal, LayoutGrid, Table2, ChevronDown } from
 import { usePlanStore } from '../store/usePlanStore';
 import { PlansSearch } from './PlansSearch';
 import { SortField, SortDir } from '../types';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 const SORT_OPTIONS: { label: string; field: SortField; dir: SortDir }[] = [
   { label: 'Newest', field: 'createdAt', dir: 'desc' },
@@ -115,7 +115,7 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
 
         {/* New Plan CTA */}
         <button
-          onClick={() => navigate('/dashboard/plans/new')}
+          onClick={() => navigate('/admin/plans/new')}
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap"
         >
           <Plus className="w-4 h-4" />

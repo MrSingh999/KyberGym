@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../../../components/forms/Form";
-import { Textarea } from "../../../../components/ui/Textarea";
-import { LoadingButton, Button } from "../../../../components/ui/Button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/forms/Form";
+import { Textarea } from "@/components/ui/textarea";
+import { LoadingButton, Button } from "@/components/ui/button";
 import { suspendMemberSchema, SuspendMemberData } from "../schemas/member.schema";
 import { useSuspendMember, useActivateMember } from "../hooks/useMemberProfile";
 

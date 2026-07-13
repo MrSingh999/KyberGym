@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { PaginationState, SortingState } from "@tanstack/react-table";
-import { apiClient } from "../../../../lib/apiClient";
-import { useGymStore } from "../../../../store/gym.store";
+import { apiClient } from "@/lib/apiClient";
+import { useGymStore } from "@/store/gym.store";
 import { useMemberDirectoryStore } from "../store/useMemberDirectoryStore";
 import { MembersResponse } from "../types";
 

@@ -11,7 +11,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Eye, Printer, MoreVertical } from 'luc
 import { PaymentListItem } from '../types';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
 import { PaymentMethodIcon } from './PaymentMethodIcon';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 interface PaymentsTableProps {
   data: PaymentListItem[];
@@ -102,7 +102,7 @@ export function PaymentsTable({
             </summary>
             <div className="absolute right-0 bottom-full mb-1 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-36 text-sm">
               <button
-                onClick={() => navigate(`/dashboard/payments/${row.original.id}`)}
+                onClick={() => navigate(`/admin/payments/${row.original.id}`)}
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
               >
                 <Eye className="w-3.5 h-3.5" /> View Details
@@ -155,7 +155,7 @@ export function PaymentsTable({
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                onClick={() => navigate(`/dashboard/payments/${row.original.id}`)}
+                onClick={() => navigate(`/admin/payments/${row.original.id}`)}
                 className={cn(
                   'border-b border-subtle hover:bg-surface-hover transition-colors cursor-pointer',
                   row.getIsSelected() && 'bg-primary/5',

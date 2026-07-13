@@ -31,7 +31,6 @@ const saasPlanSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-saasPlanSchema.index({ slug: 1 });
 saasPlanSchema.index({ active: 1 });
 
 export const SaasPlan = mongoose.model('SaasPlan', saasPlanSchema);

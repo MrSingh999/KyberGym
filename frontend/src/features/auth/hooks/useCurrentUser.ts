@@ -18,8 +18,8 @@ export function useCurrentUser() {
   return useQuery<UserProfile>({
     queryKey: ["currentUser"],
     queryFn: async () => {
-      const response = await apiClient.get(`/users/me`);
-      return response.data;
+      const response = await apiClient.get(`/auth/me`);
+      return response.data.data.user;
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000, // 5 minutes

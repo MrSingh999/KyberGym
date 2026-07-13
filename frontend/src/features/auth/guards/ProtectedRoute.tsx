@@ -19,12 +19,23 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 }
 
 export function PublicRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
 
-  if (isAuthenticated) {
-    // If user is already logged in, prevent them from accessing /login or /register
+  if (isAuthenticated && user) {
+    let from = location.state?.from?.pathname;
+    const isSpecialPath = !from || from === "/" || from === "/login" || from === "/register" || from === "/unauthorized";
+    
+    if (isSpecialPath) {
+      if (user.role === "superadmin") {
+        from = "/super-admin/dashboard";
+      } else if (user.role === "owner") {
+        from = "/admin/dashboard";
+      } else {
+        from = "/member/dashboard";
+      }
+    }
+
     return <Navigate to={from} replace />;
   }
 

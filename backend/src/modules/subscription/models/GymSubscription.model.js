@@ -27,7 +27,6 @@ const gymSubscriptionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-gymSubscriptionSchema.index({ gymId: 1 });
 gymSubscriptionSchema.index({ status: 1, endDate: 1 });
 
 export const GymSubscription = mongoose.model('GymSubscription', gymSubscriptionSchema);

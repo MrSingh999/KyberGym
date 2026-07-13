@@ -52,14 +52,14 @@ export function CommandPalette() {
 
           <Command.Group heading="Quick Actions" className="text-xs font-semibold text-muted mb-2 px-2">
             <Command.Item 
-              onSelect={() => runCommand(() => navigate('/dashboard/members/new'))}
+              onSelect={() => runCommand(() => navigate('/admin/members/new'))}
               className="flex items-center px-3 py-3 sm:py-2.5 rounded-md cursor-pointer text-sm text-secondary hover:bg-surface-hover hover:text-primary transition-colors aria-selected:bg-surface-hover aria-selected:text-primary"
             >
               <User className="mr-3 h-5 w-5 sm:h-4 sm:w-4" />
               Add New Member
             </Command.Item>
             <Command.Item 
-              onSelect={() => runCommand(() => navigate('/dashboard/payments/new'))}
+              onSelect={() => runCommand(() => navigate('/admin/payments/new'))}
               className="flex items-center px-3 py-3 sm:py-2.5 rounded-md cursor-pointer text-sm text-secondary hover:bg-surface-hover hover:text-primary transition-colors aria-selected:bg-surface-hover aria-selected:text-primary"
             >
               <CreditCard className="mr-3 h-5 w-5 sm:h-4 sm:w-4" />
@@ -69,14 +69,14 @@ export function CommandPalette() {
 
           <Command.Group heading="Navigation" className="text-xs font-semibold text-muted mb-2 px-2 mt-4">
             <Command.Item 
-              onSelect={() => runCommand(() => navigate('/dashboard/workouts'))}
+              onSelect={() => runCommand(() => navigate('/admin/workouts'))}
               className="flex items-center px-3 py-3 sm:py-2.5 rounded-md cursor-pointer text-sm text-secondary hover:bg-surface-hover hover:text-primary transition-colors aria-selected:bg-surface-hover aria-selected:text-primary"
             >
               <Dumbbell className="mr-3 h-5 w-5 sm:h-4 sm:w-4" />
               Manage Workouts
             </Command.Item>
             <Command.Item 
-              onSelect={() => runCommand(() => navigate('/admin/gyms'))}
+              onSelect={() => runCommand(() => navigate('/super-admin/gyms'))}
               className="flex items-center px-3 py-3 sm:py-2.5 rounded-md cursor-pointer text-sm text-secondary hover:bg-surface-hover hover:text-primary transition-colors aria-selected:bg-surface-hover aria-selected:text-primary"
             >
               <Building2 className="mr-3 h-5 w-5 sm:h-4 sm:w-4" />

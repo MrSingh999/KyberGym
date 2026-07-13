@@ -10,10 +10,10 @@ import {
   FormLabel, 
   FormMessage 
 } from "../../../components/forms/Form";
-import { Input } from "../../../components/ui/Input";
-import { PasswordInput } from "../../../components/ui/PasswordInput";
-import { Checkbox } from "../../../components/ui/Checkbox";
-import { LoadingButton } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/input";
+import { PasswordInput } from "../../../components/ui/password-input";
+import { Checkbox } from "../../../components/ui/checkbox";
+import { LoadingButton } from "../../../components/ui/button";
 import { loginSchema, type LoginFormData } from "../schemas/auth.schema";
 import { useAuthStore } from "../../../store/auth.store";
 import { useNavigate } from "react-router";
@@ -43,11 +43,27 @@ export function LoginForm() {
         rememberMe: data.rememberMe,
       });
 
-      // We only store the Access Token and lightweight User in Zustand
-      login(response.data.user, response.data.accessToken);
+      const user = response.data.data.user;
+      const token = response.data.data.accessToken;
+
+      // login action maps backend role automatically
+      login(user, token);
       
       toast.success("Welcome back!");
-      navigate("/dashboard", { replace: true });
+
+      // Resolve mapped role to navigate correctly
+      const mappedRole = 
+        user.role === "super_admin" || user.role === "superadmin" ? "superadmin" : 
+        user.role === "gym_admin" || user.role === "owner" ? "owner" : 
+        "member";
+
+      if (mappedRole === "superadmin") {
+        navigate("/super-admin/dashboard", { replace: true });
+      } else if (mappedRole === "owner") {
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        navigate("/member/dashboard", { replace: true });
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Invalid credentials. Please try again.");
     } finally {

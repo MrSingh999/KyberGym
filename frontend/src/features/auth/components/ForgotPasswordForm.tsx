@@ -11,8 +11,8 @@ import {
   FormLabel, 
   FormMessage 
 } from "../../../components/forms/Form";
-import { Input } from "../../../components/ui/Input";
-import { LoadingButton } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/input";
+import { LoadingButton } from "../../../components/ui/button";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "../schemas/auth.schema";
 import { apiClient } from "../../../lib/apiClient";
 import { useNavigate } from "react-router";

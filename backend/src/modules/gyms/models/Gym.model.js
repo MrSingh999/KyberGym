@@ -49,10 +49,6 @@ const gymSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Indexes for fast tenant resolution and lookups
-gymSchema.index({ slug: 1 });
-gymSchema.index({ subdomain: 1 });
-gymSchema.index({ customDomain: 1 });
 gymSchema.index({ ownerId: 1 });
 
 export const Gym = mongoose.model('Gym', gymSchema);

@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useBlocker } from 'react-router';
 import { Plus, Trash2 } from 'lucide-react';
 import { editPlanSchema, EditPlanData } from '../schemas/plan.schema';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../../components/forms/Form';
-import { Input } from '../../../../components/ui/Input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/forms/Form';
+import { Input } from '@/components/ui/input';
 import { MembershipPlan, DURATION_TYPE_LABELS } from '../types';
 
 const ACCENT_COLORS = [

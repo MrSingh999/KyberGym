@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { usePlanStore } from '../store/usePlanStore';
 import { DurationType, PlanStatus } from '../types';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 const STATUS_OPTIONS: { value: PlanStatus; label: string }[] = [
   { value: 'active', label: 'Active' },

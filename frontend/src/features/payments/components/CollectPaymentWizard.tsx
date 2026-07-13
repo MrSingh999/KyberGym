@@ -9,10 +9,10 @@ import {
   collectStep3Schema, CollectStep3,
   CollectPaymentData
 } from '../schemas/payment.schema';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../../components/forms/Form';
-import { Input } from '../../../../components/ui/Input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/forms/Form';
+import { Input } from '@/components/ui/input';
 import { PAYMENT_METHOD_LABELS } from '../types';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 import { useCollectPayment } from '../hooks/usePayments';
 
 const STEPS = [

@@ -1,12 +1,12 @@
 import React from "react";
 import { ColumnDef, PaginationState, SortingState, RowSelectionState } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { DataTable } from "../../../../components/data-display/DataTable";
+import { DataTable } from "@/components/data-display/DataTable";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../components/data-display/Avatar";
-import { Checkbox } from "../../../../components/ui/Checkbox";
-import { Button } from "../../../../components/ui/Button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 
 interface MembersTableProps {
   data: MemberDirectoryItem[];

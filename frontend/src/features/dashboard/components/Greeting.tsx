@@ -1,7 +1,7 @@
 import React from "react";
-import { useAuthStore } from "../../../../store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
 import { useCurrentTenant } from "../../../tenant/hooks/useCurrentTenant";
-import { Stack } from "../../../../components/layout/Stack";
+import { Stack } from "@/components/layout/Stack";
 
 export function Greeting() {
   const { user } = useAuthStore();

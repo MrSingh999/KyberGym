@@ -5,7 +5,7 @@ import { MembersTable } from "../components/MembersTable";
 import { DirectoryMemberCard } from "../components/DirectoryMemberCard";
 import { useMembers } from "../hooks/useMembers";
 import { useMemberDirectoryStore } from "../store/useMemberDirectoryStore";
-import { Skeleton } from "../../../../components/feedback/Skeleton";
+import { Skeleton } from "@/components/feedback/Skeleton";
 
 export function MembersPage() {
   const { viewMode } = useMemberDirectoryStore();

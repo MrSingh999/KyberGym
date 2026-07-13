@@ -1,7 +1,7 @@
 import * as React from "react"
 import { TrendingDown, TrendingUp } from "lucide-react"
 import { cn } from "../../lib/utils"
-import { Card, CardContent } from "../ui/Card"
+import { Card, CardContent } from "../ui/card"
 
 interface StatCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;

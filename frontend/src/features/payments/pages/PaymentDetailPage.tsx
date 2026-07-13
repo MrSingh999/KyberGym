@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { usePayment } from '../hooks/usePayments';
 import { PaymentOverviewCard } from '../components/PaymentOverviewCard';
 import { ReceiptPreview } from '../components/ReceiptPreview';
-import { Skeleton } from '../../../../components/feedback/Skeleton';
+import { Skeleton } from '@/components/feedback/Skeleton';
 
 export function PaymentDetailPage() {
   const { paymentId = '' } = useParams<{ paymentId: string }>();
@@ -29,7 +29,7 @@ export function PaymentDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <p className="text-muted">Payment not found.</p>
-        <button onClick={() => navigate('/dashboard/payments')} className="text-sm text-primary underline">
+        <button onClick={() => navigate('/admin/payments')} className="text-sm text-primary underline">
           Back to Payments
         </button>
       </div>
@@ -46,7 +46,7 @@ export function PaymentDetailPage() {
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-surface/90 border-b border-default backdrop-blur-md print:hidden">
         <button
-          onClick={() => navigate('/dashboard/payments')}
+          onClick={() => navigate('/admin/payments')}
           className="flex items-center gap-2 text-sm text-muted hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

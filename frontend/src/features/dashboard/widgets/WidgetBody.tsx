@@ -1,6 +1,6 @@
 import React from "react";
-import { cn } from "../../../../lib/utils";
-import { Skeleton } from "../../../../components/feedback/Skeleton";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/feedback/Skeleton";
 
 interface WidgetBodyProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;

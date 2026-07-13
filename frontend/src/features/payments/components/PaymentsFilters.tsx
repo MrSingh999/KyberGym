@@ -2,8 +2,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { usePaymentStore } from '../store/usePaymentStore';
 import { PaymentStatus, PaymentMethod, PAYMENT_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../types';
-import { cn } from '../../../../lib/utils';
-import { Input } from '../../../../components/ui/Input';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 const STATUS_OPTIONS = Object.keys(PAYMENT_STATUS_LABELS) as PaymentStatus[];
 const METHOD_OPTIONS = Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[];

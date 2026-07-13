@@ -14,7 +14,7 @@ export function Unauthorized() {
           title="Access Denied"
           description="You do not have the required permissions or role to view this page. If you believe this is a mistake, contact your Gym Owner."
           actionLabel="Return to Dashboard"
-          onAction={() => navigate("/dashboard", { replace: true })}
+          onAction={() => navigate("/admin", { replace: true })}
           className="bg-surface shadow-sm border-default"
         />
       </div>

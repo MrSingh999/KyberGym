@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useGymStore } from '../../../../store/gym.store';
+import { useGymStore } from '@/store/gym.store';
 import {
   Payment,
   PaymentListItem,

@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router';
 import { ArrowUpDown, ArrowUp, ArrowDown, Edit3, Copy, Archive, MoreVertical } from 'lucide-react';
 import { PlanListItem, DURATION_TYPE_LABELS } from '../types';
 import { PlanStatusBadge } from './PlanStatusBadge';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 interface PlansTableProps {
   data: PlanListItem[];
@@ -135,7 +135,7 @@ export function PlansTable({
             </summary>
             <div className="absolute right-0 bottom-full mb-1 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-36 text-sm">
               <button
-                onClick={() => navigate(`/dashboard/plans/${row.original.id}/edit`)}
+                onClick={() => navigate(`/admin/plans/${row.original.id}/edit`)}
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
               >
                 <Edit3 className="w-3.5 h-3.5" /> Edit
@@ -196,7 +196,7 @@ export function PlansTable({
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                onClick={() => navigate(`/dashboard/plans/${row.original.id}`)}
+                onClick={() => navigate(`/admin/plans/${row.original.id}`)}
                 className={cn(
                   'border-b border-subtle hover:bg-surface-hover transition-colors cursor-pointer',
                   row.getIsSelected() && 'bg-primary/5',

@@ -16,7 +16,7 @@ import { NotesSection } from "../components/NotesSection";
 import { ActivityTimeline } from "../components/ActivityTimeline";
 import { RenewMembershipForm } from "../components/RenewMembershipForm";
 import { SuspendMemberForm, ActivateMemberForm } from "../components/SuspendActivateForms";
-import { Skeleton } from "../../../../components/feedback/Skeleton";
+import { Skeleton } from "@/components/feedback/Skeleton";
 
 // Simple inline dialog primitives to avoid shadcn raw import
 function SimpleSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {

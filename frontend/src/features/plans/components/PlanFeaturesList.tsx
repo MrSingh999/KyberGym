@@ -1,6 +1,6 @@
 import { Check, X } from 'lucide-react';
 import { PlanFeature } from '../types';
-import { cn } from '../../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 interface PlanFeaturesListProps {
   features: PlanFeature[];
