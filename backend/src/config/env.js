@@ -16,6 +16,11 @@ const envSchema = z.object({
   REFRESH_SECRET: z.string().min(32, { message: 'REFRESH_SECRET must be at least 32 characters long' }).default('REFRESH_SECRET_NOT_SET_default_insecure_change_me_32chars'),
   
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+
+  SUPER_ADMIN_JWT_SECRET: z.string().min(32).default('FALLBACK_SUPER_ADMIN_SECRET_MIN_32_CHARS_CHANGE_ME!!'),
+  SUPER_ADMIN_NAME: z.string().optional(),
+  SUPER_ADMIN_EMAIL: z.string().email().optional(),
+  SUPER_ADMIN_PASSWORD: z.string().min(8).optional(),
   
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
@@ -51,6 +56,9 @@ export const authConfig = {
   jwtSecret: env.JWT_SECRET,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
   refreshSecret: env.REFRESH_SECRET,
+  superAdminJwtSecret: env.SUPER_ADMIN_JWT_SECRET === 'FALLBACK_SUPER_ADMIN_SECRET_MIN_32_CHARS_CHANGE_ME!!'
+    ? env.JWT_SECRET
+    : env.SUPER_ADMIN_JWT_SECRET,
 };
 
 export const cloudinaryConfig = {

@@ -25,6 +25,12 @@ export class MessageTemplateService {
     return MessageTemplateRepository.findPaginated(gymId, filter, Number(page), Number(limit));
   }
 
+  static async getTemplateById(id, gymId) {
+    const template = await MessageTemplateRepository.findById(id, gymId);
+    if (!template) throw createError.NotFound('Message template not found');
+    return template;
+  }
+
   static async updateTemplate(id, gymId, data) {
     const template = await MessageTemplateRepository.update(id, gymId, data);
     if (!template) throw createError.NotFound('Message template not found');

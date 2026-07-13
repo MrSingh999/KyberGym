@@ -4,6 +4,7 @@ import { runSeeders } from './database/seeder.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { setupCronJobs } from './jobs/cron.js';
+import { seedSuperAdmin } from './modules/super-admin/superAdmin.seed.js';
 
 // Handle synchronous uncaught exceptions
 process.on('uncaughtException', (err) => {
@@ -18,8 +19,9 @@ const startServer = async () => {
     // 1. Connect to Database
     await connectDB();
 
-    // 2. Run startup seeders (no-op in MVP)
+    // 2. Run startup seeders
     await runSeeders();
+    await seedSuperAdmin();
 
     // 3. Start Express App
     const server = app.listen(env.PORT, () => {

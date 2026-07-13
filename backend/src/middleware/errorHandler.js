@@ -18,6 +18,13 @@ export const errorHandler = (err, req, res, next) => {
     }
   }
 
+  // Specific formatting for Zod validation errors
+  let errorsList = null;
+  if (err.name === 'ZodError') {
+    error = createError.BadRequest('Validation Failed');
+    errorsList = err.errors.map(e => ({ field: e.path.join('.'), message: e.message }));
+  }
+
   const statusCode = error.status || 500;
   const message = error.message || 'Internal Server Error';
 
@@ -27,13 +34,6 @@ export const errorHandler = (err, req, res, next) => {
   }
 
   const stack = env.NODE_ENV === 'development' ? err.stack : null;
-  
-  // Specific formatting for Zod validation errors
-  let errorsList = null;
-  if (err.name === 'ZodError') {
-    error = createError.BadRequest('Validation Failed');
-    errorsList = err.errors.map(e => ({ field: e.path.join('.'), message: e.message }));
-  }
 
   return res.status(statusCode).json({
     success: false,

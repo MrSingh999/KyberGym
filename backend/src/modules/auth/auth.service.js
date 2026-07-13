@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
 import createError from 'http-errors';
+import { GymService } from '../gyms/gym.service.js';
 import { Gym } from '../gyms/models/Gym.model.js';
+import { checkSubscriptionStatus } from '../gyms/subscription.helper.js';
+import { compareData, generateOTP, hashData, generateAccessToken, generateRefreshToken, verifyRefreshToken } from './auth.utils.js';
 import { User } from '../users/models/User.model.js';
-import { ROLES } from '../../shared/constants.js';
-import { hashData, compareData, generateOTP, generateAccessToken, generateRefreshToken, verifyRefreshToken } from './auth.utils.js';
 import { logger } from '../../config/logger.js';
 import { env } from '../../config/env.js';
 import { Resend } from 'resend';
@@ -13,84 +13,35 @@ const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 export class AuthService {
 
   static async registerOwner(data) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    const { gym, user } = await GymService.createGymWithAdmin({
+      name: data.gymName,
+      subdomain: data.subdomain,
+      ownerName: data.ownerName,
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+    });
 
-    try {
-      // 1. Check Subdomain collision
-      const existingGym = await Gym.findOne({ subdomain: data.subdomain }).session(session);
-      if (existingGym) {
-        throw createError.Conflict('Subdomain is already taken');
-      }
+    const otp = generateOTP();
+    user.emailVerificationOTP = await hashData(otp);
+    user.emailVerificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save();
 
-      // 2. Create Gym with default MVP feature flags
-      const gym = new Gym({
-        name: data.gymName,
-        slug: data.subdomain,
-        subdomain: data.subdomain,
-        ownerId: new mongoose.Types.ObjectId(), // Placeholder, updated after user creation
-        features: {
-          members:       true,
-          workouts:      true,
-          notifications: true,
-          attendance:    false,
-          branding:      false,
-        },
-      });
+    logger.info(`New Gym Registered: ${gym._id}, Owner: ${user._id}`);
 
-      await gym.save({ session });
-
-      // 3. Hash password
-      const hashedPassword = await hashData(data.password);
-
-      // 4. Create Owner User
-      const user = new User({
-        _id: gym.ownerId, // Set ID to match placeholder
-        gymId: gym._id,
-        role: ROLES.GYM_ADMIN,
-        name: data.ownerName,
-        email: data.email,
-        password: hashedPassword,
-        phone: data.phone,
-      });
-
-      // 5. Generate Email OTP
-      const otp = generateOTP();
-      user.emailVerificationOTP = await hashData(otp);
-      user.emailVerificationExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-
-      await user.save({ session });
-
-      // Commit transaction
-      await session.commitTransaction();
-      session.endSession();
-
-      logger.info(`New Gym Registered: ${gym._id}, Owner: ${user._id}`);
-
-      // 6. Send OTP email (non-blocking)
-      if (resend) {
-        resend.emails.send({
-          from: 'KyberGym <noreply@kyberfitness.com>',
-          to: user.email,
-          subject: 'Verify your email address',
-          html: `<p>Your verification code is: <strong>${otp}</strong></p>`
-        }).catch(err => logger.error(`Failed to send welcome email to ${user.email}:`, err));
-      }
-
-      // 7. Issue Tokens
-      const accessToken = generateAccessToken(user);
-      const refreshToken = generateRefreshToken(user);
-
-      return { user, accessToken, refreshToken, gym };
-    } catch (error) {
-      await session.abortTransaction();
-      session.endSession();
-
-      if (error.code === 11000) {
-        throw createError.Conflict('Subdomain is already taken');
-      }
-      throw error;
+    if (resend) {
+      resend.emails.send({
+        from: 'KyberGym <noreply@kyberfitness.com>',
+        to: user.email,
+        subject: 'Verify your email address',
+        html: `<p>Your verification code is: <strong>${otp}</strong></p>`
+      }).catch(err => logger.error(`Failed to send welcome email to ${user.email}:`, err));
     }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    return { user, accessToken, refreshToken, gym };
   }
 
   static async login(email, password, gymId) {
@@ -101,6 +52,16 @@ export class AuthService {
 
     if (user.status !== 'active') {
       throw createError.Forbidden(`User account is ${user.status}`);
+    }
+
+    const gym = await checkSubscriptionStatus(await Gym.findById(gymId));
+    if (gym && gym.subscription) {
+      if (gym.subscription.status === 'expired') {
+        throw createError.Forbidden('Gym subscription has expired. Please contact the Super Admin.');
+      }
+      if (gym.subscription.status === 'suspended') {
+        throw createError.Forbidden('Gym subscription is suspended. Please contact the Super Admin.');
+      }
     }
 
     const isMatch = await compareData(password, user.password);
@@ -118,7 +79,14 @@ export class AuthService {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    return { user, accessToken, refreshToken };
+    return {
+      user,
+      accessToken,
+      refreshToken,
+      enabledFeatures: gym.features,
+      subscriptionStatus: gym.subscription?.status || 'trial',
+      subscriptionExpiry: gym.subscription?.expiresAt || null,
+    };
   }
 
   static async refreshToken(oldRefreshToken) {

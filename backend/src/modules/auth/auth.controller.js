@@ -39,7 +39,7 @@ export class AuthController {
     const { email, password } = req.body;
     const gymId = req.gym._id; // Resolved by tenantMiddleware
 
-    const { user, accessToken, refreshToken } = await AuthService.login(email, password, gymId);
+    const { user, accessToken, refreshToken, enabledFeatures, subscriptionStatus, subscriptionExpiry } = await AuthService.login(email, password, gymId);
     setRefreshTokenCookie(res, refreshToken);
 
     const userResponse = {
@@ -52,7 +52,10 @@ export class AuthController {
 
     return ApiSuccess.send(res, httpStatus.OK, 'Login successful', {
       user: userResponse,
-      accessToken
+      accessToken,
+      enabledFeatures,
+      subscriptionStatus,
+      subscriptionExpiry,
     });
   }
 

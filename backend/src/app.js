@@ -12,6 +12,7 @@ import { logger } from './config/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import apiRoutes from './routes/index.js';
+import superAdminRoutes from './modules/super-admin/superAdmin.routes.js';
 import { HealthCheckController } from './modules/health/health.controller.js';
 
 const app = express();
@@ -60,7 +61,10 @@ app.get('/health', HealthCheckController.check);
 // 6. Routes Registration
 app.use('/api/v1', apiRoutes);
 
-// 7. Error Handling
+// 7. Super Admin Routes (separate from tenant architecture)
+app.use('/api/super-admin', superAdminRoutes);
+
+// 8. Error Handling
 app.use(notFoundHandler); 
 app.use(errorHandler); 
 

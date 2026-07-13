@@ -4,12 +4,14 @@ import { asyncHandler } from '../../middleware/asyncHandler.js';
 import { resolveTenant } from '../../middleware/tenant.middleware.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requireRoles } from '../../middleware/role.middleware.js';
+import { requireFeature } from '../../middleware/feature.middleware.js';
 import { ROLES } from '../../shared/constants.js';
 
 const router = Router({ mergeParams: true }); // Need mergeParams if mounted on /members/:id/qr
 
 router.use(asyncHandler(resolveTenant));
 router.use(authenticate);
+router.use(requireFeature('qrEntry'));
 
 const allowedRoles = [ROLES.GYM_ADMIN, ROLES.STAFF];
 

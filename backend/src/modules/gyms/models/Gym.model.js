@@ -10,11 +10,18 @@ const gymSchema = new mongoose.Schema(
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
     features: {
-      members:       { type: Boolean, default: true },
-      workouts:      { type: Boolean, default: true },
-      notifications: { type: Boolean, default: true },
-      attendance:    { type: Boolean, default: false },
-      branding:      { type: Boolean, default: false },
+      members:          { type: Boolean, default: true },
+      workouts:         { type: Boolean, default: true },
+      notifications:    { type: Boolean, default: true },
+      attendance:       { type: Boolean, default: false },
+      branding:         { type: Boolean, default: false },
+      memberPortal:     { type: Boolean, default: false },
+      staffPortal:      { type: Boolean, default: false },
+      dietPlans:        { type: Boolean, default: false },
+      qrEntry:          { type: Boolean, default: false },
+      whatsappBroadcast:{ type: Boolean, default: false },
+      payments:         { type: Boolean, default: false },
+      analytics:        { type: Boolean, default: false },
     },
 
     branding: {
@@ -24,6 +31,17 @@ const gymSchema = new mongoose.Schema(
       primaryColor:  { type: String, default: '#000000' },
       secondaryColor:{ type: String, default: '#ffffff' },
       loginBanner:   { type: String, default: '' },
+    },
+
+    subscription: {
+      plan: { type: String, default: null },
+      status: {
+        type: String,
+        enum: ['active', 'trial', 'expired', 'suspended'],
+        default: 'trial',
+      },
+      expiresAt: { type: Date },
+      trialEndsAt: { type: Date },
     },
 
     timezone: { type: String, default: 'Asia/Kolkata' },
@@ -38,6 +56,5 @@ const gymSchema = new mongoose.Schema(
 );
 
 gymSchema.index({ ownerId: 1 });
-gymSchema.index({ slug: 1 });
 
 export const Gym = mongoose.model('Gym', gymSchema);

@@ -6,6 +6,7 @@ import { asyncHandler } from '../../middleware/asyncHandler.js';
 import { resolveTenant } from '../../middleware/tenant.middleware.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requireRoles } from '../../middleware/role.middleware.js';
+import { requireFeature } from '../../middleware/feature.middleware.js';
 import { ROLES } from '../../shared/constants.js';
 
 const router = Router();
@@ -16,7 +17,10 @@ router.use(asyncHandler(resolveTenant));
 // 2. Authenticate User
 router.use(authenticate);
 
-// 3. Verify Active SaaS Subscription (blocks mutations if expired)
+// 3. Feature check
+router.use(requireFeature('members'));
+
+// 4. Verify Active SaaS Subscription (blocks mutations if expired)
 
 // Routes
 // Read access: Owner, Staff, Trainer

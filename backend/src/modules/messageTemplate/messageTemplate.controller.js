@@ -17,6 +17,13 @@ export class MessageTemplateController {
     return ApiSuccess.send(res, httpStatus.OK, 'Templates retrieved successfully', result.data, result.meta);
   }
 
+  static async getTemplateById(req, res) {
+    const gymId = req.gym._id;
+    const { id } = req.params;
+    const template = await MessageTemplateService.getTemplateById(id, gymId);
+    return ApiSuccess.send(res, httpStatus.OK, 'Template retrieved successfully', template);
+  }
+
   static async updateTemplate(req, res) {
     const gymId = req.gym._id;
     const { id } = req.params;
