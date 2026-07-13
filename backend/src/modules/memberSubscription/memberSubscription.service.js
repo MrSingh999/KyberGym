@@ -21,8 +21,12 @@ export class MemberSubscriptionService {
       throw createError.Conflict('Member already has an active subscription. Please upgrade or cancel it first.');
     }
 
-    // 4. Calculate End Date and Final Amount
+    // 4. Validate and Calculate Dates
     const startDate = new Date(data.startDate);
+    // Only allow dates up to 1 minute in the past (to accommodate clock skew)
+    if (startDate.getTime() < Date.now() - 60000) {
+      throw createError.BadRequest('Start date cannot be in the past');
+    }
     const endDate = addDays(startDate, plan.durationInDays);
     const finalAmount = plan.price - (data.discount || 0);
 

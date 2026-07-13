@@ -3,11 +3,12 @@ import createError from 'http-errors';
 import { Gym } from '../gyms/models/Gym.model.js';
 import { User } from '../users/models/User.model.js';
 import { ROLES } from '../../shared/constants.js';
-import { hashData, compareData, generateOTP, generateAccessToken, generateRefreshToken, verifyToken } from './auth.utils.js';
+import { hashData, compareData, generateOTP, generateAccessToken, generateRefreshToken, verifyRefreshToken } from './auth.utils.js';
 import { logger } from '../../config/logger.js';
+import { env } from '../../config/env.js';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
+const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
 export class AuthService {
 
@@ -67,12 +68,14 @@ export class AuthService {
       logger.info(`New Gym Registered: ${gym._id}, Owner: ${user._id}`);
 
       // 6. Send OTP email (non-blocking)
-      resend.emails.send({
-        from: 'KyberGym <noreply@kyberfitness.com>',
-        to: user.email,
-        subject: 'Verify your email address',
-        html: `<p>Your verification code is: <strong>${otp}</strong></p>`
-      }).catch(err => logger.error(`Failed to send welcome email to ${user.email}:`, err));
+      if (resend) {
+        resend.emails.send({
+          from: 'KyberGym <noreply@kyberfitness.com>',
+          to: user.email,
+          subject: 'Verify your email address',
+          html: `<p>Your verification code is: <strong>${otp}</strong></p>`
+        }).catch(err => logger.error(`Failed to send welcome email to ${user.email}:`, err));
+      }
 
       // 7. Issue Tokens
       const accessToken = generateAccessToken(user);
@@ -82,6 +85,10 @@ export class AuthService {
     } catch (error) {
       await session.abortTransaction();
       session.endSession();
+
+      if (error.code === 11000) {
+        throw createError.Conflict('Subdomain is already taken');
+      }
       throw error;
     }
   }
@@ -120,7 +127,7 @@ export class AuthService {
     }
 
     try {
-      const decoded = verifyToken(oldRefreshToken);
+      const decoded = verifyRefreshToken(oldRefreshToken);
 
       const user = await User.findById(decoded.userId);
       if (!user) {
@@ -155,12 +162,14 @@ export class AuthService {
 
     logger.info(`Password reset requested for: ${email}`);
 
-    resend.emails.send({
-      from: 'KyberGym <noreply@kyberfitness.com>',
-      to: user.email,
-      subject: 'Password Reset Request',
-      html: `<p>Your password reset code is: <strong>${otp}</strong>. It expires in 15 minutes.</p>`
-    }).catch(err => logger.error(`Failed to send password reset email to ${email}:`, err));
+    if (resend) {
+      resend.emails.send({
+        from: 'KyberGym <noreply@kyberfitness.com>',
+        to: user.email,
+        subject: 'Password Reset Request',
+        html: `<p>Your password reset code is: <strong>${otp}</strong>. It expires in 15 minutes.</p>`
+      }).catch(err => logger.error(`Failed to send password reset email to ${email}:`, err));
+    }
 
     return true;
   }

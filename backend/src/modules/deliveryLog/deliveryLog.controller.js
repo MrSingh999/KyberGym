@@ -1,5 +1,5 @@
 import { DeliveryLogService } from "./deliveryLog.service.js";
-import { ApiResponse } from '../../shared/ApiResponse.js';
+import { ApiSuccess } from '../../shared/ApiSuccess.js';
 import httpStatus from "http-status";
 
 export class DeliveryLogController {
@@ -7,12 +7,7 @@ export class DeliveryLogController {
     const gymId = req.gym._id;
     const result = await DeliveryLogService.getLogs(gymId, req.query);
 
-    return res.status(httpStatus.OK).json({
-      success: true,
-      message: "Delivery logs retrieved successfully",
-      data: result.data,
-      meta: result.meta,
-    });
+    return ApiSuccess.send(res, httpStatus.OK, "Delivery logs retrieved successfully", result.data, result.meta);
   }
 
   static async getLogById(req, res) {
@@ -20,7 +15,7 @@ export class DeliveryLogController {
     const { id } = req.params;
 
     const log = await DeliveryLogService.getLogById(id, gymId);
-    return ApiResponse.success(
+    return ApiSuccess.send(
       res,
       httpStatus.OK,
       "Delivery log retrieved successfully",

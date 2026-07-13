@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { env } from '../../config/env.js';
+import { env, authConfig } from '../../config/env.js';
 
 /**
  * Hash a plain text string using bcrypt
@@ -51,14 +51,21 @@ export const generateRefreshToken = (user) => {
       gymId: user.gymId, 
       tokenVersion: user.tokenVersion 
     },
-    env.JWT_SECRET, // Note: you could use a separate REFRESH_SECRET
+    authConfig.refreshSecret,
     { expiresIn: '7d' } 
   );
 };
 
 /**
- * Verify JWT
+ * Verify Access Token
  */
 export const verifyToken = (token) => {
   return jwt.verify(token, env.JWT_SECRET);
+};
+
+/**
+ * Verify Refresh Token
+ */
+export const verifyRefreshToken = (token) => {
+  return jwt.verify(token, authConfig.refreshSecret);
 };

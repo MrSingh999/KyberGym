@@ -12,6 +12,8 @@ const envSchema = z.object({
   
   JWT_SECRET: z.string().min(32, { message: 'JWT_SECRET must be at least 32 characters long' }),
   JWT_EXPIRES_IN: z.string().default('1d'),
+
+  REFRESH_SECRET: z.string().min(32, { message: 'REFRESH_SECRET must be at least 32 characters long' }).default('REFRESH_SECRET_NOT_SET_default_insecure_change_me_32chars'),
   
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   
@@ -48,6 +50,7 @@ export const dbConfig = {
 export const authConfig = {
   jwtSecret: env.JWT_SECRET,
   jwtExpiresIn: env.JWT_EXPIRES_IN,
+  refreshSecret: env.REFRESH_SECRET,
 };
 
 export const cloudinaryConfig = {

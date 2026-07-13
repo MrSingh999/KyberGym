@@ -111,6 +111,13 @@ export class BroadcastService {
       } else if (target === 'active') {
         const members = await Member.find({ gymId, status: 'active' }).select('_id');
         memberIds = members.map(m => m._id);
+      } else if (target === 'expired') {
+        const subs = await MemberSubscription.find({
+          gymId,
+          status: 'expired',
+        }).select('memberId');
+
+        memberIds = subs.map(s => s.memberId);
       } else if (['dueToday', 'dueIn3Days', 'dueIn7Days'].includes(target)) {
         let targetDate = new Date();
         if (target === 'dueIn3Days') targetDate = addDays(new Date(), 3);

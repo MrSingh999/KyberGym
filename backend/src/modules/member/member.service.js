@@ -1,5 +1,6 @@
 import { MemberRepository } from './member.repository.js';
 import { generateMemberCode } from './member.utils.js';
+import { escapeRegex } from '../../shared/constants.js';
 import createError from 'http-errors';
 
 export class MemberService {
@@ -34,11 +35,12 @@ export class MemberService {
     }
 
     if (search) {
+      const safeSearch = escapeRegex(search);
       filter.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { memberCode: { $regex: search, $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { phone: { $regex: safeSearch, $options: 'i' } },
+        { email: { $regex: safeSearch, $options: 'i' } },
+        { memberCode: { $regex: safeSearch, $options: 'i' } }
       ];
     }
 

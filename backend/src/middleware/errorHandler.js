@@ -1,4 +1,3 @@
-import { ApiResponse } from '../shared/ApiResponse.js';
 import { logger } from '../config/logger.js';
 import { env } from '../config/env.js';
 import createError from 'http-errors';
@@ -36,5 +35,10 @@ export const errorHandler = (err, req, res, next) => {
     errorsList = err.errors.map(e => ({ field: e.path.join('.'), message: e.message }));
   }
 
-  return ApiResponse.error(res, statusCode, error.message, errorsList, stack);
+  return res.status(statusCode).json({
+    success: false,
+    message: error.message,
+    ...(errorsList && { errors: errorsList }),
+    ...(stack && { stack }),
+  });
 };

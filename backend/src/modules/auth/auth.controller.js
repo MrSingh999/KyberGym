@@ -1,5 +1,5 @@
 import { AuthService } from './auth.service.js';
-import { ApiResponse } from '../../shared/ApiResponse.js';
+import { ApiSuccess } from '../../shared/ApiSuccess.js';
 import httpStatus from 'http-status';
 import { env } from '../../config/env.js';
 
@@ -28,7 +28,7 @@ export class AuthController {
       gymId: user.gymId
     };
 
-    return ApiResponse.success(res, httpStatus.CREATED, 'Owner registered successfully', {
+    return ApiSuccess.send(res, httpStatus.CREATED, 'Owner registered successfully', {
       user: userResponse,
       gym,
       accessToken
@@ -50,7 +50,7 @@ export class AuthController {
       gymId: user.gymId
     };
 
-    return ApiResponse.success(res, httpStatus.OK, 'Login successful', {
+    return ApiSuccess.send(res, httpStatus.OK, 'Login successful', {
       user: userResponse,
       accessToken
     });
@@ -62,7 +62,7 @@ export class AuthController {
       secure: env.NODE_ENV === 'production',
       sameSite: 'strict'
     });
-    return ApiResponse.success(res, httpStatus.OK, 'Logged out successfully');
+    return ApiSuccess.send(res, httpStatus.OK, 'Logged out successfully');
   }
 
   static async refreshToken(req, res) {
@@ -71,7 +71,7 @@ export class AuthController {
     
     setRefreshTokenCookie(res, refreshToken);
 
-    return ApiResponse.success(res, httpStatus.OK, 'Token refreshed successfully', {
+    return ApiSuccess.send(res, httpStatus.OK, 'Token refreshed successfully', {
       accessToken
     });
   }
@@ -82,7 +82,7 @@ export class AuthController {
     
     await AuthService.forgotPassword(email, gymId);
     
-    return ApiResponse.success(res, httpStatus.OK, 'If an account exists, a reset code has been sent');
+    return ApiSuccess.send(res, httpStatus.OK, 'If an account exists, a reset code has been sent');
   }
 
   static async resetPassword(req, res) {
@@ -91,7 +91,7 @@ export class AuthController {
     
     await AuthService.resetPassword(email, otp, newPassword, gymId);
     
-    return ApiResponse.success(res, httpStatus.OK, 'Password reset successful');
+    return ApiSuccess.send(res, httpStatus.OK, 'Password reset successful');
   }
 
   static async verifyEmail(req, res) {
@@ -100,7 +100,7 @@ export class AuthController {
     
     await AuthService.verifyEmail(email, otp, gymId);
     
-    return ApiResponse.success(res, httpStatus.OK, 'Email verified successfully');
+    return ApiSuccess.send(res, httpStatus.OK, 'Email verified successfully');
   }
 
   static async getMe(req, res) {
@@ -113,6 +113,6 @@ export class AuthController {
       isEmailVerified: req.user.isEmailVerified
     };
     
-    return ApiResponse.success(res, httpStatus.OK, 'User profile retrieved', { user: userResponse });
+    return ApiSuccess.send(res, httpStatus.OK, 'User profile retrieved', { user: userResponse });
   }
 }

@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { ApiResponse } from '../shared/ApiResponse.js';
 import httpStatus from 'http-status';
 import { env } from '../config/env.js';
 
