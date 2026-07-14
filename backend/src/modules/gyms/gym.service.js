@@ -34,11 +34,30 @@ export class GymService {
   }
 
   static async createGymWithAdmin(data) {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    try {
+      return await GymService._createGymWithAdminInner(data, true);
+    } catch (error) {
+      if (error.message && (error.message.includes('Transaction numbers') || error.message.includes('replica set'))) {
+        console.log("Fallback: MongoDB replica set not active. Retrying gym creation without transaction.");
+        return await GymService._createGymWithAdminInner(data, false);
+      }
+      throw error;
+    }
+  }
+
+  static async _createGymWithAdminInner(data, useTransaction) {
+    let session = null;
+    if (useTransaction) {
+      try {
+        session = await mongoose.startSession();
+        session.startTransaction();
+      } catch (e) {
+        useTransaction = false;
+      }
+    }
 
     try {
-      const existingGym = await Gym.findOne({ subdomain: data.subdomain }).session(session);
+      const existingGym = await Gym.findOne({ subdomain: data.subdomain }).session(useTransaction ? session : null);
       if (existingGym) {
         throw createError.Conflict('Subdomain is already taken');
       }
@@ -57,7 +76,7 @@ export class GymService {
         },
       });
 
-      await gym.save({ session });
+      await gym.save(useTransaction ? { session } : undefined);
 
       const hashedPassword = await hashData(data.password);
       const user = new User({
@@ -70,15 +89,23 @@ export class GymService {
         phone: data.phone,
       });
 
-      await user.save({ session });
+      await user.save(useTransaction ? { session } : undefined);
 
-      await session.commitTransaction();
-      session.endSession();
+      if (useTransaction && session) {
+        await session.commitTransaction();
+        session.endSession();
+      }
 
       return { gym, user };
     } catch (error) {
-      await session.abortTransaction();
-      session.endSession();
+      if (useTransaction && session) {
+        try {
+          await session.abortTransaction();
+          session.endSession();
+        } catch (e) {
+          // ignore session abort errors during failure cleanup
+        }
+      }
 
       if (error.code === 11000) {
         throw createError.Conflict('Subdomain is already taken');

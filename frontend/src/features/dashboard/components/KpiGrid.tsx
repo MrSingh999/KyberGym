@@ -7,7 +7,12 @@ import { useDashboardDues } from "../hooks/useDashboardDues";
 
 const CountUp = (reactCountUp as any).default || reactCountUp;
 
-export function KpiGrid() {
+interface KpiGridProps {
+  activeFilter?: "all" | "overdue" | "due";
+  onFilterChange?: (filter: "all" | "overdue" | "due") => void;
+}
+
+export function KpiGrid({ activeFilter = "all", onFilterChange }: KpiGridProps) {
   const { data: stats, isLoading: isStatsLoading } = useDashboardStats();
   const { data: dues, isLoading: isDuesLoading } = useDashboardDues();
 
@@ -34,14 +39,20 @@ export function KpiGrid() {
         value={<CountUp end={stats?.expiredMembers || 0} duration={1.5} separator="," />}
         icon={<AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
         loading={isLoading}
-        className="border-l-[3px] border-l-red-500"
+        onClick={() => onFilterChange?.(activeFilter === "overdue" ? "all" : "overdue")}
+        className={`border-l-[3px] border-l-red-500 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 ${
+          activeFilter === "overdue" ? "ring-1 ring-text-primary/30 bg-surface-hover/30" : ""
+        }`}
       />
       <StatCard
-        title="Due in 7d"
-        value={<CountUp end={dues?.dueIn7Days.length || 0} duration={1.5} separator="," />}
+        title="Due soon"
+        value={<CountUp end={dues?.dueIn7Days?.length || 0} duration={1.5} separator="," />}
         icon={<Clock className="h-3.5 w-3.5 text-amber-500" />}
         loading={isLoading}
-        className="border-l-[3px] border-l-amber-500"
+        onClick={() => onFilterChange?.(activeFilter === "due" ? "all" : "due")}
+        className={`border-l-[3px] border-l-amber-500 cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 ${
+          activeFilter === "due" ? "ring-1 ring-text-primary/30 bg-surface-hover/30" : ""
+        }`}
       />
       <StatCard
         title="Monthly Rev"

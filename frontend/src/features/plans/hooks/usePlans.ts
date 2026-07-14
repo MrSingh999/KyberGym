@@ -10,103 +10,7 @@ import {
 } from '../types';
 import { CreatePlanData } from '../schemas/plan.schema';
 
-// ─── Mock data ───────────────────────────────────────────────────────────────
-
-const MOCK_PLANS: MembershipPlan[] = [
-  {
-    id: 'plan-1',
-    gymId: 'gym-1',
-    name: 'Starter Monthly',
-    description: 'Perfect for beginners getting into fitness.',
-    duration: 1,
-    durationType: 'months',
-    price: 39,
-    joiningFee: 0,
-    status: 'active',
-    features: [
-      { id: 'f1', label: 'Workout Access', included: true },
-      { id: 'f2', label: 'Personal Trainer', included: false },
-      { id: 'f3', label: 'Locker Room', included: true },
-      { id: 'f4', label: 'Diet Plan', included: false },
-      { id: 'f5', label: 'Group Classes', included: false },
-    ],
-    color: '#22c55e',
-    isDefault: true,
-    isPopular: false,
-    memberCount: 42,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-2',
-    gymId: 'gym-1',
-    name: 'Pro Quarterly',
-    description: 'Great value for serious gym-goers.',
-    duration: 3,
-    durationType: 'months',
-    price: 99,
-    joiningFee: 15,
-    status: 'active',
-    features: [
-      { id: 'f1', label: 'Workout Access', included: true },
-      { id: 'f2', label: 'Personal Trainer', included: true },
-      { id: 'f3', label: 'Locker Room', included: true },
-      { id: 'f4', label: 'Diet Plan', included: false },
-      { id: 'f5', label: 'Group Classes', included: true },
-    ],
-    color: '#6366f1',
-    isDefault: false,
-    isPopular: true,
-    memberCount: 128,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-3',
-    gymId: 'gym-1',
-    name: 'Elite Annual',
-    description: 'Everything included. Unlimited access.',
-    duration: 1,
-    durationType: 'years',
-    price: 349,
-    joiningFee: 0,
-    status: 'active',
-    features: [
-      { id: 'f1', label: 'Workout Access', included: true },
-      { id: 'f2', label: 'Personal Trainer', included: true },
-      { id: 'f3', label: 'Locker Room', included: true },
-      { id: 'f4', label: 'Diet Plan', included: true },
-      { id: 'f5', label: 'Group Classes', included: true },
-      { id: 'f6', label: 'Swimming Pool', included: true },
-    ],
-    color: '#f59e0b',
-    isDefault: false,
-    isPopular: true,
-    memberCount: 67,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'plan-4',
-    gymId: 'gym-1',
-    name: 'Student Discount',
-    description: 'Special rate for students with valid ID.',
-    duration: 1,
-    durationType: 'months',
-    price: 25,
-    joiningFee: 0,
-    status: 'inactive',
-    features: [
-      { id: 'f1', label: 'Workout Access', included: true },
-      { id: 'f3', label: 'Locker Room', included: false },
-    ],
-    isDefault: false,
-    isPopular: false,
-    memberCount: 0,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import { apiClient } from '@/lib/apiClient';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -134,11 +38,49 @@ export function usePlans(params: UsePlansParams = {}) {
   return useQuery({
     queryKey: planKeys.list(selectedGymId ?? '', { search, filters, sortField, sortDir, page, pageSize }),
     queryFn: async (): Promise<{ data: PlanListItem[]; total: number; page: number; pageSize: number }> => {
-      await new Promise((r) => setTimeout(r, 500));
+      const response = await apiClient.get('/membership-plans', {
+        params: {
+          includeArchived: 'true',
+        }
+      });
+      const rawPlans = response.data.data;
 
-      let results = MOCK_PLANS.filter((p) => p.gymId === (selectedGymId ?? 'gym-1'));
+      // Map to frontend structure
+      let results: PlanListItem[] = rawPlans.map((p: any) => {
+        let duration = p.durationInDays;
+        let durationType: 'days' | 'weeks' | 'months' | 'years' = 'days';
+        if (p.durationInDays % 365 === 0) {
+          duration = p.durationInDays / 365;
+          durationType = 'years';
+        } else if (p.durationInDays % 30 === 0) {
+          duration = p.durationInDays / 30;
+          durationType = 'months';
+        } else if (p.durationInDays % 7 === 0) {
+          duration = p.durationInDays / 7;
+          durationType = 'weeks';
+        }
 
-      // Search filtering
+        return {
+          id: p._id,
+          gymId: p.gymId,
+          name: p.name,
+          description: p.description || '',
+          duration,
+          durationType,
+          price: p.price,
+          joiningFee: 0,
+          status: p.active ? 'active' : 'inactive',
+          color: p.color || '#3B82F6',
+          isDefault: false,
+          isPopular: false,
+          memberCount: 0,
+          featureCount: 0,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+        };
+      });
+
+      // Filter by search locally (backend search not implemented for plans)
       if (search) {
         const q = search.toLowerCase();
         results = results.filter(
@@ -146,27 +88,17 @@ export function usePlans(params: UsePlansParams = {}) {
         );
       }
 
-      // Status filter
+      // Filter by status
       if (filters.status?.length) {
         results = results.filter((p) => filters.status!.includes(p.status));
       }
 
-      // Duration type filter
+      // Filter by duration type
       if (filters.durationType?.length) {
         results = results.filter((p) => filters.durationType!.includes(p.durationType));
       }
 
-      // Popular filter
-      if (filters.isPopular) {
-        results = results.filter((p) => p.isPopular);
-      }
-
-      // Default filter
-      if (filters.isDefault) {
-        results = results.filter((p) => p.isDefault);
-      }
-
-      // Sorting
+      // Sort
       results.sort((a, b) => {
         let aVal: string | number = a.createdAt;
         let bVal: string | number = b.createdAt;
@@ -177,18 +109,12 @@ export function usePlans(params: UsePlansParams = {}) {
         return sortDir === 'asc' ? cmp : -cmp;
       });
 
-      const listItems: PlanListItem[] = results.map(({ features, ...rest }) => ({
-        ...rest,
-        featureCount: features.filter((f) => f.included).length,
-      }));
-
-      // Pagination
-      const total = listItems.length;
-      const paginated = listItems.slice((page - 1) * pageSize, page * pageSize);
+      const total = results.length;
+      const paginated = results.slice((page - 1) * pageSize, page * pageSize);
 
       return { data: paginated, total, page, pageSize };
     },
-    enabled: true,
+    enabled: !!selectedGymId,
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -201,12 +127,42 @@ export function usePlan(planId: string) {
   return useQuery<MembershipPlan>({
     queryKey: planKeys.detail(selectedGymId ?? '', planId),
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 400));
-      const plan = MOCK_PLANS.find((p) => p.id === planId);
-      if (!plan) throw new Error('Plan not found');
-      return plan;
+      const response = await apiClient.get(`/membership-plans/${planId}`);
+      const p = response.data.data;
+      
+      let duration = p.durationInDays;
+      let durationType: 'days' | 'weeks' | 'months' | 'years' = 'days';
+      if (p.durationInDays % 365 === 0) {
+        duration = p.durationInDays / 365;
+        durationType = 'years';
+      } else if (p.durationInDays % 30 === 0) {
+        duration = p.durationInDays / 30;
+        durationType = 'months';
+      } else if (p.durationInDays % 7 === 0) {
+        duration = p.durationInDays / 7;
+        durationType = 'weeks';
+      }
+
+      return {
+        id: p._id,
+        gymId: p.gymId,
+        name: p.name,
+        description: p.description || '',
+        duration,
+        durationType,
+        price: p.price,
+        joiningFee: 0,
+        status: p.active ? 'active' : 'inactive',
+        color: p.color || '#3B82F6',
+        isDefault: false,
+        isPopular: false,
+        memberCount: 0,
+        features: [],
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      };
     },
-    enabled: !!planId,
+    enabled: !!selectedGymId && !!planId,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -218,10 +174,20 @@ export function useCreatePlan() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreatePlanData): Promise<MembershipPlan> => {
-      // await apiClient.post('/membership-plans', { ...data, gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 900));
-      return { ...data, id: `plan-${Date.now()}`, gymId: selectedGymId ?? '', memberCount: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    mutationFn: async (data: CreatePlanData): Promise<any> => {
+      let durationInDays = data.duration;
+      if (data.durationType === 'weeks') durationInDays = data.duration * 7;
+      if (data.durationType === 'months') durationInDays = data.duration * 30;
+      if (data.durationType === 'years') durationInDays = data.duration * 365;
+
+      const response = await apiClient.post('/membership-plans', {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        durationInDays,
+        color: data.color || '#3B82F6',
+      });
+      return response.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: planKeys.all(selectedGymId ?? '') });
@@ -234,27 +200,27 @@ export function useUpdatePlan(planId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Partial<CreatePlanData>): Promise<MembershipPlan> => {
-      // await apiClient.patch(`/membership-plans/${planId}`, { ...data, gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 700));
-      const existing = MOCK_PLANS.find((p) => p.id === planId)!;
-      return { ...existing, ...data, updatedAt: new Date().toISOString() };
-    },
-    onMutate: async (data) => {
-      await queryClient.cancelQueries({ queryKey: planKeys.detail(selectedGymId ?? '', planId) });
-      const previous = queryClient.getQueryData<MembershipPlan>(planKeys.detail(selectedGymId ?? '', planId));
-      if (previous) {
-        queryClient.setQueryData(planKeys.detail(selectedGymId ?? '', planId), { ...previous, ...data });
+    mutationFn: async (data: Partial<CreatePlanData>): Promise<any> => {
+      const payload: any = {};
+      if (data.name !== undefined) payload.name = data.name;
+      if (data.description !== undefined) payload.description = data.description;
+      if (data.price !== undefined) payload.price = data.price;
+      if (data.color !== undefined) payload.color = data.color;
+      
+      if (data.duration !== undefined && data.durationType !== undefined) {
+        let durationInDays = data.duration;
+        if (data.durationType === 'weeks') durationInDays = data.duration * 7;
+        if (data.durationType === 'months') durationInDays = data.duration * 30;
+        if (data.durationType === 'years') durationInDays = data.duration * 365;
+        payload.durationInDays = durationInDays;
       }
-      return { previous };
+
+      const response = await apiClient.patch(`/membership-plans/${planId}`, payload);
+      return response.data.data;
     },
-    onError: (_err, _data, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(planKeys.detail(selectedGymId ?? '', planId), context.previous);
-      }
-    },
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: planKeys.all(selectedGymId ?? '') });
+      queryClient.invalidateQueries({ queryKey: planKeys.detail(selectedGymId ?? '', planId) });
     },
   });
 }
@@ -262,9 +228,10 @@ export function useUpdatePlan(planId: string) {
 export function useArchivePlan(planId: string) {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: async () => {
-      await new Promise((r) => setTimeout(r, 500));
+      await apiClient.delete(`/membership-plans/${planId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: planKeys.all(selectedGymId ?? '') });
@@ -275,11 +242,20 @@ export function useArchivePlan(planId: string) {
 export function useDuplicatePlan() {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
+  
   return useMutation({
-    mutationFn: async (planId: string): Promise<MembershipPlan> => {
-      await new Promise((r) => setTimeout(r, 700));
-      const src = MOCK_PLANS.find((p) => p.id === planId)!;
-      return { ...src, id: `plan-${Date.now()}`, name: `${src.name} (Copy)`, status: 'inactive', memberCount: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    mutationFn: async (planId: string): Promise<any> => {
+      const response = await apiClient.get(`/membership-plans/${planId}`);
+      const src = response.data.data;
+      
+      const newPlanResponse = await apiClient.post('/membership-plans', {
+        name: `${src.name} (Copy)`,
+        description: src.description,
+        price: src.price,
+        durationInDays: src.durationInDays,
+        color: src.color,
+      });
+      return newPlanResponse.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: planKeys.all(selectedGymId ?? '') });
@@ -290,13 +266,17 @@ export function useDuplicatePlan() {
 export function useSetPlanStatus() {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: async ({ planId, status }: { planId: string; status: PlanStatus }) => {
-      await new Promise((r) => setTimeout(r, 500));
-      return { planId, status };
+      const response = await apiClient.patch(`/membership-plans/${planId}`, {
+        active: status === 'active',
+      });
+      return response.data.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, { planId }) => {
       queryClient.invalidateQueries({ queryKey: planKeys.all(selectedGymId ?? '') });
+      queryClient.invalidateQueries({ queryKey: planKeys.detail(selectedGymId ?? '', planId) });
     },
   });
 }

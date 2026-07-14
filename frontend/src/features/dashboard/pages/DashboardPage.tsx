@@ -14,11 +14,14 @@ import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { CreateMemberWizard } from "../../members/components/CreateMemberWizard";
 import { Button } from "@/components/ui/button";
 
+import { MemberStatusBadge } from "../../members/components/MemberStatusBadge";
+
 export function DashboardPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [dueTimeframe, setDueTimeframe] = useState<"today" | "3days" | "7days">("7days");
+  const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "due">("all");
 
   const { data: stats } = useDashboardStats();
   const { data: dues, isLoading: isDuesLoading } = useDashboardDues();
@@ -36,6 +39,7 @@ export function DashboardPage() {
   };
 
   const getDaysDiff = (dateStr: string) => {
+    if (!dateStr) return 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const end = new Date(dateStr);
@@ -49,6 +53,22 @@ export function DashboardPage() {
     dueTimeframe === "today" ? dues?.dueToday || [] :
     dueTimeframe === "3days" ? dues?.dueIn3Days || [] :
     dues?.dueIn7Days || [];
+
+  const overdueCount = activeDues.filter(m => getDaysDiff(m.endDate) < 0).length;
+  const dueCount = activeDues.filter(m => getDaysDiff(m.endDate) >= 0).length;
+  const totalDuesCount = activeDues.length;
+
+  const filteredDues = activeDues.filter((member) => {
+    const daysDiff = getDaysDiff(member.endDate);
+    const isOverdue = daysDiff < 0;
+    if (dueFilter === "overdue") {
+      return isOverdue;
+    }
+    if (dueFilter === "due") {
+      return !isOverdue;
+    }
+    return true;
+  });
 
   return (
     <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
@@ -73,7 +93,7 @@ export function DashboardPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <KpiGrid />
+      <KpiGrid activeFilter={dueFilter} onFilterChange={setDueFilter} />
 
       {/* Quick Actions (B&W minimal) */}
       <QuickActions />
@@ -85,40 +105,77 @@ export function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="glass-panel p-4 sm:p-5 md:p-6 rounded-[16px] space-y-5">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-default pb-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 flex-1">
                 <h2 className="font-bold text-base text-text-primary font-mono uppercase tracking-wide">
                   Membership Dues Tracker
                 </h2>
                 <p className="text-xs text-text-secondary">
-                  Active memberships expiring within the selected timeframe.
+                  Active memberships expiring or overdue within the selected timeframe.
                 </p>
+                
+                {/* Timeframe Selector Pills */}
+                <div className="flex items-center space-x-2 pt-1.5 overflow-x-auto hide-scrollbar">
+                  <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono shrink-0">
+                    Timeframe:
+                  </span>
+                  <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px]">
+                    {[
+                      { val: "today", label: "Today" },
+                      { val: "3days", label: "3 Days" },
+                      { val: "7days", label: "7 Days" },
+                    ].map((tf) => (
+                      <button
+                        key={tf.val}
+                        type="button"
+                        onClick={() => setDueTimeframe(tf.val as any)}
+                        className={`px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer ${
+                          dueTimeframe === tf.val
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-text-secondary hover:text-text-primary"
+                        }`}
+                      >
+                        {tf.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              {/* Timeframe Selector Pills */}
-              <div className="flex items-center space-x-2 pt-1">
-                <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono shrink-0">
-                  Timeframe:
-                </span>
-                <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px]">
-                  {[
-                    { val: "today", label: "Today" },
-                    { val: "3days", label: "3 Days" },
-                    { val: "7days", label: "7 Days" },
-                  ].map((tf) => (
-                    <button
-                      key={tf.val}
-                      type="button"
-                      onClick={() => setDueTimeframe(tf.val as any)}
-                      className={`px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer ${
-                        dueTimeframe === tf.val
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-text-secondary hover:text-text-primary"
-                      }`}
-                    >
-                      {tf.label}
-                    </button>
-                  ))}
-                </div>
+              {/* Status Toggle Filters (All, Overdue, Due) */}
+              <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
+                {[
+                  {
+                    key: "all",
+                    label: `All Dues (${totalDuesCount})`,
+                    labelMobile: `All (${totalDuesCount})`,
+                    activeClass: "bg-primary text-primary-foreground font-bold",
+                  },
+                  {
+                    key: "overdue",
+                    label: `Overdue (${overdueCount})`,
+                    labelMobile: `Overdue (${overdueCount})`,
+                    activeClass: "bg-error/10 text-error border border-error/20 font-bold",
+                  },
+                  {
+                    key: "due",
+                    label: `Due soon (${dueCount})`,
+                    labelMobile: `Due (${dueCount})`,
+                    activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold",
+                  },
+                ].map((f) => (
+                  <button
+                    key={f.key}
+                    onClick={() => setDueFilter(f.key as any)}
+                    className={`px-3 py-1 rounded-[4px] text-xs transition-all duration-150 cursor-pointer shrink-0 ${
+                      dueFilter === f.key
+                        ? f.activeClass
+                        : "text-text-secondary hover:text-text-primary border border-transparent"
+                    }`}
+                  >
+                    <span className="hidden sm:inline">{f.label}</span>
+                    <span className="sm:hidden">{f.labelMobile}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -128,7 +185,7 @@ export function DashboardPage() {
                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-border-default border-t-text-primary mx-auto mb-2"></div>
                 <p className="text-text-muted text-xs font-mono uppercase tracking-wider">Loading dues tracker...</p>
               </div>
-            ) : activeDues.length === 0 ? (
+            ) : filteredDues.length === 0 ? (
               <div className="text-center py-14">
                 <div className="w-12 h-12 border border-border-default rounded-[8px] flex items-center justify-center mx-auto mb-4 text-text-secondary">
                   <CheckCircle className="h-5 w-5" />
@@ -137,7 +194,7 @@ export function DashboardPage() {
                   Diagnostics Clear
                 </h3>
                 <p className="text-text-secondary text-xs max-w-sm mx-auto mb-6">
-                  No active billing records are pending or expiring under the current configuration parameters.
+                  No billing records match the selected filter configuration.
                 </p>
                 <Button
                   onClick={() => setIsAddMemberOpen(true)}
@@ -150,7 +207,7 @@ export function DashboardPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
-                {activeDues.map((member, idx) => {
+                {filteredDues.map((member, idx) => {
                   const daysDiff = getDaysDiff(member.endDate);
                   const isOverdue = daysDiff < 0;
 
@@ -170,18 +227,7 @@ export function DashboardPage() {
                           </h4>
                           
                           <div className="flex items-center space-x-2 mt-1">
-                            <span
-                              className={`inline-flex items-center space-x-1 text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${
-                                isOverdue
-                                  ? "bg-error/10 text-error"
-                                  : "bg-warning/10 text-warning"
-                              }`}
-                            >
-                              <span
-                                className={`status-dot ${isOverdue ? "status-dot-overdue" : "status-dot-due"}`}
-                              ></span>
-                              <span>{isOverdue ? "overdue" : "due soon"}</span>
-                            </span>
+                            <MemberStatusBadge status={isOverdue ? "Expired" : "Expiring Soon"} />
                             <span className="text-[10px] text-text-muted font-mono">
                               {member.memberId?.memberCode}
                             </span>
@@ -225,8 +271,8 @@ export function DashboardPage() {
                             )}
                             <Button
                               size="xs"
-                              onClick={() => navigate("/admin/payments/collect")}
-                              className="text-[10px] font-bold h-7"
+                              onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?._id}`)}
+                              className="text-[10px] font-bold h-7 cursor-pointer rounded-[4px]"
                             >
                               Collect Payment
                             </Button>

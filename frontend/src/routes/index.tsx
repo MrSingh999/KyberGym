@@ -17,13 +17,28 @@ import { DashboardPage } from "../features/dashboard/pages/DashboardPage";
 import { MembersPage } from "../features/members/pages/MembersPage";
 import { MemberProfilePage } from "../features/members/pages/MemberProfilePage";
 
-// Temporary dummy components for routing
+import { WorkoutsPage } from "../features/workouts/pages/WorkoutsPage";
+import { WorkoutDetailPage } from "../features/workouts/pages/WorkoutDetailPage";
+import { CreateWorkoutPage } from "../features/workouts/pages/CreateWorkoutPage";
+import { EditWorkoutPage } from "../features/workouts/pages/EditWorkoutPage";
+
+import { NotificationsPage } from "../features/notifications/pages/NotificationsPage";
+import { QrEntryPage } from "../features/qr-entry/pages/QrEntryPage";
+import { BrandingPage } from "../features/branding/pages/BrandingPage";
+import { MemberDashboardPage } from "../features/members/pages/MemberDashboardPage";
+import { MemberWorkoutPlanPage } from "../features/workouts/pages/MemberWorkoutPlanPage";
+import { SuperAdminDashboardPage } from "../features/super-admin/pages/SuperAdminDashboardPage";
+import { SuperAdminGymsPage } from "../features/super-admin/pages/SuperAdminGymsPage";
+import { SuperAdminGymDetailPage } from "../features/super-admin/pages/SuperAdminGymDetailPage";
+
 import { EmptyState } from "../components/feedback/ErrorState";
 
-// Guards & Store
 import { ProtectedRoute, PublicRoute } from "../features/auth/guards/ProtectedRoute";
 import { Login } from "../features/auth/components/Login";
 import { ForgotPasswordForm } from "../features/auth/components/ForgotPasswordForm";
+import { ResetPasswordForm } from "../features/auth/components/ResetPasswordForm";
+import { VerifyEmailForm } from "../features/auth/components/VerifyEmailForm";
+import { ProfilePage } from "../features/auth/components/ProfilePage";
 import { RoleGuard } from "../features/auth/guards/RoleGuard";
 import { Unauthorized } from "../features/auth/components/Unauthorized";
 import { useAuthStore } from "../store/auth.store";
@@ -39,7 +54,6 @@ const DummyComponent = ({ title }: { title: string }) => (
   </div>
 );
 
-// Dynamic redirect component based on authentication state and role
 function RootRedirect() {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -71,9 +85,10 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { index: true, element: <DummyComponent title="Super Admin Dashboard" /> },
-          { path: "dashboard", element: <DummyComponent title="Super Admin Dashboard" /> },
-          { path: "gyms", element: <DummyComponent title="Manage Gyms" /> },
+          { index: true, element: <SuperAdminDashboardPage /> },
+          { path: "dashboard", element: <SuperAdminDashboardPage /> },
+          { path: "gyms", element: <SuperAdminGymsPage /> },
+          { path: "gyms/:gymId", element: <SuperAdminGymDetailPage /> },
           { path: "subscriptions", element: <DummyComponent title="Subscriptions" /> },
           { path: "plans", element: <DummyComponent title="Subscription Plans" /> },
           { path: "settings", element: <DummyComponent title="Settings" /> },
@@ -96,21 +111,22 @@ export const router = createBrowserRouter([
           { path: "dashboard", element: <DashboardPage /> },
           { path: "members", element: <MembersPage /> },
           { path: "members/:memberId", element: <MemberProfilePage /> },
-          // ── Plans ─────────────────────────────────────────────────────────────
           { path: "plans", element: <PlansPage /> },
           { path: "plans/new", element: <CreatePlanPage /> },
           { path: "plans/:planId", element: <PlanDetailPage /> },
           { path: "plans/:planId/edit", element: <EditPlanPage /> },
-          // ── Payments ──────────────────────────────────────────────────────────
           { path: "payments", element: <PaymentsPage /> },
           { path: "payments/collect", element: <CollectPaymentPage /> },
           { path: "payments/:paymentId", element: <PaymentDetailPage /> },
-          // ─────────────────────────────────────────────────────────────────────
-          { path: "workouts", element: <DummyComponent title="Manage Workouts" /> },
+          { path: "workouts", element: <WorkoutsPage /> },
+          { path: "workouts/new", element: <CreateWorkoutPage /> },
+          { path: "workouts/:workoutId", element: <WorkoutDetailPage /> },
+          { path: "workouts/:workoutId/edit", element: <EditWorkoutPage /> },
+          { path: "notifications", element: <NotificationsPage /> },
           { path: "exercises", element: <DummyComponent title="Manage Exercises" /> },
-          { path: "qr", element: <DummyComponent title="QR Entry" /> },
+          { path: "qr", element: <QrEntryPage /> },
           { path: "reports", element: <DummyComponent title="Reports" /> },
-          { path: "branding", element: <DummyComponent title="Branding" /> },
+          { path: "branding", element: <BrandingPage /> },
           { path: "staff", element: <DummyComponent title="Staff" /> },
           { path: "settings", element: <DummyComponent title="Settings" /> },
         ],
@@ -125,15 +141,16 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { index: true, element: <DummyComponent title="Member Dashboard" /> },
-          { path: "dashboard", element: <DummyComponent title="Member Dashboard" /> },
-          { path: "profile", element: <DummyComponent title="Member Profile" /> },
+          { index: true, element: <MemberDashboardPage /> },
+          { path: "dashboard", element: <MemberDashboardPage /> },
+          { path: "profile", element: <ProfilePage /> },
           { path: "membership", element: <DummyComponent title="My Membership" /> },
-          { path: "workout-plan", element: <DummyComponent title="My Workout Plan" /> },
-          { path: "workouts", element: <DummyComponent title="My Workout Plan" /> },
+          { path: "workout-plan", element: <MemberWorkoutPlanPage /> },
+          { path: "workouts", element: <MemberWorkoutPlanPage /> },
           { path: "qr", element: <DummyComponent title="QR Pass" /> },
           { path: "payments", element: <DummyComponent title="Payment History" /> },
           { path: "attendance", element: <DummyComponent title="Attendance" /> },
+          { path: "notifications", element: <NotificationsPage /> },
           { path: "settings", element: <DummyComponent title="Settings" /> },
         ],
       },
@@ -149,6 +166,8 @@ export const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <DummyComponent title="Register" /> },
       { path: "forgot-password", element: <ForgotPasswordForm /> },
+      { path: "reset-password", element: <ResetPasswordForm /> },
+      { path: "verify-email", element: <VerifyEmailForm /> },
     ],
   },
   {

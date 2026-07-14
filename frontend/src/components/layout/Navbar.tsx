@@ -1,14 +1,26 @@
-import { useLocation } from "react-router";
-import { ChevronRight, Menu, Moon, Sun, Search } from "lucide-react";
+import { useLocation, useNavigate } from "react-router";
+import { ChevronRight, Menu, Moon, Sun, Search, User, Settings, LogOut, Shield } from "lucide-react";
+import { toast } from "sonner";
 import { useSearchStore } from "../../store/search.store";
 import { useSidebarStore } from "../../store/sidebar.store";
 import { NotificationCenter } from "./NotificationCenter";
 import { useTheme } from "../../providers/ThemeProvider";
+import { useAuthStore } from "../../store/auth.store";
+import { authApi } from "../../features/auth/api/auth.api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 export function Breadcrumbs() {
   const location = useLocation();
   const paths = location.pathname.split('/').filter(p => p);
-  
+
   if (paths.length === 0) return null;
 
   return (
@@ -33,11 +45,42 @@ export function Navbar() {
   const { setMobileDrawerOpen } = useSidebarStore();
   const { setOpen: setSearchOpen } = useSearchStore();
   const { theme, setTheme } = useTheme();
+  const { user, logout: storeLogout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Even if the API call fails, clear local state
+    }
+    storeLogout();
+    toast.success("Logged out successfully");
+    navigate("/login", { replace: true });
+  };
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.charAt(0).toUpperCase() || "U";
+
+  const getProfilePath = () => {
+    if (!user) return "/login";
+    if (user.role === "superadmin") return "/super-admin/settings";
+    if (user.role === "owner") return "/admin/settings";
+    return "/member/profile";
+  };
+
+  const getDashboardPath = () => {
+    if (!user) return "/login";
+    if (user.role === "superadmin") return "/super-admin/dashboard";
+    if (user.role === "owner") return "/admin/dashboard";
+    return "/member/dashboard";
+  };
 
   return (
     <header className="h-[64px] border-b border-subtle bg-canvas/80 backdrop-blur-md sticky top-0 flex items-center justify-between px-4 lg:px-6 z-30">
       <div className="flex items-center">
-        <button 
+        <button
           onClick={() => setMobileDrawerOpen(true)}
           className="p-2 -ml-2 mr-2 lg:hidden text-muted hover:text-primary"
         >
@@ -47,8 +90,7 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center space-x-2 sm:space-x-4">
-        {/* Global Search Trigger */}
-        <button 
+        <button
           onClick={() => setSearchOpen(true)}
           className="hidden sm:flex items-center text-sm text-muted bg-surface border border-default hover:border-hover px-3 py-1.5 rounded-md transition-all shadow-sm w-64"
         >
@@ -59,8 +101,7 @@ export function Navbar() {
           </kbd>
         </button>
 
-        {/* Mobile Search Icon */}
-        <button 
+        <button
           onClick={() => setSearchOpen(true)}
           className="sm:hidden p-2 text-muted hover:text-primary rounded-full hover:bg-surface-hover transition-colors"
         >
@@ -69,18 +110,50 @@ export function Navbar() {
 
         <NotificationCenter />
 
-        {/* Theme Toggle */}
-        <button 
+        <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-full hover:bg-surface-hover transition-colors text-muted hover:text-primary outline-none"
         >
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
 
-        {/* Profile Avatar */}
-        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm ml-2 cursor-pointer shadow-sm">
-          A
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 ml-2 p-1 rounded-full hover:bg-surface-hover transition-colors outline-none">
+              <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm">
+                {initials}
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 mr-4" align="end">
+            <DropdownMenuLabel>
+              <div className="flex flex-col">
+                <span className="font-medium text-primary truncate">{user?.name || "User"}</span>
+                <span className="text-xs text-muted font-normal truncate">{user?.email}</span>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => navigate(getProfilePath())}>
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(getDashboardPath())}>
+                <Shield className="w-4 h-4 mr-2" />
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/admin/settings")}>
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

@@ -1,5 +1,6 @@
 import React from "react";
 import { MembershipStatus } from "../types";
+import { User } from "lucide-react";
 
 interface MemberStatusBadgeProps {
   status: MembershipStatus;
@@ -7,34 +8,29 @@ interface MemberStatusBadgeProps {
 }
 
 const statusConfig: Record<MembershipStatus, {
+  label: string;
   dotClass: string;
-  textClass: string;
-  bgClass: string;
-  borderClass: string;
+  badgeClass: string;
 }> = {
   "Active": {
-    dotClass: "status-dot status-dot-active",
-    textClass: "text-emerald-600 dark:text-emerald-400",
-    bgClass: "bg-emerald-500/10",
-    borderClass: "border-emerald-500/20",
+    label: "Active",
+    dotClass: "status-dot-active",
+    badgeClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 dark:border-emerald-500/15",
   },
   "Expiring Soon": {
-    dotClass: "status-dot status-dot-due",
-    textClass: "text-amber-600 dark:text-amber-400",
-    bgClass: "bg-amber-500/10",
-    borderClass: "border-amber-500/20",
+    label: "Due Soon",
+    dotClass: "status-dot-due",
+    badgeClass: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20 dark:border-amber-500/15",
   },
   "Expired": {
-    dotClass: "status-dot status-dot-overdue",
-    textClass: "text-red-600 dark:text-red-400",
-    bgClass: "bg-red-500/10",
-    borderClass: "border-red-500/20",
+    label: "Overdue",
+    dotClass: "status-dot-overdue",
+    badgeClass: "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20 dark:border-red-500/15",
   },
   "Suspended": {
-    dotClass: "status-dot bg-zinc-400",
-    textClass: "text-zinc-500 dark:text-zinc-400",
-    bgClass: "bg-zinc-500/10",
-    borderClass: "border-zinc-500/20",
+    label: "Inactive",
+    dotClass: "",
+    badgeClass: "text-text-muted bg-white/[0.03] border-border-default dark:border-border-default/40",
   },
 };
 
@@ -43,10 +39,14 @@ export function MemberStatusBadge({ status, className }: MemberStatusBadgeProps)
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full border font-mono ${config.bgClass} ${config.textClass} ${config.borderClass} ${className ?? ""}`}
+      className={`inline-flex items-center space-x-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full border w-fit ${config.badgeClass} ${className ?? ""}`}
     >
-      <span className={config.dotClass} />
-      {status}
+      {config.dotClass ? (
+        <span className={`status-dot ${config.dotClass}`} />
+      ) : (
+        <User className="h-3 w-3 shrink-0" />
+      )}
+      <span>{config.label}</span>
     </span>
   );
 }

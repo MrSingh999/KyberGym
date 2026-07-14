@@ -53,13 +53,15 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8 border border-border-default">
             <AvatarImage src={member.profilePhoto} />
-            <AvatarFallback className="bg-surface text-text-secondary text-xs font-mono font-bold">
+            <AvatarFallback className="bg-surface text-text-secondary text-[10px] font-bold font-sans">
               {member.name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col">
-            <span className="font-semibold text-text-primary text-sm">{member.name}</span>
-            <span className="text-[11px] text-text-muted font-mono">{member.email}</span>
+          <div className="min-w-0">
+            <div className="font-semibold text-text-primary text-[13px] truncate">{member.name}</div>
+            <div className="flex items-center text-xs text-text-muted space-x-1.5 mt-0.5 font-mono">
+              <span className="truncate">{member.email}</span>
+            </div>
           </div>
         </div>
       );
@@ -69,7 +71,7 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     accessorKey: "memberCode",
     header: "Code",
     cell: ({ row }) => (
-      <span className="text-[11px] font-bold text-text-secondary font-mono uppercase tracking-wider">
+      <span className="text-xs font-semibold text-text-secondary font-mono">
         {row.getValue("memberCode")}
       </span>
     ),
@@ -87,7 +89,7 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     accessorKey: "planName",
     header: "Plan",
     cell: ({ row }) => (
-      <span className="text-xs text-text-primary font-mono">
+      <span className="text-xs text-text-secondary font-mono capitalize">
         {row.getValue("planName") || "—"}
       </span>
     ),
@@ -95,7 +97,11 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
   {
     accessorKey: "membershipStatus",
     header: "Status",
-    cell: ({ row }) => <MemberStatusBadge status={row.getValue("membershipStatus")} />,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <MemberStatusBadge status={row.getValue("membershipStatus")} />
+      </div>
+    ),
   },
   {
     accessorKey: "joiningDate",
@@ -103,7 +109,7 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue("joiningDate"));
       return (
-        <span className="text-[11px] text-text-muted font-mono">
+        <span className="text-xs text-text-muted font-mono">
           {isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
         </span>
       );
@@ -113,26 +119,37 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     id: "actions",
     cell: ({ row }) => {
       const member = row.original;
-      return (
-        <div className="flex items-center gap-1">
-          <ActionButton memberId={member.id} />
-        </div>
-      );
+      return <ActionButtons memberId={member.id} />;
     },
   },
 ];
 
-function ActionButton({ memberId }: { memberId: string }) {
+interface ActionButtonsProps {
+  memberId: string;
+}
+
+function ActionButtons({ memberId }: ActionButtonsProps) {
   const navigate = useNavigate();
   return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      onClick={() => navigate(`/admin/members/${memberId}`)}
-      className="text-text-muted hover:text-text-primary"
-    >
-      <Eye className="h-3.5 w-3.5" />
-    </Button>
+    <div className="flex items-center gap-1.5 justify-end">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={() => navigate(`/admin/members/${memberId}`)}
+        title="View Profile"
+        className="text-text-secondary hover:text-text-primary border border-border-default h-7 w-7 rounded-[4px] cursor-pointer"
+      >
+        <Eye className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        variant="default"
+        size="xs"
+        onClick={() => navigate(`/admin/payments/collect?memberId=${memberId}`)}
+        className="text-[10px] font-bold h-7 rounded-[4px] cursor-pointer"
+      >
+        Collect
+      </Button>
+    </div>
   );
 }
 

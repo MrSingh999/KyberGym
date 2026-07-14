@@ -1,11 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { useGymStore } from "./gym.store";
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: "superadmin" | "owner" | "member";
+  gymId?: string;
   avatarUrl?: string;
 }
 
@@ -15,6 +18,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (user: any, token: string) => void;
   setUser: (user: any) => void;
+  setToken: (token: string) => void;
   logout: () => void;
 }
 
@@ -33,12 +37,24 @@ export const useAuthStore = create<AuthState>()(
       login: (user, token) => {
         const normalizedUser = user ? { ...user, role: normalizeRole(user.role) } : null;
         set({ user: normalizedUser, token, isAuthenticated: true });
+        if (normalizedUser && normalizedUser.gymId) {
+          useGymStore.getState().setSelectedGymId(normalizedUser.gymId);
+        }
       },
       setUser: (user) => {
         const normalizedUser = user ? { ...user, role: normalizeRole(user.role) } : null;
         set({ user: normalizedUser });
+        if (normalizedUser && normalizedUser.gymId) {
+          useGymStore.getState().setSelectedGymId(normalizedUser.gymId);
+        }
       },
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      setToken: (token) => {
+        set({ token, isAuthenticated: true });
+      },
+      logout: () => {
+        set({ user: null, token: null, isAuthenticated: false });
+        useGymStore.getState().clearGymFeatures();
+      },
     }),
     {
       name: "kybergym-auth",

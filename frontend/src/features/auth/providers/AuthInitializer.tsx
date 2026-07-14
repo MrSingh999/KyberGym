@@ -1,40 +1,52 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useAuthStore } from "../../../store/auth.store";
-import { apiClient } from "../../../lib/apiClient";
+import { useGymStore } from "../../../store/gym.store";
+import { authApi } from "../api/auth.api";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { token, login, logout } = useAuthStore();
+  const { token, login, setToken, logout } = useAuthStore();
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     let active = true;
 
-    const initializeAuth = async () => {
+    const restoreSession = async () => {
       if (!token) {
-        if (active) {
-          logout();
-          setIsInitializing(false);
-        }
+        if (active) setIsInitializing(false);
         return;
       }
 
       try {
-        const response = await apiClient.get(`/auth/me`);
-        const user = response.data.data.user;
-        if (active) {
-          login(user, token);
-          setIsInitializing(false);
+        const user = await authApi.getMe();
+        if (active) login(user, token);
+      } catch {
+        try {
+          const gymId = useGymStore.getState().selectedGymId;
+          const refreshRes = await axios.post(
+            `${API_URL}/auth/refresh-token`,
+            {},
+            {
+              withCredentials: true,
+              headers: gymId ? { "x-tenant-id": gymId } : undefined,
+            }
+          );
+          const newToken = refreshRes.data.data.accessToken;
+          setToken(newToken);
+
+          const user = await authApi.getMe();
+          if (active) login(user, newToken);
+        } catch {
+          if (active) logout();
         }
-      } catch (error: any) {
-        console.error("Session restoration failed:", error);
-        if (active) {
-          logout();
-          setIsInitializing(false);
-        }
+      } finally {
+        if (active) setIsInitializing(false);
       }
     };
 
-    initializeAuth();
+    restoreSession();
 
     return () => {
       active = false;

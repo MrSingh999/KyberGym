@@ -36,7 +36,7 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
     ]);
   };
 
-  const selectTriggerClass = "w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-2 h-9 text-xs text-text-primary cursor-pointer hover:border-border-hover transition-all duration-200 font-mono";
+  const selectTriggerClass = "w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-1.5 h-8 text-xs text-text-primary cursor-pointer hover:border-border-hover transition-all duration-200 font-mono";
 
   return (
     <div className="glass-panel p-4 md:p-5 rounded-[16px] animate-fade-slide-up mb-6">
@@ -54,7 +54,7 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
               placeholder="Name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-2 h-9 text-xs text-text-primary placeholder-text-muted focus:outline-none focus:border-border-hover transition-all duration-200 font-mono"
+              className="w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-1.5 h-8 text-xs text-text-primary placeholder-text-muted focus:outline-none focus:border-border-hover transition-all duration-200 font-mono"
             />
           </div>
         </div>
@@ -73,8 +73,8 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
               <SelectContent className="bg-surface border border-border-default rounded-[6px] shadow-2xl">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="Expiring Soon">Expiring Soon</SelectItem>
-                <SelectItem value="Expired">Expired</SelectItem>
+                <SelectItem value="Expiring Soon">Due Soon</SelectItem>
+                <SelectItem value="Expired">Overdue</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -19,26 +19,44 @@ export function useMemberProfile(memberId: string) {
   return useQuery<MemberProfile>({
     queryKey: ["member", selectedGymId, memberId],
     queryFn: async () => {
-      // const res = await apiClient.get(`/members/${memberId}`, { params: { gymId: selectedGymId } });
-      // return res.data;
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await apiClient.get(`/members/${memberId}`);
+      const m = res.data.data;
+      
+      let planName = "No active plan";
+      let membershipStartDate = "";
+      let membershipEndDate = "";
+      try {
+        const subsRes = await apiClient.get('/member-subscriptions', {
+          params: { memberId, status: 'active', limit: 1 }
+        });
+        const activeSub = subsRes.data.data?.[0];
+        if (activeSub) {
+          const planRes = await apiClient.get(`/membership-plans/${activeSub.membershipPlanId}`);
+          planName = planRes.data.data?.name || "Pro Monthly";
+          membershipStartDate = activeSub.startDate ? new Date(activeSub.startDate).toISOString().split('T')[0] : "";
+          membershipEndDate = activeSub.endDate ? new Date(activeSub.endDate).toISOString().split('T')[0] : "";
+        }
+      } catch (e) {
+        // Fallback silently if subscriptions fail
+      }
+
       return {
-        id: memberId,
-        memberCode: "KGM-1042",
-        name: "Alex Johnson",
-        phone: "+1 (555) 123-4567",
-        email: "alex.johnson@example.com",
-        profilePhoto: undefined,
-        gender: "male",
-        dateOfBirth: "1992-08-15",
-        joiningDate: "2023-01-10",
-        membershipStartDate: "2024-06-01",
-        membershipEndDate: "2025-06-01",
-        membershipStatus: "Active",
-        planName: "Pro Monthly",
-        assignedTrainerName: "Coach Priya",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        id: m._id,
+        memberCode: m.memberCode,
+        name: m.fullName,
+        phone: m.phone || "No phone",
+        email: m.email || "No email",
+        profilePhoto: m.profilePhoto,
+        gender: m.gender || "male",
+        dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : "",
+        joiningDate: m.joinDate ? new Date(m.joinDate).toISOString().split('T')[0] : "",
+        membershipStartDate,
+        membershipEndDate,
+        membershipStatus: m.status === 'active' ? 'Active' : m.status === 'expired' ? 'Expired' : m.status === 'suspended' ? 'Suspended' : 'Inactive',
+        planName,
+        assignedTrainerName: "Coach Alex",
+        createdAt: m.createdAt,
+        updatedAt: m.updatedAt,
       };
     },
     enabled: !!selectedGymId && !!memberId,
@@ -87,11 +105,32 @@ export function useMemberPaymentSummary(memberId: string) {
   return useQuery<PaymentSummaryItem[]>({
     queryKey: ["member-summary", selectedGymId, memberId, "payments"],
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 400));
-      return [
-        { id: "p1", amount: 120, date: "2024-06-01", status: "paid", description: "Pro Monthly – June" },
-        { id: "p2", amount: 120, date: "2024-05-01", status: "paid", description: "Pro Monthly – May" },
-      ];
+      const response = await apiClient.get('/payments', {
+        params: { memberId, limit: 50 }
+      });
+      const rawPayments = response.data.data;
+      
+      const paymentsWithPlans = await Promise.all(
+        rawPayments.map(async (p: any) => {
+          let planName = "Gym Membership";
+          if (p.planId) {
+            try {
+              const planRes = await apiClient.get(`/membership-plans/${p.planId}`);
+              planName = planRes.data.data?.name || "Gym Membership";
+            } catch {
+              // fallback
+            }
+          }
+          return {
+            id: p._id,
+            amount: p.finalAmount || p.amount,
+            date: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
+            status: p.status || "paid",
+            description: `${planName} – payment`,
+          };
+        })
+      );
+      return paymentsWithPlans;
     },
     enabled: !!selectedGymId && !!memberId,
   });
@@ -120,8 +159,12 @@ export function useRenewMembership(memberId: string) {
 
   return useMutation({
     mutationFn: async (data: RenewMembershipFormData) => {
-      // await apiClient.post(`/members/${memberId}/renew`, { ...data, gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 800));
+      // 1. Create a subscription
+      await apiClient.post('/member-subscriptions', {
+        memberId,
+        membershipPlanId: data.planId,
+        startDate: new Date(data.startDate).toISOString(),
+      });
       return { success: true };
     },
     onSuccess: () => {
@@ -137,8 +180,10 @@ export function useSuspendMember(memberId: string) {
 
   return useMutation({
     mutationFn: async (data: SuspendMemberFormData) => {
-      // await apiClient.post(`/members/${memberId}/suspend`, { ...data, gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 600));
+      await apiClient.patch(`/members/${memberId}`, {
+        status: 'suspended',
+        notes: data.reason,
+      });
       return { success: true };
     },
     onSuccess: () => {
@@ -153,8 +198,9 @@ export function useActivateMember(memberId: string) {
 
   return useMutation({
     mutationFn: async () => {
-      // await apiClient.post(`/members/${memberId}/activate`, { gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 600));
+      await apiClient.patch(`/members/${memberId}`, {
+        status: 'active',
+      });
       return { success: true };
     },
     onSuccess: () => {

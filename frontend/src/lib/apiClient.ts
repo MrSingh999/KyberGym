@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../store/auth.store';
+import { useGymStore } from '../store/gym.store';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -11,13 +12,19 @@ export const apiClient = axios.create({
   },
 });
 
-// Request Interceptor: Attach Access Token
+// Request Interceptor: Attach Access Token & Tenant ID
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().token;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    const selectedGymId = useGymStore.getState().selectedGymId;
+    if (selectedGymId && config.headers) {
+      config.headers['x-tenant-id'] = selectedGymId;
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)
@@ -61,27 +68,24 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Attempt to refresh. Backend relies on the HttpOnly cookie.
-        const response = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
-        
-        const newAccessToken = response.data.accessToken;
-        const user = response.data.user;
+        const gymId = useGymStore.getState().selectedGymId;
+        const response = await axios.post(`${API_URL}/auth/refresh-token`, {}, {
+          withCredentials: true,
+          headers: gymId ? { 'x-tenant-id': gymId } : undefined,
+        });
+        const newAccessToken = response.data.data.accessToken;
 
-        // Update the Zustand store with new token
-        useAuthStore.getState().login(user, newAccessToken);
+        useAuthStore.getState().setToken(newAccessToken);
 
         processQueue(null, newAccessToken);
 
-        // Retry the original request
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        
-        // Refresh failed, completely log the user out
+
         useAuthStore.getState().logout();
-        
-        // Let the router handle redirecting to login based on state
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

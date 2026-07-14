@@ -11,78 +11,7 @@ import {
 } from '../types';
 import { CollectPaymentData } from '../schemas/payment.schema';
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const MOCK_PAYMENTS: Payment[] = [
-  {
-    id: 'pay-001', gymId: 'gym-1', memberId: 'mem-1',
-    memberName: 'Alex Johnson', memberCode: 'KGM-1042', memberPhone: '+1 555-123-4567',
-    planId: 'plan-2', planName: 'Pro Quarterly',
-    amount: 99, discount: 0, finalAmount: 99,
-    paymentMethod: 'upi', paymentStatus: 'paid',
-    transactionReference: 'UPI-20240601-ABC123',
-    paymentDate: '2024-06-01', membershipStartDate: '2024-06-01', membershipEndDate: '2024-09-01',
-    createdBy: 'Owner', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'pay-002', gymId: 'gym-1', memberId: 'mem-2',
-    memberName: 'Sara Williams', memberCode: 'KGM-1043', memberPhone: '+1 555-987-6543',
-    planId: 'plan-3', planName: 'Elite Annual',
-    amount: 349, discount: 50, finalAmount: 299,
-    paymentMethod: 'card', paymentStatus: 'paid',
-    transactionReference: 'TXN-20240601-XYZ789',
-    paymentDate: '2024-06-01', membershipStartDate: '2024-06-01', membershipEndDate: '2025-06-01',
-    createdBy: 'Owner', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'pay-003', gymId: 'gym-1', memberId: 'mem-3',
-    memberName: 'Marcus Chen', memberCode: 'KGM-1044', memberPhone: '+1 555-246-8101',
-    planId: 'plan-1', planName: 'Starter Monthly',
-    amount: 39, discount: 0, finalAmount: 39,
-    paymentMethod: 'cash', paymentStatus: 'pending',
-    paymentDate: '2024-06-10', membershipStartDate: '2024-06-10', membershipEndDate: '2024-07-10',
-    createdBy: 'Owner', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(), updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'pay-004', gymId: 'gym-1', memberId: 'mem-4',
-    memberName: 'Priya Sharma', memberCode: 'KGM-1045', memberPhone: '+91 98765-43210',
-    planId: 'plan-2', planName: 'Pro Quarterly',
-    amount: 99, discount: 10, finalAmount: 89,
-    paymentMethod: 'upi', paymentStatus: 'paid',
-    transactionReference: 'UPI-20240505-DEF456',
-    paymentDate: '2024-05-05', membershipStartDate: '2024-05-05', membershipEndDate: '2024-08-05',
-    notes: 'Renewed early — gave loyalty discount.',
-    createdBy: 'Owner', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 40).toISOString(), updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'pay-005', gymId: 'gym-1', memberId: 'mem-5',
-    memberName: 'Jake Thompson', memberCode: 'KGM-1046', memberPhone: '+1 555-369-2580',
-    planId: 'plan-1', planName: 'Starter Monthly',
-    amount: 39, discount: 0, finalAmount: 39,
-    paymentMethod: 'bank_transfer', paymentStatus: 'failed',
-    transactionReference: 'BNK-20240612-GHI012',
-    paymentDate: '2024-06-12', membershipStartDate: '2024-06-12', membershipEndDate: '2024-07-12',
-    createdBy: 'Owner', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'pay-006', gymId: 'gym-1', memberId: 'mem-6',
-    memberName: 'Nadia Patel', memberCode: 'KGM-1047',
-    planId: 'plan-3', planName: 'Elite Annual',
-    amount: 349, discount: 0, finalAmount: 349,
-    paymentMethod: 'card', paymentStatus: 'refunded',
-    transactionReference: 'TXN-20240401-REF111',
-    paymentDate: '2024-04-01', membershipStartDate: '2024-04-01', membershipEndDate: '2025-04-01',
-    notes: 'Refund requested due to medical leave.',
-    createdBy: 'Owner', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 70).toISOString(), updatedAt: new Date().toISOString(),
-  },
-];
-
-const MOCK_DUES: DueEntry[] = [
-  { memberId: 'mem-7', memberName: 'Ryan Foster', memberCode: 'KGM-1048', phone: '+1 555-111-2222', planName: 'Starter Monthly', membershipEndDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString().split('T')[0], daysUntilDue: -3, category: 'overdue' },
-  { memberId: 'mem-8', memberName: 'Lena Kim', memberCode: 'KGM-1049', phone: '+82 10-1234-5678', planName: 'Pro Quarterly', membershipEndDate: new Date().toISOString().split('T')[0], daysUntilDue: 0, category: 'today' },
-  { memberId: 'mem-9', memberName: 'Diego Reyes', memberCode: 'KGM-1050', phone: '+1 555-333-4444', planName: 'Elite Annual', membershipEndDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString().split('T')[0], daysUntilDue: 2, category: 'in_3_days' },
-  { memberId: 'mem-10', memberName: 'Aisha Okafor', memberCode: 'KGM-1051', phone: '+234 802-345-6789', planName: 'Starter Monthly', membershipEndDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6).toISOString().split('T')[0], daysUntilDue: 6, category: 'in_7_days' },
-];
+import { apiClient } from '@/lib/apiClient';
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -112,9 +41,40 @@ export function usePayments(params: UsePaymentsParams = {}) {
   return useQuery({
     queryKey: paymentKeys.list(selectedGymId ?? '', { search, filters, sortField, sortDir, page }),
     queryFn: async (): Promise<{ data: PaymentListItem[]; total: number }> => {
-      await new Promise((r) => setTimeout(r, 450));
+      const response = await apiClient.get('/payments', {
+        params: {
+          page,
+          limit: pageSize,
+          status: filters.status?.[0] || undefined,
+          paymentMethod: filters.method?.[0] || undefined,
+        }
+      });
+      const rawPayments = response.data.data;
+      const meta = response.data.meta;
 
-      let results = MOCK_PAYMENTS.filter((p) => p.gymId === (selectedGymId ?? 'gym-1'));
+      let results: PaymentListItem[] = await Promise.all(rawPayments.map(async (p: any) => {
+        let planName = "Gym Membership";
+        if (p.subscriptionId?.membershipPlanId) {
+          try {
+            const planRes = await apiClient.get(`/membership-plans/${p.subscriptionId.membershipPlanId}`);
+            planName = planRes.data.data?.name || "Gym Membership";
+          } catch {
+            // fallback
+          }
+        }
+        return {
+          id: p._id,
+          memberId: p.memberId?._id || "",
+          memberName: p.memberId?.fullName || "Unknown Member",
+          memberCode: p.memberId?.memberCode || "N/A",
+          planName,
+          finalAmount: p.amount,
+          paymentMethod: p.paymentMethod === 'bankTransfer' ? 'bank_transfer' : p.paymentMethod,
+          paymentStatus: p.status === 'completed' ? 'paid' : p.status,
+          paymentDate: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
+          transactionReference: p.transactionId || "",
+        };
+      }));
 
       if (search) {
         const q = search.toLowerCase();
@@ -122,44 +82,16 @@ export function usePayments(params: UsePaymentsParams = {}) {
           (p) =>
             p.memberName.toLowerCase().includes(q) ||
             p.memberCode.toLowerCase().includes(q) ||
-            p.memberPhone?.includes(q) ||
-            p.transactionReference?.toLowerCase().includes(q),
+            p.transactionReference?.toLowerCase().includes(q)
         );
       }
-      if (filters.status?.length) {
-        results = results.filter((p) => filters.status!.includes(p.paymentStatus));
-      }
-      if (filters.method?.length) {
-        results = results.filter((p) => filters.method!.includes(p.paymentMethod));
-      }
-      if (filters.dateFrom) {
-        results = results.filter((p) => p.paymentDate >= filters.dateFrom!);
-      }
-      if (filters.dateTo) {
-        results = results.filter((p) => p.paymentDate <= filters.dateTo!);
-      }
-
-      results.sort((a, b) => {
-        let aVal: string | number = a.paymentDate;
-        let bVal: string | number = b.paymentDate;
-        if (sortField === 'finalAmount') { aVal = a.finalAmount; bVal = b.finalAmount; }
-        if (sortField === 'memberName') { aVal = a.memberName; bVal = b.memberName; }
-        if (sortField === 'createdAt') { aVal = a.createdAt; bVal = b.createdAt; }
-        const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-        return sortDir === 'asc' ? cmp : -cmp;
-      });
-
-      const listItems: PaymentListItem[] = results.map((p) => ({
-        id: p.id, memberId: p.memberId, memberName: p.memberName, memberCode: p.memberCode,
-        planName: p.planName, finalAmount: p.finalAmount, paymentMethod: p.paymentMethod,
-        paymentStatus: p.paymentStatus, paymentDate: p.paymentDate, transactionReference: p.transactionReference,
-      }));
 
       return {
-        data: listItems.slice((page - 1) * pageSize, page * pageSize),
-        total: listItems.length,
+        data: results,
+        total: meta.total,
       };
     },
+    enabled: !!selectedGymId,
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -171,12 +103,32 @@ export function usePayment(paymentId: string) {
   return useQuery<Payment>({
     queryKey: paymentKeys.detail(selectedGymId ?? '', paymentId),
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 350));
-      const p = MOCK_PAYMENTS.find((p) => p.id === paymentId);
-      if (!p) throw new Error('Payment not found');
-      return p;
+      const response = await apiClient.get(`/payments/${paymentId}`);
+      const p = response.data.data;
+      return {
+        id: p._id,
+        gymId: p.gymId,
+        memberId: p.memberId?._id || "",
+        memberName: p.memberId?.fullName || "Unknown Member",
+        memberCode: p.memberId?.memberCode || "N/A",
+        memberPhone: "",
+        planId: p.subscriptionId?.membershipPlanId || "",
+        planName: "Gym Membership",
+        amount: p.amount,
+        discount: 0,
+        finalAmount: p.amount,
+        paymentMethod: p.paymentMethod === 'bankTransfer' ? 'bank_transfer' : p.paymentMethod,
+        paymentStatus: p.status === 'completed' ? 'paid' : p.status,
+        transactionReference: p.transactionId || "",
+        paymentDate: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
+        membershipStartDate: p.subscriptionId?.startDate ? new Date(p.subscriptionId.startDate).toISOString().split('T')[0] : "",
+        membershipEndDate: p.subscriptionId?.endDate ? new Date(p.subscriptionId.endDate).toISOString().split('T')[0] : "",
+        createdBy: "Staff",
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      };
     },
-    enabled: !!paymentId,
+    enabled: !!selectedGymId && !!paymentId,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -188,10 +140,29 @@ export function useMemberPayments(memberId: string) {
   return useQuery<Payment[]>({
     queryKey: paymentKeys.memberHistory(selectedGymId ?? '', memberId),
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 350));
-      return MOCK_PAYMENTS.filter((p) => p.memberId === memberId);
+      const response = await apiClient.get('/payments', {
+        params: { memberId, limit: 100 }
+      });
+      const rawPayments = response.data.data;
+      return rawPayments.map((p: any) => ({
+        id: p._id,
+        gymId: p.gymId,
+        memberId: p.memberId?._id || "",
+        memberName: p.memberId?.fullName || "",
+        memberCode: p.memberId?.memberCode || "",
+        planName: "Gym Membership",
+        amount: p.amount,
+        discount: 0,
+        finalAmount: p.amount,
+        paymentMethod: p.paymentMethod === 'bankTransfer' ? 'bank_transfer' : p.paymentMethod,
+        paymentStatus: p.status === 'completed' ? 'paid' : p.status,
+        transactionReference: p.transactionId || "",
+        paymentDate: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      }));
     },
-    enabled: !!memberId,
+    enabled: !!selectedGymId && !!memberId,
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -203,9 +174,52 @@ export function usePaymentDues() {
   return useQuery<DueEntry[]>({
     queryKey: paymentKeys.dues(selectedGymId ?? ''),
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 300));
-      return MOCK_DUES;
+      const response = await apiClient.get('/dashboard/due-tracking');
+      const d = response.data.data;
+      const list: DueEntry[] = [];
+      
+      d.dueToday?.forEach((m: any) => {
+        list.push({
+          memberId: m.memberId?._id || m._id,
+          memberName: m.memberId?.fullName || "Member",
+          memberCode: m.memberId?.memberCode || "N/A",
+          phone: m.memberId?.phone || "",
+          planName: "Gym Member",
+          membershipEndDate: m.endDate ? new Date(m.endDate).toISOString().split('T')[0] : "",
+          daysUntilDue: 0,
+          category: 'today'
+        });
+      });
+      
+      d.dueIn3Days?.forEach((m: any) => {
+        list.push({
+          memberId: m.memberId?._id || m._id,
+          memberName: m.memberId?.fullName || "Member",
+          memberCode: m.memberId?.memberCode || "N/A",
+          phone: m.memberId?.phone || "",
+          planName: "Gym Member",
+          membershipEndDate: m.endDate ? new Date(m.endDate).toISOString().split('T')[0] : "",
+          daysUntilDue: 3,
+          category: 'in_3_days'
+        });
+      });
+
+      d.dueIn7Days?.forEach((m: any) => {
+        list.push({
+          memberId: m.memberId?._id || m._id,
+          memberName: m.memberId?.fullName || "Member",
+          memberCode: m.memberId?.memberCode || "N/A",
+          phone: m.memberId?.phone || "",
+          planName: "Gym Member",
+          membershipEndDate: m.endDate ? new Date(m.endDate).toISOString().split('T')[0] : "",
+          daysUntilDue: 7,
+          category: 'in_7_days'
+        });
+      });
+
+      return list;
     },
+    enabled: !!selectedGymId,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -217,22 +231,30 @@ export function useCollectPayment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CollectPaymentData): Promise<Payment> => {
-      // await apiClient.post('/payments', { ...data, gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 1000));
-      return {
-        ...data,
-        id: `pay-${Date.now()}`,
-        gymId: selectedGymId ?? '',
-        memberCode: data.memberCode,
-        memberPhone: undefined,
-        createdBy: 'Owner',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+    mutationFn: async (data: CollectPaymentData): Promise<any> => {
+      let subscriptionId: string | undefined = undefined;
+      try {
+        const subRes = await apiClient.get('/member-subscriptions', {
+          params: { memberId: data.memberId, status: 'active', limit: 1 }
+        });
+        subscriptionId = subRes.data.data?.[0]?._id;
+      } catch {
+        // fallback
+      }
+
+      const response = await apiClient.post('/payments', {
+        memberId: data.memberId,
+        subscriptionId,
+        amount: data.amount,
+        paymentMethod: data.paymentMethod === 'bank_transfer' ? 'bankTransfer' : data.paymentMethod,
+        transactionId: data.transactionReference || undefined,
+        notes: data.notes || undefined,
+      });
+      return response.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.all(selectedGymId ?? '') });
+      queryClient.invalidateQueries({ queryKey: ["member-summary", selectedGymId] });
     },
   });
 }
@@ -243,12 +265,22 @@ export function useUpdatePaymentStatus() {
 
   return useMutation({
     mutationFn: async ({ paymentId, status }: { paymentId: string; status: PaymentStatus }) => {
-      await new Promise((r) => setTimeout(r, 500));
-      return { paymentId, status };
+      if (status === 'refunded') {
+        const response = await apiClient.post(`/payments/${paymentId}/refund`, {
+          notes: "Refunded via dashboard status update"
+        });
+        return response.data.data;
+      } else {
+        const response = await apiClient.patch(`/payments/${paymentId}`, {
+          status: status === 'paid' ? 'completed' : status,
+        });
+        return response.data.data;
+      }
     },
     onSuccess: (_data, { paymentId }) => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.all(selectedGymId ?? '') });
       queryClient.invalidateQueries({ queryKey: paymentKeys.detail(selectedGymId ?? '', paymentId) });
+      queryClient.invalidateQueries({ queryKey: ["member-summary", selectedGymId] });
     },
   });
 }

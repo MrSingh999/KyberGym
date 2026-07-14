@@ -6,6 +6,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button, LoadingButton } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/apiClient";
+import { toast } from "sonner";
 import {
   createMemberStep1Schema, CreateMemberStep1Data,
   createMemberStep2Schema, CreateMemberStep2Data,
@@ -39,37 +41,28 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
   const step2Form = useForm<CreateMemberStep2Data>({ resolver: zodResolver(createMemberStep2Schema), defaultValues: { planId: "", membershipStartDate: "", membershipEndDate: "" } });
   const step3Form = useForm<CreateMemberStep3Data>({ resolver: zodResolver(createMemberStep3Schema) });
 
-  // Draft Recovery: Load saved draft on mount
+  // Load draft on mount
   useEffect(() => {
-    const draft = localStorage.getItem("kybergym_member_draft");
-    if (draft) {
+    const saved = localStorage.getItem("kybergym_member_draft");
+    if (saved) {
       try {
-        const parsed = JSON.parse(draft);
-        if (parsed.step1) {
-          setStep1Data(parsed.step1);
-          step1Form.reset(parsed.step1);
-        }
-        if (parsed.step2) {
-          setStep2Data(parsed.step2);
-          step2Form.reset(parsed.step2);
-        }
-        if (parsed.step3) {
-          setStep3Data(parsed.step3);
-          step3Form.reset(parsed.step3);
-        }
-        if (parsed.currentStep) {
-          setCurrentStep(parsed.currentStep);
-        }
-      } catch (e) {
-        // invalid draft
-      }
+        const { step1, step2, step3, step } = JSON.parse(saved);
+        if (step1) { setStep1Data(step1); step1Form.reset(step1); }
+        if (step2) { setStep2Data(step2); step2Form.reset(step2); }
+        if (step3) { setStep3Data(step3); step3Form.reset(step3); }
+        if (step) setCurrentStep(step);
+      } catch {}
     }
-  }, []);
+  }, [step1Form, step2Form, step3Form]);
 
-  // Autosave: Save to localStorage whenever data changes
+  // Auto-save draft on data changes
   useEffect(() => {
-    const draft = { step1: step1Data, step2: step2Data, step3: step3Data, currentStep };
-    localStorage.setItem("kybergym_member_draft", JSON.stringify(draft));
+    if (currentStep > 1) {
+      localStorage.setItem(
+        "kybergym_member_draft",
+        JSON.stringify({ step1: step1Data, step2: step2Data, step3: step3Data, step: currentStep })
+      );
+    }
   }, [step1Data, step2Data, step3Data, currentStep]);
 
   const handleStep1Submit = (data: CreateMemberStep1Data) => {
@@ -87,14 +80,38 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Merge all step data and submit
-      // const fullData = { ...step1Data, ...step2Data, ...step3Data };
-      // await apiClient.post('/members', { ...fullData, gymId: selectedGymId });
-      await new Promise((r) => setTimeout(r, 1200));
+      // 1. Create the Member
+      const memberRes = await apiClient.post('/members', {
+        fullName: step1Data.name,
+        email: step1Data.email || undefined,
+        phone: step1Data.phone || undefined,
+        gender: step1Data.gender || 'male',
+        dateOfBirth: step1Data.dateOfBirth || undefined,
+        address: step1Data.address || undefined,
+        emergencyContact: {
+          name: step3Data.emergencyContactName || undefined,
+          phone: step3Data.emergencyContactPhone || undefined,
+        }
+      });
+      const createdMember = memberRes.data.data;
+      const memberId = createdMember._id;
+
+      // 2. Create subscription if a plan was selected
+      if (step2Data.planId) {
+        await apiClient.post('/member-subscriptions', {
+          memberId,
+          membershipPlanId: step2Data.planId,
+          startDate: step2Data.membershipStartDate ? new Date(step2Data.membershipStartDate).toISOString() : new Date().toISOString(),
+        });
+      }
+
       // Clear draft on success
       localStorage.removeItem("kybergym_member_draft");
+      toast.success("Member registered successfully!");
       onSuccess();
-    } catch {
+    } catch (error: any) {
+      const errMsg = error.response?.data?.message || "Failed to register member. Please check details and try again.";
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }

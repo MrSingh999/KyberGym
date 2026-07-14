@@ -1,12 +1,56 @@
-import { Bell } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { Bell, ExternalLink } from "lucide-react";
 import { useNotificationStore } from "../../store/notification.store";
+import { useNotifications, useMarkAsRead, useUnreadCount } from "../../features/notifications/hooks/useNotifications";
+import { NotificationsList } from "../../features/notifications/components/NotificationsList";
+import { useAuthStore } from "../../store/auth.store";
 
 export function NotificationCenter() {
-  const { isOpen: open, setOpen, unreadCount, markAllAsRead } = useNotificationStore();
+  const { unreadCount } = useNotificationStore();
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  useUnreadCount();
+
+  const { data, isLoading } = useNotifications({
+    page: 1,
+    limit: 5,
+    read: false,
+  });
+  const { mutate: markAsRead } = useMarkAsRead();
+
+  const notifications = data?.data ?? [];
+
+  const handleMarkRead = (id: string) => {
+    markAsRead(id);
+  };
+
+  const handleViewAll = () => {
+    setOpen(false);
+    if (user?.role === "owner") {
+      navigate("/admin/notifications");
+    } else {
+      navigate("/member/notifications");
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-notification-center]")) {
+        setOpen(false);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", handler), 0);
+    return () => document.removeEventListener("click", handler);
+  }, [open]);
 
   return (
-    <div className="relative">
-      <button 
+    <div data-notification-center className="relative">
+      <button
         onClick={() => setOpen(!open)}
         className="relative p-2 rounded-full hover:bg-surface-hover transition-colors text-muted hover:text-primary outline-none"
       >
@@ -17,39 +61,35 @@ export function NotificationCenter() {
       </button>
 
       {open && (
-        <>
-          <div className="absolute right-0 mt-2 w-80 bg-elevated border border-default rounded-xl shadow-elevated overflow-hidden z-50 animate-fade-slide-up">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-subtle">
-              <h3 className="font-semibold text-small text-primary">Notifications</h3>
-              <button 
-                onClick={markAllAsRead}
-                className="text-xs text-primary hover:underline font-medium"
-              >
-                Mark all read
-              </button>
-            </div>
-            
-            <div className="max-h-[300px] overflow-y-auto">
-              {unreadCount > 0 ? (
-                <div className="p-2 space-y-1">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="p-3 rounded-lg hover:bg-surface-hover cursor-pointer transition-colors border border-transparent hover:border-subtle">
-                      <p className="text-small font-medium text-primary">New Payment Received</p>
-                      <p className="text-caption text-muted mt-0.5">John Doe paid $50 for Monthly Plan.</p>
-                      <p className="text-tiny text-muted mt-2">2 hours ago</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-8 text-center text-muted">
-                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                  <p className="text-sm">You're all caught up!</p>
-                </div>
+        <div className="absolute right-0 mt-2 w-80 bg-elevated border border-default rounded-xl shadow-elevated overflow-hidden z-50 animate-fade-slide-up">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-subtle">
+            <h3 className="font-semibold text-small text-primary">
+              Notifications
+              {unreadCount > 0 && (
+                <span className="ml-1.5 text-xs text-muted">({unreadCount})</span>
               )}
-            </div>
+            </h3>
           </div>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-        </>
+
+          <div className="max-h-[360px] overflow-y-auto custom-scrollbar">
+            <NotificationsList
+              notifications={notifications}
+              isLoading={isLoading}
+              onMarkRead={handleMarkRead}
+              compact
+            />
+          </div>
+
+          <div className="border-t border-subtle p-2">
+            <button
+              onClick={handleViewAll}
+              className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-primary hover:bg-surface-hover rounded-lg transition-colors font-medium"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              View All Notifications
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
