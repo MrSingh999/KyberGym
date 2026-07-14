@@ -3,6 +3,7 @@ import { cn } from "../../lib/utils";
 import { useSidebarStore } from "../../store/sidebar.store";
 import { NavGroup } from "../../constants/navigation";
 import { ChevronLeft, ChevronRight, X, Dumbbell } from "lucide-react";
+import { Sheet, SheetContent } from "../ui/sheet";
 
 interface SidebarProps {
   groups: NavGroup[];
@@ -87,32 +88,25 @@ export function Sidebar({ groups, role }: SidebarProps) {
         {renderNavItems(groups)}
       </aside>
 
-      {/* Mobile Drawer Overlay */}
-      {mobileDrawerOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setMobileDrawerOpen(false)}
-        />
-      )}
-
       {/* Mobile Drawer */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 w-[240px] bg-canvas border-r border-border-default z-50 lg:hidden flex flex-col transform transition-transform duration-300",
-          mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        <div className="h-14 flex items-center justify-between border-b border-border-default px-4">
-          <div className="font-bold text-sm tracking-tight text-text-primary flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 shrink-0" />
-            {brandName}
+      <Sheet open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
+        <SheetContent
+          side="left"
+          className="w-[240px] p-0 bg-canvas border-r border-border-default flex flex-col gap-0"
+          showCloseButton={false}
+        >
+          <div className="h-14 flex items-center justify-between border-b border-border-default px-4">
+            <div className="font-bold text-sm tracking-tight text-text-primary flex items-center gap-2">
+              <Dumbbell className="w-4 h-4 shrink-0" />
+              {brandName}
+            </div>
+            <button onClick={() => setMobileDrawerOpen(false)} className="p-2 text-text-muted hover:text-text-primary">
+              <X className="w-4" />
+            </button>
           </div>
-          <button onClick={() => setMobileDrawerOpen(false)} className="p-2 text-text-muted hover:text-text-primary">
-            <X className="w-4" />
-          </button>
-        </div>
-        {renderNavItems(groups)}
-      </aside>
+          {renderNavItems(groups)}
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

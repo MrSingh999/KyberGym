@@ -52,7 +52,7 @@ export function NotificationCenter() {
     <div data-notification-center className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-full hover:bg-surface-hover transition-colors text-muted hover:text-primary outline-none"
+        className="relative p-2 rounded-full hover:bg-surface-hover transition-colors text-text-muted hover:text-text-primary outline-none"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -61,12 +61,12 @@ export function NotificationCenter() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-elevated border border-default rounded-xl shadow-elevated overflow-hidden z-50 animate-fade-slide-up">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-subtle">
-            <h3 className="font-semibold text-small text-primary">
+        <div className="fixed sm:absolute right-4 sm:right-0 left-4 sm:left-auto mt-2 w-auto sm:w-80 bg-elevated border border-border-default rounded-xl shadow-elevated overflow-hidden z-50 animate-fade-slide-up">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
+            <h3 className="font-semibold text-small text-text-primary">
               Notifications
               {unreadCount > 0 && (
-                <span className="ml-1.5 text-xs text-muted">({unreadCount})</span>
+                <span className="ml-1.5 text-xs text-text-muted">({unreadCount})</span>
               )}
             </h3>
           </div>
@@ -80,10 +80,10 @@ export function NotificationCenter() {
             />
           </div>
 
-          <div className="border-t border-subtle p-2">
+          <div className="border-t border-border-subtle p-2">
             <button
               onClick={handleViewAll}
-              className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-primary hover:bg-surface-hover rounded-lg transition-colors font-medium"
+              className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-text-primary hover:bg-surface-hover rounded-lg transition-colors font-medium"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               View All Notifications

@@ -8,7 +8,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "@/components/ui/select";
 
 interface MembersToolbarProps {
   sorting: SortingState;
@@ -19,15 +19,15 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
   const { searchQuery, setSearchQuery, filters, setFilters } = useMemberDirectoryStore();
 
   const currentStatus = filters.status[0] || "all";
-  const currentPlan = filters.plan[0] || "all";
+  const currentDueStatus = filters.dueStatus || "all";
   const sortOption = sorting[0]?.id === "joiningDate" ? (sorting[0]?.desc ? "joining-desc" : "joining-asc") : "joining-desc";
 
   const handleStatusChange = (val: string) => {
     setFilters({ status: val === "all" ? [] : [val] });
   };
 
-  const handlePlanChange = (val: string) => {
-    setFilters({ plan: val === "all" ? [] : [val] });
+  const handleDueStatusChange = (val: string) => {
+    setFilters({ dueStatus: val === "all" ? "" : val });
   };
 
   const handleSortChange = (val: string) => {
@@ -36,7 +36,7 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
     ]);
   };
 
-  const selectTriggerClass = "w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-2.5 h-auto text-sm text-text-primary cursor-pointer hover:border-border-hover transition-all duration-200 font-mono";
+  const selectTriggerClass = "w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-3 h-auto min-h-[44px] text-sm text-text-primary cursor-pointer hover:border-border-hover transition-all duration-200 font-mono";
 
   return (
     <div className="glass-panel p-4 md:p-5 rounded-[16px] animate-fade-slide-up mb-6">
@@ -50,11 +50,11 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
           <div className="relative">
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-text-muted" />
             <input
-              type="text"
-              placeholder="Name or phone..."
+              type="search"
+              placeholder="Name, phone, or code..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-border-hover transition-all duration-200 font-mono"
+              className="w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-3 min-h-[44px] text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-border-hover transition-all duration-200 font-mono"
             />
           </div>
         </div>
@@ -73,28 +73,30 @@ export function MembersToolbar({ sorting, onSortingChange }: MembersToolbarProps
               <SelectContent className="bg-surface border border-border-hover rounded-[6px] shadow-2xl">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="Expiring Soon">Due Soon</SelectItem>
-                <SelectItem value="Expired">Overdue</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* Plan Filter */}
+        {/* Due Status Filter */}
         <div className="space-y-1.5">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider pl-0.5 font-mono">
-            Membership Plan
+            Due Schedule
           </label>
           <div className="relative">
             <SlidersHorizontal className="absolute left-3.5 top-3 h-4 w-4 text-text-muted z-10 pointer-events-none" />
-            <Select value={currentPlan} onValueChange={handlePlanChange}>
+            <Select value={currentDueStatus} onValueChange={handleDueStatusChange}>
               <SelectTrigger className={selectTriggerClass}>
-                <SelectValue placeholder="All Plans" />
+                <SelectValue placeholder="All Timeline" />
               </SelectTrigger>
               <SelectContent className="bg-surface border border-border-hover rounded-[6px] shadow-2xl">
-                <SelectItem value="all">All Plans</SelectItem>
-                <SelectItem value="Pro Monthly">Pro Monthly</SelectItem>
-                <SelectItem value="Elite Annual">Elite Annual</SelectItem>
+                <SelectItem value="all">All Timeline</SelectItem>
+                <SelectItem value="today">Due Today</SelectItem>
+                <SelectItem value="3days">Due in 3 Days</SelectItem>
+                <SelectItem value="7days">Due in 7 Days</SelectItem>
               </SelectContent>
             </Select>
           </div>

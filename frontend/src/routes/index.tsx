@@ -25,6 +25,10 @@ import { EditWorkoutPage } from "../features/workouts/pages/EditWorkoutPage";
 import { NotificationsPage } from "../features/notifications/pages/NotificationsPage";
 import { QrEntryPage } from "../features/qr-entry/pages/QrEntryPage";
 import { BrandingPage } from "../features/branding/pages/BrandingPage";
+import { AttendancePage } from "../features/attendance/pages/AttendancePage";
+import { AttendanceDashboardPage } from "../features/attendance/pages/AttendanceDashboardPage";
+import { MemberAttendancePage } from "../features/attendance/pages/MemberAttendancePage";
+import { MyAttendancePage } from "../features/attendance/pages/MyAttendancePage";
 import { MemberDashboardPage } from "../features/members/pages/MemberDashboardPage";
 import { MemberWorkoutPlanPage } from "../features/workouts/pages/MemberWorkoutPlanPage";
 import { SuperAdminDashboardPage } from "../features/super-admin/pages/SuperAdminDashboardPage";
@@ -45,7 +49,7 @@ import { useAuthStore } from "../store/auth.store";
 
 const DummyComponent = ({ title }: { title: string }) => (
   <div className="flex h-full flex-col animate-fade-slide-up">
-    <h1 className="text-h2 font-heading font-bold text-primary mb-6">{title}</h1>
+    <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight mb-6">{title}</h1>
     <EmptyState
       title={`No ${title.split(' ').pop()} Found`}
       description="This module is currently under development. Press Cmd+K to search across the platform."
@@ -123,6 +127,9 @@ export const router = createBrowserRouter([
           { path: "workouts/:workoutId", element: <WorkoutDetailPage /> },
           { path: "workouts/:workoutId/edit", element: <EditWorkoutPage /> },
           { path: "notifications", element: <NotificationsPage /> },
+          { path: "attendance", element: <AttendancePage /> },
+          { path: "attendance/dashboard", element: <AttendanceDashboardPage /> },
+          { path: "attendance/members/:memberId", element: <MemberAttendancePage /> },
           { path: "exercises", element: <DummyComponent title="Manage Exercises" /> },
           { path: "qr", element: <QrEntryPage /> },
           { path: "reports", element: <DummyComponent title="Reports" /> },
@@ -149,7 +156,7 @@ export const router = createBrowserRouter([
           { path: "workouts", element: <MemberWorkoutPlanPage /> },
           { path: "qr", element: <DummyComponent title="QR Pass" /> },
           { path: "payments", element: <DummyComponent title="Payment History" /> },
-          { path: "attendance", element: <DummyComponent title="Attendance" /> },
+          { path: "attendance", element: <MyAttendancePage /> },
           { path: "notifications", element: <NotificationsPage /> },
           { path: "settings", element: <DummyComponent title="Settings" /> },
         ],

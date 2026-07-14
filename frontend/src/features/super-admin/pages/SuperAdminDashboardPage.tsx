@@ -24,12 +24,12 @@ function StatCard({ label, value, icon, color, isLoading }: {
 }) {
   const Icon = icon;
   return (
-    <div className="rounded-xl border border-default bg-surface p-5 hover:border-border-hover transition-all duration-200 card-hover">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="rounded-xl border border-border-default bg-surface p-4 sm:p-5 hover:border-border-hover transition-all duration-200 card-hover">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", color)}>
           <Icon className="w-4 h-4" />
         </div>
-        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wide font-mono leading-none">
+        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wide font-mono leading-tight sm:leading-none">
           {label}
         </span>
       </div>
@@ -67,12 +67,12 @@ export function SuperAdminDashboardPage() {
 
   const statCards = [
     { label: "Total Gyms", value: stats?.totalGyms ?? 0, icon: Building2, color: "bg-primary/10 text-primary" },
-    { label: "Active Gyms", value: stats?.activeGyms ?? 0, icon: Activity, color: "bg-emerald-500/10 text-emerald-600" },
-    { label: "Trial Gyms", value: stats?.trialGyms ?? 0, icon: Clock, color: "bg-amber-500/10 text-amber-600" },
-    { label: "Suspended", value: stats?.suspendedGyms ?? 0, icon: AlertTriangle, color: "bg-red-500/10 text-red-600" },
-    { label: "Total Members", value: stats?.totalMembers ?? 0, icon: Users, color: "bg-purple-500/10 text-purple-600" },
-    { label: "Active Subs", value: stats?.activeSubscriptions ?? 0, icon: CreditCard, color: "bg-cyan-500/10 text-cyan-600" },
-    { label: "Expired Subs", value: stats?.expiredSubscriptions ?? 0, icon: CreditCard, color: "bg-zinc-500/10 text-zinc-600" },
+    { label: "Active Gyms", value: stats?.activeGyms ?? 0, icon: Activity, color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+    { label: "Trial Gyms", value: stats?.trialGyms ?? 0, icon: Clock, color: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+    { label: "Suspended", value: stats?.suspendedGyms ?? 0, icon: AlertTriangle, color: "bg-red-500/10 text-red-600 dark:text-red-400" },
+    { label: "Total Members", value: stats?.totalMembers ?? 0, icon: Users, color: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
+    { label: "Active Subs", value: stats?.activeSubscriptions ?? 0, icon: CreditCard, color: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" },
+    { label: "Expired Subs", value: stats?.expiredSubscriptions ?? 0, icon: CreditCard, color: "bg-zinc-500/10 dark:bg-zinc-500/15 text-zinc-600 dark:text-zinc-400" },
   ];
 
   const quickActions = [
@@ -82,7 +82,7 @@ export function SuperAdminDashboardPage() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
+    <div className="flex-1 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -96,7 +96,7 @@ export function SuperAdminDashboardPage() {
         </div>
         <Button
           onClick={() => navigate("/super-admin/gyms")}
-          className="bg-primary text-primary-foreground px-4 py-2 rounded-[6px] font-semibold text-xs flex items-center gap-2 cursor-pointer"
+          className="w-full sm:w-auto bg-primary text-primary-foreground px-4 py-2 rounded-[6px] font-semibold text-xs flex items-center gap-2 cursor-pointer"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Create Gym</span>
@@ -115,7 +115,7 @@ export function SuperAdminDashboardPage() {
       ) : (
         <>
           {/* Stat Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-8">
             {statCards.map((card) => (
               <StatCard key={card.label} {...card} isLoading={isLoading} />
             ))}
@@ -126,7 +126,7 @@ export function SuperAdminDashboardPage() {
             <h2 className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-3 font-mono">
               Quick Actions
             </h2>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2.5">
               {quickActions.map((action) => (
                 <button
                   key={action.label}
@@ -195,9 +195,9 @@ export function SuperAdminDashboardPage() {
                       <div
                         key={gym.id}
                         onClick={() => navigate(`/super-admin/gyms/${gym.id}`)}
-                        className="flex items-center justify-between p-3 rounded-xl border border-border-default hover:border-border-hover hover:bg-surface-hover/50 hover:shadow-sm transition-all duration-150 cursor-pointer group press-effect"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-border-default hover:border-border-hover hover:bg-surface-hover/50 hover:shadow-sm transition-all duration-150 cursor-pointer group press-effect gap-3"
                       >
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="flex items-center gap-3 min-w-0 flex-1 w-full">
                           <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 transition-transform duration-150 group-hover:scale-105">
                             <Building2 className="w-4 h-4" />
                           </div>
@@ -210,7 +210,7 @@ export function SuperAdminDashboardPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto sm:justify-end">
                           <Badge
                             variant={gym.isActive ? "success" : "secondary"}
                             className="text-[10px] px-2 py-0.5"
@@ -258,11 +258,11 @@ export function SuperAdminDashboardPage() {
                 ) : (
                   <div className="divide-y divide-border-default/50">
                     <SummaryRow label="Total Gyms" value={stats.totalGyms} color="text-text-primary" />
-                    <SummaryRow label="Active" value={stats.activeGyms} color="text-emerald-600" />
-                    <SummaryRow label="Trial" value={stats.trialGyms} color="text-amber-600" />
-                    <SummaryRow label="Suspended" value={stats.suspendedGyms} color="text-red-600" />
-                    <SummaryRow label="Total Members" value={stats.totalMembers} color="text-purple-600" />
-                    <SummaryRow label="Active Subscriptions" value={stats.activeSubscriptions} color="text-cyan-600" />
+                    <SummaryRow label="Active" value={stats.activeGyms} color="text-emerald-600 dark:text-emerald-400" />
+                    <SummaryRow label="Trial" value={stats.trialGyms} color="text-amber-600 dark:text-amber-400" />
+                    <SummaryRow label="Suspended" value={stats.suspendedGyms} color="text-red-600 dark:text-red-400" />
+                    <SummaryRow label="Total Members" value={stats.totalMembers} color="text-purple-600 dark:text-purple-400" />
+                    <SummaryRow label="Active Subscriptions" value={stats.activeSubscriptions} color="text-cyan-600 dark:text-cyan-400" />
                     <SummaryRow label="Expired Subscriptions" value={stats.expiredSubscriptions} color="text-text-muted" />
                   </div>
                 )}

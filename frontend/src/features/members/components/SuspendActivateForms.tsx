@@ -46,7 +46,7 @@ export function SuspendMemberForm({ memberId, memberName, onSuccess, onCancel }:
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 animate-fade-slide-up">
           <FormField
             control={form.control}
             name="reason"
@@ -61,8 +61,8 @@ export function SuspendMemberForm({ memberId, memberName, onSuccess, onCancel }:
             )}
           />
           <div className="flex gap-3">
-            <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>Cancel</Button>
-            <LoadingButton type="submit" variant="destructive" className="flex-1" isLoading={isPending} loadingText="Suspending...">
+            <Button type="button" variant="outline" className="flex-1 min-h-[44px]" onClick={onCancel}>Cancel</Button>
+            <LoadingButton type="submit" variant="destructive" className="flex-1 min-h-[44px]" isLoading={isPending} loadingText="Suspending...">
               Suspend Member
             </LoadingButton>
           </div>
@@ -99,8 +99,8 @@ export function ActivateMemberForm({ memberId, memberName, onSuccess, onCancel }
         Reactivate <span className="font-medium text-primary">{memberName}</span>'s membership and restore their gym access.
       </p>
       <div className="flex gap-3">
-        <Button variant="outline" className="flex-1" onClick={onCancel}>Cancel</Button>
-        <LoadingButton className="flex-1 bg-success hover:bg-success/90" isLoading={isPending} loadingText="Activating..." onClick={handleActivate}>
+        <Button variant="outline" className="flex-1 min-h-[44px]" onClick={onCancel}>Cancel</Button>
+        <LoadingButton className="flex-1 min-h-[44px] bg-success hover:bg-success/90" isLoading={isPending} loadingText="Activating..." onClick={handleActivate}>
           Activate Member
         </LoadingButton>
       </div>

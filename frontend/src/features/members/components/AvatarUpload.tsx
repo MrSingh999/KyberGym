@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { Camera, Upload, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface AvatarUploadProps {
   currentPhotoUrl?: string;

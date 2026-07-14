@@ -1,4 +1,4 @@
-import { MemberDirectoryItem, MembershipStatus } from "./index";
+import { MemberDirectoryItem } from "./index";
 
 // Extended full profile entity
 export interface MemberProfile extends MemberDirectoryItem {
@@ -9,6 +9,8 @@ export interface MemberProfile extends MemberDirectoryItem {
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
   notes?: MemberNote[];
+  activeSubId?: string;
+  subscriptionStatus?: string;
 }
 
 export interface MemberNote {

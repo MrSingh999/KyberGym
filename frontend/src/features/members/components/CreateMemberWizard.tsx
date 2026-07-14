@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
@@ -8,6 +8,9 @@ import { Button, LoadingButton } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { apiClient } from "@/lib/apiClient";
 import { toast } from "sonner";
+import { addDays, format } from "date-fns";
+import { usePlans } from "@/features/plans/hooks/usePlans";
+import { AvatarUpload } from "./AvatarUpload";
 import {
   createMemberStep1Schema, CreateMemberStep1Data,
   createMemberStep2Schema, CreateMemberStep2Data,
@@ -28,17 +31,30 @@ interface CreateMemberWizardProps {
   onCancel: () => void;
 }
 
+const convertToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
 export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardProps) {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
 
   // Each step's data is accumulated and merged on submit
   const [step1Data, setStep1Data] = useState<Partial<CreateMemberStep1Data>>({});
   const [step2Data, setStep2Data] = useState<Partial<CreateMemberStep2Data>>({});
   const [step3Data, setStep3Data] = useState<Partial<CreateMemberStep3Data>>({});
 
+  const { data: plansData } = usePlans({ pageSize: 100 });
+  const activePlans = useMemo(() => plansData?.data?.filter(p => p.status === 'active') || [], [plansData]);
+
   const step1Form = useForm<CreateMemberStep1Data>({ resolver: zodResolver(createMemberStep1Schema), defaultValues: { name: "", email: "", phone: "", gender: "male" } });
-  const step2Form = useForm<CreateMemberStep2Data>({ resolver: zodResolver(createMemberStep2Schema), defaultValues: { planId: "", membershipStartDate: "", membershipEndDate: "" } });
+  const step2Form = useForm<CreateMemberStep2Data>({ resolver: zodResolver(createMemberStep2Schema), defaultValues: { planId: "", membershipStartDate: new Date().toISOString().split("T")[0], membershipEndDate: "" } });
   const step3Form = useForm<CreateMemberStep3Data>({ resolver: zodResolver(createMemberStep3Schema) });
 
   // Load draft on mount
@@ -65,6 +81,28 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
     }
   }, [step1Data, step2Data, step3Data, currentStep]);
 
+  // Auto calculate membership end date
+  const selectedPlanId = step2Form.watch("planId");
+  const startDateVal = step2Form.watch("membershipStartDate");
+
+  useEffect(() => {
+    if (selectedPlanId && startDateVal) {
+      const plan = activePlans.find((p) => p.id === selectedPlanId);
+      if (plan) {
+        let durationInDays = plan.duration;
+        if (plan.durationType === 'weeks') durationInDays = plan.duration * 7;
+        if (plan.durationType === 'months') durationInDays = plan.duration * 30;
+        if (plan.durationType === 'years') durationInDays = plan.duration * 365;
+
+        const start = new Date(startDateVal);
+        if (!isNaN(start.getTime())) {
+          const end = addDays(start, durationInDays);
+          step2Form.setValue("membershipEndDate", format(end, "yyyy-MM-dd"));
+        }
+      }
+    }
+  }, [selectedPlanId, startDateVal, activePlans, step2Form]);
+
   const handleStep1Submit = (data: CreateMemberStep1Data) => {
     setStep1Data(data);
     setCurrentStep(2);
@@ -80,6 +118,11 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     try {
+      let profilePhotoBase64 = "";
+      if (profilePhotoFile) {
+        profilePhotoBase64 = await convertToBase64(profilePhotoFile);
+      }
+
       // 1. Create the Member
       const memberRes = await apiClient.post('/members', {
         fullName: step1Data.name,
@@ -88,6 +131,7 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
         gender: step1Data.gender || 'male',
         dateOfBirth: step1Data.dateOfBirth || undefined,
         address: step1Data.address || undefined,
+        profilePhoto: profilePhotoBase64 || undefined,
         emergencyContact: {
           name: step3Data.emergencyContactName || undefined,
           phone: step3Data.emergencyContactPhone || undefined,
@@ -98,10 +142,17 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
 
       // 2. Create subscription if a plan was selected
       if (step2Data.planId) {
+        const now = new Date();
+        const start = step2Data.membershipStartDate ? new Date(step2Data.membershipStartDate) : now;
+        let startDateStr = start.toISOString();
+        if (start.toDateString() === now.toDateString()) {
+          startDateStr = now.toISOString();
+        }
+
         await apiClient.post('/member-subscriptions', {
           memberId,
           membershipPlanId: step2Data.planId,
-          startDate: step2Data.membershipStartDate ? new Date(step2Data.membershipStartDate).toISOString() : new Date().toISOString(),
+          startDate: startDateStr,
         });
       }
 
@@ -147,7 +198,13 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
       <div className="flex-1 overflow-y-auto">
         {currentStep === 1 && (
           <Form {...step1Form}>
-            <form id="step1" onSubmit={step1Form.handleSubmit(handleStep1Submit)} className="space-y-5">
+            <form id="step1" onSubmit={step1Form.handleSubmit(handleStep1Submit)} className="space-y-5 animate-fade-slide-up">
+              <div className="pb-4 flex justify-center">
+                <AvatarUpload 
+                  name={step1Form.watch("name") || "Member"} 
+                  onChange={(file) => setProfilePhotoFile(file)} 
+                />
+              </div>
               <FormField control={step1Form.control} name="name" render={({ field }) => (
                 <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="Alex Johnson" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
@@ -157,7 +214,7 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
               <FormField control={step1Form.control} name="email" render={({ field }) => (
                 <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="alex@example.com" type="email" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={step1Form.control} name="gender" render={({ field }) => (
                   <FormItem><FormLabel>Gender *</FormLabel><FormControl>
                     <select {...field} className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary">
@@ -177,15 +234,31 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
 
         {currentStep === 2 && (
           <Form {...step2Form}>
-            <form id="step2" onSubmit={step2Form.handleSubmit(handleStep2Submit)} className="space-y-5">
+            <form id="step2" onSubmit={step2Form.handleSubmit(handleStep2Submit)} className="space-y-5 animate-fade-slide-up">
               <FormField control={step2Form.control} name="planId" render={({ field }) => (
-                <FormItem><FormLabel>Membership Plan *</FormLabel><FormControl><Input placeholder="Select a plan..." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel>Membership Plan *</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary focus-visible:outline-none"
+                    >
+                      <option value="">Select a plan...</option>
+                      {activePlans.map(plan => (
+                        <option key={plan.id} value={plan.id}>
+                          {plan.name} (${plan.price})
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={step2Form.control} name="membershipStartDate" render={({ field }) => (
                 <FormItem><FormLabel>Start Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={step2Form.control} name="membershipEndDate" render={({ field }) => (
-                <FormItem><FormLabel>End Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>End Date *</FormLabel><FormControl><Input type="date" readOnly {...field} className="bg-surface-hover cursor-not-allowed text-muted" /></FormControl><FormMessage /></FormItem>
               )} />
             </form>
           </Form>
@@ -193,7 +266,7 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
 
         {currentStep === 3 && (
           <Form {...step3Form}>
-            <form id="step3" onSubmit={step3Form.handleSubmit(handleStep3Submit)} className="space-y-5">
+            <form id="step3" onSubmit={step3Form.handleSubmit(handleStep3Submit)} className="space-y-5 animate-fade-slide-up">
               <p className="text-sm text-secondary -mt-2">Emergency contact details (optional but recommended).</p>
               <FormField control={step3Form.control} name="emergencyContactName" render={({ field }) => (
                 <FormItem><FormLabel>Contact Name</FormLabel><FormControl><Input placeholder="Jane Johnson" {...field} /></FormControl><FormMessage /></FormItem>
@@ -209,14 +282,14 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
         )}
 
         {currentStep === 4 && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-slide-up">
             <p className="text-sm text-secondary">Review member details before creating the profile.</p>
             <div className="rounded-xl border border-default bg-surface-hover p-4 space-y-3">
               {[
                 { label: "Name", value: step1Data.name },
                 { label: "Phone", value: step1Data.phone },
                 { label: "Email", value: step1Data.email || "—" },
-                { label: "Plan", value: step2Data.planId },
+                { label: "Plan", value: activePlans.find(p => p.id === step2Data.planId)?.name || "—" },
                 { label: "Start", value: step2Data.membershipStartDate },
                 { label: "End", value: step2Data.membershipEndDate },
               ].map(({ label, value }) => (
@@ -230,21 +303,22 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
         )}
       </div>
 
-      {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-6 mt-6 border-t border-subtle">
+      {/* Navigation Footer - sticky on mobile */}
+      <div className="flex items-center justify-between pt-6 mt-6 border-t border-subtle sticky bottom-0 bg-surface">
         <Button
           variant="outline"
+          className="min-h-[44px]"
           onClick={currentStep === 1 ? onCancel : () => setCurrentStep((prev) => (prev - 1) as WizardStep)}
         >
           {currentStep === 1 ? "Cancel" : "Back"}
         </Button>
 
         {currentStep < 4 ? (
-          <Button type="submit" form={`step${currentStep}`}>
+          <Button type="submit" className="min-h-[44px]" form={`step${currentStep}`}>
             Continue
           </Button>
         ) : (
-          <LoadingButton onClick={handleFinalSubmit} isLoading={isSubmitting} loadingText="Creating...">
+          <LoadingButton className="min-h-[44px]" onClick={handleFinalSubmit} isLoading={isSubmitting} loadingText="Creating...">
             Create Member
           </LoadingButton>
         )}

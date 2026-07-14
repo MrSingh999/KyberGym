@@ -1,10 +1,10 @@
 import React from "react";
-import { User, Mail, Phone, Calendar, Droplets, MapPin, Dumbbell } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { Mail, Phone, Calendar, Droplets, MapPin, Dumbbell } from "lucide-react";
 import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
 import { MemberProfile } from "../types/profile";
-import { Skeleton } from "@/components/feedback/Skeleton";
 
 interface MemberOverviewCardProps {
   member?: MemberProfile;
@@ -37,7 +37,7 @@ export function MemberOverviewCard({ member, isLoading }: MemberOverviewCardProp
           <div className="divide-y divide-subtle -mt-2">
             <DetailRow icon={<Mail className="h-4 w-4" />} label="Email" value={member.email} />
             <DetailRow icon={<Phone className="h-4 w-4" />} label="Phone" value={member.phone} />
-            <DetailRow icon={<Calendar className="h-4 w-4" />} label="Date of Birth" value={member.dateOfBirth ? new Date(member.dateOfBirth).toLocaleDateString() : undefined} />
+            <DetailRow icon={<Calendar className="h-4 w-4" />} label="Date of Birth" value={member.dateOfBirth ? format(parseISO(member.dateOfBirth), "MMM d, yyyy") : undefined} />
             <DetailRow icon={<Droplets className="h-4 w-4" />} label="Blood Group" value={member.bloodGroup} />
             <DetailRow icon={<MapPin className="h-4 w-4" />} label="Address" value={member.address} />
             <DetailRow icon={<Dumbbell className="h-4 w-4" />} label="Trainer" value={member.assignedTrainerName} />

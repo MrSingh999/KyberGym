@@ -25,18 +25,21 @@ export function useMemberProfile(memberId: string) {
       let planName = "No active plan";
       let membershipStartDate = "";
       let membershipEndDate = "";
+      let activeSubId = "";
+      let subscriptionStatus = "inactive";
       try {
         const subsRes = await apiClient.get('/member-subscriptions', {
-          params: { memberId, status: 'active', limit: 1 }
+          params: { memberId, limit: 1 }
         });
         const activeSub = subsRes.data.data?.[0];
         if (activeSub) {
-          const planRes = await apiClient.get(`/membership-plans/${activeSub.membershipPlanId}`);
-          planName = planRes.data.data?.name || "Pro Monthly";
+          planName = activeSub.membershipPlanId?.name || "Pro Monthly";
           membershipStartDate = activeSub.startDate ? new Date(activeSub.startDate).toISOString().split('T')[0] : "";
           membershipEndDate = activeSub.endDate ? new Date(activeSub.endDate).toISOString().split('T')[0] : "";
+          activeSubId = activeSub._id;
+          subscriptionStatus = activeSub.status;
         }
-      } catch (e) {
+      } catch {
         // Fallback silently if subscriptions fail
       }
 
@@ -47,6 +50,8 @@ export function useMemberProfile(memberId: string) {
         phone: m.phone || "No phone",
         email: m.email || "No email",
         profilePhoto: m.profilePhoto,
+        bloodGroup: m.bloodGroup,
+        address: m.address,
         gender: m.gender || "male",
         dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : "",
         joiningDate: m.joinDate ? new Date(m.joinDate).toISOString().split('T')[0] : "",
@@ -57,7 +62,9 @@ export function useMemberProfile(memberId: string) {
         assignedTrainerName: "Coach Alex",
         createdAt: m.createdAt,
         updatedAt: m.updatedAt,
-      };
+        activeSubId,
+        subscriptionStatus,
+      } as MemberProfile;
     },
     enabled: !!selectedGymId && !!memberId,
     staleTime: 5 * 60 * 1000,
@@ -70,12 +77,38 @@ export function useMemberActivities(memberId: string) {
   return useQuery<MemberActivity[]>({
     queryKey: ["member-activities", selectedGymId, memberId],
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 500));
-      return [
-        { id: "a1", type: "membership_renewed", description: "Membership renewed for 1 year (Pro Plan)", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), actorName: "Gym Owner" },
-        { id: "a2", type: "profile_updated", description: "Phone number updated", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(), actorName: "Alex Johnson" },
-        { id: "a3", type: "member_created", description: "Member account created", createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 180).toISOString(), actorName: "Gym Owner" },
-      ];
+      const [subsRes, paymentsRes] = await Promise.all([
+        apiClient.get('/member-subscriptions', { params: { memberId, limit: 50 } }),
+        apiClient.get('/payments', { params: { memberId, limit: 50 } }),
+      ]);
+
+      const subs = subsRes.data.data || [];
+      const payments = paymentsRes.data.data || [];
+
+      const activities: MemberActivity[] = [];
+
+      subs.forEach((sub: any) => {
+        activities.push({
+          id: `sub-${sub._id}`,
+          type: "membership_renewed",
+          description: `Subscription to ${sub.membershipPlanId?.name || "Plan"} created (Status: ${sub.status})`,
+          createdAt: sub.createdAt,
+          actorName: "System",
+        });
+      });
+
+      payments.forEach((pay: any) => {
+        activities.push({
+          id: `pay-${pay._id}`,
+          type: "payment_received",
+          description: `Payment of $${pay.finalAmount || pay.amount} received (Status: ${pay.status})`,
+          createdAt: pay.paymentDate || pay.createdAt,
+          actorName: "System",
+        });
+      });
+
+      // Sort by date desc
+      return activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     },
     enabled: !!selectedGymId && !!memberId,
     staleTime: 2 * 60 * 1000,
@@ -88,10 +121,19 @@ export function useMemberNotes(memberId: string) {
   return useQuery<MemberNote[]>({
     queryKey: ["member-notes", selectedGymId, memberId],
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 400));
+      const res = await apiClient.get(`/members/${memberId}`);
+      const m = res.data.data;
+      if (!m.notes) return [];
+
       return [
-        { id: "n1", content: "Has a knee injury – avoid lower body exercises without clearance.", isPinned: true, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), updatedAt: new Date().toISOString(), authorName: "Coach Priya" },
-        { id: "n2", content: "Prefers morning sessions. Interested in upgrading to Elite plan.", isPinned: false, createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), updatedAt: new Date().toISOString(), authorName: "Gym Owner" },
+        {
+          id: "member-notes-str",
+          content: m.notes,
+          isPinned: true,
+          createdAt: m.updatedAt || m.createdAt,
+          updatedAt: m.updatedAt || m.createdAt,
+          authorName: "Staff",
+        }
       ];
     },
     enabled: !!selectedGymId && !!memberId,
@@ -142,10 +184,18 @@ export function useMemberWorkoutSummary(memberId: string) {
   return useQuery<WorkoutSummaryItem[]>({
     queryKey: ["member-summary", selectedGymId, memberId, "workouts"],
     queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 400));
-      return [
-        { id: "w1", title: "Hypertrophy Phase 1", assignedAt: "2024-06-01", status: "in_progress" },
-      ];
+      const res = await apiClient.get('/workouts');
+      const allWorkouts = res.data.data || [];
+      const assigned = allWorkouts.filter((w: any) => 
+        w.assignmentType === 'ALL' || 
+        (w.assignmentType === 'SELECTED' && w.assignedMembers?.includes(memberId))
+      );
+      return assigned.map((w: any) => ({
+        id: w._id,
+        title: w.title,
+        assignedAt: w.createdAt ? new Date(w.createdAt).toISOString().split('T')[0] : "",
+        status: w.isActive ? "in_progress" as const : "completed" as const,
+      }));
     },
     enabled: !!selectedGymId && !!memberId,
   });
@@ -159,6 +209,22 @@ export function useRenewMembership(memberId: string) {
 
   return useMutation({
     mutationFn: async (data: RenewMembershipFormData) => {
+      // Find active subscriptions first, cancel them to avoid backend Conflict error
+      const profile = await queryClient.fetchQuery<MemberProfile>({
+        queryKey: ["member", selectedGymId, memberId]
+      });
+
+      if (profile?.activeSubId && profile?.subscriptionStatus === 'active') {
+        try {
+          await apiClient.patch(`/member-subscriptions/${profile.activeSubId}/status`, {
+            status: 'cancelled',
+            notes: 'Renewed and superseded by new plan'
+          });
+        } catch {
+          // ignore failures if it was already updated
+        }
+      }
+
       // 1. Create a subscription
       await apiClient.post('/member-subscriptions', {
         memberId,
@@ -205,6 +271,59 @@ export function useActivateMember(memberId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["member", selectedGymId, memberId] });
+    },
+  });
+}
+
+export function useUpdateMemberNotes(memberId: string) {
+  const { selectedGymId } = useGymStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (notes: string) => {
+      await apiClient.patch(`/members/${memberId}`, { notes });
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["member-notes", selectedGymId, memberId] });
+      queryClient.invalidateQueries({ queryKey: ["member", selectedGymId, memberId] });
+    },
+  });
+}
+
+export function useFreezeSubscription(memberId: string, subId: string) {
+  const { selectedGymId } = useGymStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (notes?: string) => {
+      await apiClient.patch(`/member-subscriptions/${subId}/status`, {
+        status: 'paused',
+        notes
+      });
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["member", selectedGymId, memberId] });
+      queryClient.invalidateQueries({ queryKey: ["member-activities", selectedGymId, memberId] });
+    },
+  });
+}
+
+export function useResumeSubscription(memberId: string, subId: string) {
+  const { selectedGymId } = useGymStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      await apiClient.patch(`/member-subscriptions/${subId}/status`, {
+        status: 'active'
+      });
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["member", selectedGymId, memberId] });
+      queryClient.invalidateQueries({ queryKey: ["member-activities", selectedGymId, memberId] });
     },
   });
 }

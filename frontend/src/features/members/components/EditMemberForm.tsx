@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBlocker } from "react-router";
@@ -8,21 +8,36 @@ import { LoadingButton } from "@/components/ui/button";
 import { MemberProfile } from "../types/profile";
 import { createMemberStep1Schema, CreateMemberStep1Data } from "../schemas/member.schema";
 import { AvatarUpload } from "./AvatarUpload";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 interface EditMemberFormProps {
   member: MemberProfile;
-  onSubmit: (data: CreateMemberStep1Data) => Promise<void>;
+  onSubmit: (data: CreateMemberStep1Data, file: File | null, removed: boolean) => Promise<void>;
   isSubmitting?: boolean;
 }
 
 export function EditMemberForm({ member, onSubmit, isSubmitting }: EditMemberFormProps) {
+  const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+  const [profilePhotoRemoved, setProfilePhotoRemoved] = useState(false);
+
   const form = useForm<CreateMemberStep1Data>({
     resolver: zodResolver(createMemberStep1Schema),
     defaultValues: {
       name: member.name,
       email: member.email || "",
       phone: member.phone,
-      gender: "male", // Would map from member if existed
+      gender: member.gender || "male",
+      dateOfBirth: member.dateOfBirth || "",
+      address: member.address || "",
     },
   });
 
@@ -31,27 +46,41 @@ export function EditMemberForm({ member, onSubmit, isSubmitting }: EditMemberFor
   // Unsaved changes protection via React Router v7
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
+      (isDirty || profilePhotoFile !== null || profilePhotoRemoved) && 
+      currentLocation.pathname !== nextLocation.pathname
   );
+
+  const [blockerDialogOpen, setBlockerDialogOpen] = useState(false);
 
   useEffect(() => {
     if (blocker.state === "blocked") {
-      const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?");
-      if (confirmLeave) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
+      setBlockerDialogOpen(true);
     }
-  }, [blocker]);
+  }, [blocker.state]);
+
+  const handlePhotoChange = (file: File | null) => {
+    setProfilePhotoFile(file);
+    if (file === null) {
+      setProfilePhotoRemoved(true);
+    } else {
+      setProfilePhotoRemoved(false);
+    }
+    // Set dirty state manually
+    form.setValue("name", form.getValues("name"), { shouldDirty: true });
+  };
+
+  const handleFormSubmit = async (data: CreateMemberStep1Data) => {
+    await onSubmit(data, profilePhotoFile, profilePhotoRemoved);
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 animate-fade-slide-up">
         <div className="pb-4">
           <AvatarUpload 
+            currentPhotoUrl={member.profilePhoto}
             name={member.name} 
-            onChange={() => form.setValue("name", form.getValues("name"), { shouldDirty: true })} 
+            onChange={handlePhotoChange} 
           />
         </div>
 
@@ -85,7 +114,7 @@ export function EditMemberForm({ member, onSubmit, isSubmitting }: EditMemberFor
           </FormItem>
         )} />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField control={form.control} name="gender" render={({ field }) => (
             <FormItem>
               <FormLabel>Gender *</FormLabel>
@@ -112,11 +141,31 @@ export function EditMemberForm({ member, onSubmit, isSubmitting }: EditMemberFor
         </div>
 
         <div className="pt-4 flex justify-end">
-          <LoadingButton type="submit" disabled={!isDirty} isLoading={isSubmitting} loadingText="Saving...">
+          <LoadingButton type="submit" className="min-h-[44px] w-full sm:w-auto" disabled={!isDirty && profilePhotoFile === null && !profilePhotoRemoved} isLoading={isSubmitting} loadingText="Saving...">
             Save Changes
           </LoadingButton>
         </div>
       </form>
+
+      {/* Unsaved Changes Blocker Dialog */}
+      <AlertDialog open={blockerDialogOpen} onOpenChange={setBlockerDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Are you sure you want to leave?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { blocker.reset?.(); setBlockerDialogOpen(false); }}>
+              Stay
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => { blocker.proceed?.(); setBlockerDialogOpen(false); }}>
+              Leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Form>
   );
 }

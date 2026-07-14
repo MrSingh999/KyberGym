@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   static async login(email, password, gymId) {
-    const user = await User.findOne({ email, gymId });
+    const user = await User.findOne({ email: email.toLowerCase().trim(), gymId });
     if (!user) {
       throw createError.Unauthorized('Invalid email or password');
     }

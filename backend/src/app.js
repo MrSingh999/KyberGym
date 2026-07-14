@@ -22,8 +22,24 @@ app.set('trust proxy', 1);
 
 // 1. Security Middleware
 app.use(helmet()); 
+
+const allowedOrigins = [env.FRONTEND_URL];
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    try {
+      const originUrl = new URL(origin);
+      const hostname = originUrl.hostname;
+      const isLocalhostSubdomain = hostname === 'localhost' || hostname.endsWith('.localhost');
+      if (allowedOrigins.includes(origin) || isLocalhostSubdomain) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } catch {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 

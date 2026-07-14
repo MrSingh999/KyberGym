@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -8,10 +8,17 @@ import {
   SortingState,
   OnChangeFn,
   RowSelectionState,
+  VisibilityState,
 } from "@tanstack/react-table";
 import { cn } from "../../lib/utils";
 import { Skeleton } from "../feedback/Skeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Columns3 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -26,6 +33,8 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
   className?: string;
   emptyMessage?: string;
+  onRowClick?: (row: TData) => void;
+  enableColumnVisibility?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -40,8 +49,11 @@ export function DataTable<TData, TValue>({
   onRowSelectionChange,
   isLoading,
   className,
-  emptyMessage = "No records match your query.",
+  onRowClick,
+  enableColumnVisibility = false,
 }: DataTableProps<TData, TValue>) {
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
   const table = useReactTable({
     data,
     columns,
@@ -50,10 +62,12 @@ export function DataTable<TData, TValue>({
       pagination,
       sorting,
       rowSelection,
+      columnVisibility,
     },
     onPaginationChange,
     onSortingChange,
     onRowSelectionChange,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
@@ -66,19 +80,22 @@ export function DataTable<TData, TValue>({
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="bg-elevated/50 border-b border-border-default text-text-muted text-[10px] uppercase tracking-wider font-bold font-mono">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="py-3.5 px-5"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const meta = header.column.columnDef.meta as { className?: string } | undefined;
+                  return (
+                    <th
+                      key={header.id}
+                      className={cn("py-3.5 px-5", meta?.className)}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>
@@ -97,19 +114,26 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="table-row-hover table-zebra"
+                  className={cn(
+                    "table-row-hover table-zebra",
+                    onRowClick && "cursor-pointer"
+                  )}
+                  onClick={() => onRowClick?.(row.original)}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="py-3 px-5 align-middle">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const meta = cell.column.columnDef.meta as { className?: string } | undefined;
+                    return (
+                      <td key={cell.id} className={cn("py-3 px-5 align-middle", meta?.className)}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan={columns.length} className="text-center py-16">
-                  <p className="text-text-secondary text-sm font-semibold">No records match your query.</p>
+                  <p className="text-text-secondary text-sm font-semibold">No records match your criteria.</p>
                   <p className="text-xs text-text-muted mt-1 font-mono">Try adjusting search or filter criteria.</p>
                 </td>
               </tr>
@@ -125,21 +149,45 @@ export function DataTable<TData, TValue>({
             {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–
             {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)} of {table.getFilteredRowModel().rows.length}
           </span>
+          {enableColumnVisibility && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="ml-2 p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all cursor-pointer" title="Toggle columns">
+                  <Columns3 className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-surface border border-default shadow-xl rounded-lg py-1 z-50">
+                {table.getAllLeafColumns().map((column) => {
+                  if (column.id === "actions" || column.id === "select") return null;
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="px-4 py-2 text-sm text-primary hover:bg-surface-hover cursor-pointer transition-colors capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    >
+                      {column.columnDef.header as string || column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="flex items-center space-x-1">
             {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => table.setPageIndex(page - 1)}
-                className={`h-7 w-7 rounded-[4px] text-xs font-bold font-mono transition-all cursor-pointer ${
+                className={`min-w-[36px] h-9 rounded-[4px] text-xs font-bold font-mono transition-all cursor-pointer ${
                   table.getState().pagination.pageIndex === page - 1
                     ? "bg-primary text-primary-foreground"
                     : "text-text-secondary hover:text-text-primary hover:bg-elevated border border-transparent"
@@ -152,9 +200,9 @@ export function DataTable<TData, TValue>({
           <button
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>

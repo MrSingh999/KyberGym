@@ -81,24 +81,45 @@ export function WorkoutsPage() {
           variant={hasSearch ? "no-search" : "no-workouts"}
           onAction={hasSearch ? undefined : () => navigate("/admin/workouts/new")}
         />
-      ) : viewMode === "table" ? (
-        <WorkoutsTable
-          data={workouts}
-          onDelete={handleDelete}
-          sorting={sorting}
-          onSortingChange={setSorting}
-        />
       ) : (
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          {workouts.map((workout, i) => (
-            <WorkoutCard key={workout.id} workout={workout} index={i} />
-          ))}
-        </motion.div>
+        <>
+          {/* Desktop View: table or cards layout depending on viewMode */}
+          <div className="hidden lg:block">
+            {viewMode === "table" ? (
+              <WorkoutsTable
+                data={workouts}
+                onDelete={handleDelete}
+                sorting={sorting}
+                onSortingChange={setSorting}
+              />
+            ) : (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                {workouts.map((workout, i) => (
+                  <WorkoutCard key={workout.id} workout={workout} index={i} />
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Mobile View: always display cards layout */}
+          <div className="block lg:hidden">
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              {workouts.map((workout, i) => (
+                <WorkoutCard key={workout.id} workout={workout} index={i} />
+              ))}
+            </motion.div>
+          </div>
+        </>
       )}
 
       {/* Delete confirmation modal */}

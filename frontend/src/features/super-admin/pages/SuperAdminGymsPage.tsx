@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ColumnDef, PaginationState, SortingState, RowSelectionState } from "@tanstack/react-table";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, CheckCircle2, Copy, ExternalLink } from "lucide-react";
 import { useSAGyms, useSASuspendGym, useSAActivateGym, useSADeleteGym } from "../hooks/useSuperAdmin";
 import { GymTenantListItem, SUBSCRIPTION_STATUS_LABELS } from "../types";
 import { DataTable } from "@/components/data-display/DataTable";
@@ -30,6 +30,12 @@ export function SuperAdminGymsPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [showCreate, setShowCreate] = useState(false);
+  const [createdGymInfo, setCreatedGymInfo] = useState<{
+    name: string;
+    subdomain: string;
+    email: string;
+    temporaryPassword: string;
+  } | null>(null);
 
   const page = pagination.pageIndex + 1;
 
@@ -74,10 +80,7 @@ export function SuperAdminGymsPage() {
         accessorKey: "name",
         header: "Gym",
         cell: ({ row }) => (
-          <span
-            className="font-semibold text-text-primary text-sm cursor-pointer hover:text-primary transition-colors"
-            onClick={() => navigate(`/super-admin/gyms/${row.original.id}`)}
-          >
+          <span className="font-semibold text-text-primary hover:text-primary transition-colors">
             {row.original.name}
           </span>
         ),
@@ -90,6 +93,7 @@ export function SuperAdminGymsPage() {
             {row.original.subdomain || "-"}
           </span>
         ),
+        meta: { className: "hidden md:table-cell" },
       },
       {
         accessorKey: "isActive",
@@ -114,6 +118,7 @@ export function SuperAdminGymsPage() {
             {SUBSCRIPTION_STATUS_LABELS[row.original.subscriptionStatus] || row.original.subscriptionStatus}
           </Badge>
         ),
+        meta: { className: "hidden sm:table-cell" },
       },
       {
         accessorKey: "createdAt",
@@ -123,6 +128,7 @@ export function SuperAdminGymsPage() {
             {format(parseISO(row.original.createdAt), "MMM d, yyyy")}
           </span>
         ),
+        meta: { className: "hidden md:table-cell" },
       },
       {
         id: "actions",
@@ -130,25 +136,25 @@ export function SuperAdminGymsPage() {
         cell: ({ row }) => {
           const gym = row.original;
           return (
-            <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
               {gym.isActive ? (
                 <button
-                  onClick={() => handleSuspend(gym.id, gym.name)}
-                  className="px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wider rounded-[4px] border border-amber-500/20 text-amber-600 bg-amber-500/5 hover:bg-amber-500/10 active:bg-amber-500/15 transition-colors duration-100 cursor-pointer press-effect"
+                  onClick={(e) => { e.stopPropagation(); handleSuspend(gym.id, gym.name); }}
+                  className="px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wider rounded-[4px] border border-border-default hover:border-amber-500/30 text-text-secondary hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/5 dark:hover:bg-amber-500/10 active:scale-95 transition-all duration-100 cursor-pointer"
                 >
                   Suspend
                 </button>
               ) : (
                 <button
-                  onClick={() => handleActivate(gym.id, gym.name)}
-                  className="px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wider rounded-[4px] border border-emerald-500/20 text-emerald-600 bg-emerald-500/5 hover:bg-emerald-500/10 active:bg-emerald-500/15 transition-colors duration-100 cursor-pointer press-effect"
+                  onClick={(e) => { e.stopPropagation(); handleActivate(gym.id, gym.name); }}
+                  className="px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wider rounded-[4px] border border-border-default hover:border-emerald-500/30 text-text-secondary hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/5 dark:hover:bg-emerald-500/10 active:scale-95 transition-all duration-100 cursor-pointer"
                 >
                   Activate
                 </button>
               )}
               <button
-                onClick={() => handleDelete(gym.id, gym.name)}
-                className="px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wider rounded-[4px] border border-red-500/20 text-red-600 bg-red-500/5 hover:bg-red-500/10 active:bg-red-500/15 transition-colors duration-100 cursor-pointer press-effect"
+                onClick={(e) => { e.stopPropagation(); handleDelete(gym.id, gym.name); }}
+                className="px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wider rounded-[4px] border border-border-default hover:border-red-500/30 text-text-secondary hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/5 dark:hover:bg-red-500/10 active:scale-95 transition-all duration-100 cursor-pointer"
               >
                 Delete
               </button>
@@ -162,7 +168,7 @@ export function SuperAdminGymsPage() {
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
+    <div className="flex-1 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -185,8 +191,8 @@ export function SuperAdminGymsPage() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 w-full">
+        <div className="relative w-full sm:flex-1 sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-text-muted" />
           <Input
             placeholder="Search gyms..."
@@ -212,7 +218,7 @@ export function SuperAdminGymsPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="text-xs text-text-muted font-mono flex items-center px-3 h-9 border border-border-default rounded-lg shrink-0">
+        <div className="w-full sm:w-auto text-xs text-text-muted font-mono flex items-center justify-center sm:justify-start px-3 h-9 border border-border-default rounded-lg shrink-0">
           {meta.total} gym{(meta.total ?? 0) !== 1 ? "s" : ""}
         </div>
       </div>
@@ -227,35 +233,200 @@ export function SuperAdminGymsPage() {
           />
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={gyms}
-          pageCount={meta.totalPages}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          sorting={sorting}
-          onSortingChange={setSorting}
-          rowSelection={rowSelection}
-          onRowSelectionChange={setRowSelection}
-          isLoading={isLoading}
-        />
+        <>
+          {/* Desktop View: TanStack DataTable */}
+          <div className="hidden lg:block">
+            <DataTable
+              columns={columns}
+              data={gyms}
+              pageCount={meta.totalPages}
+              pagination={pagination}
+              onPaginationChange={setPagination}
+              sorting={sorting}
+              onSortingChange={setSorting}
+              rowSelection={rowSelection}
+              onRowSelectionChange={setRowSelection}
+              isLoading={isLoading}
+              onRowClick={(row) => navigate(`/super-admin/gyms/${row.id}`)}
+            />
+          </div>
+
+          {/* Mobile/Tablet View: Card List */}
+          <div className="block lg:hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                ))
+              ) : gyms.length ? (
+                gyms.map((gym) => (
+                  <div
+                    key={gym.id}
+                    onClick={() => navigate(`/super-admin/gyms/${gym.id}`)}
+                    className="flex flex-col p-4 rounded-xl border border-border-default bg-surface hover:border-border-hover transition-all duration-150 cursor-pointer group press-effect gap-4"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Building2 className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-semibold text-text-primary group-hover:text-primary transition-colors truncate">
+                            {gym.name}
+                          </h3>
+                          <span className="text-[10px] text-text-muted font-mono mt-0.5 block">
+                            {gym.subdomain || "-"}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <Badge
+                          variant={gym.isActive ? "success" : "secondary"}
+                          className="text-[10px] px-2 py-0.5 font-bold"
+                        >
+                          {gym.isActive ? "Active" : "Suspended"}
+                        </Badge>
+                        <Badge
+                          variant={statusVariant[gym.subscriptionStatus] || "secondary"}
+                          className="text-[10px] px-2 py-0.5 font-bold"
+                        >
+                          {SUBSCRIPTION_STATUS_LABELS[gym.subscriptionStatus] || gym.subscriptionStatus}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t border-border-default/40 text-[11px] font-mono text-text-muted">
+                      <span>Created: {format(parseISO(gym.createdAt), "MMM d, yyyy")}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-16 text-center">
+                  <p className="text-text-muted text-xs font-mono uppercase tracking-wider">
+                    No gyms found.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Pagination */}
+            {meta.totalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 px-4 py-3 bg-surface border border-border-default rounded-xl">
+                <div className="text-xs text-text-muted font-mono">
+                  Page {pagination.pageIndex + 1} of {meta.totalPages}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setPagination(p => ({ ...p, pageIndex: Math.max(0, p.pageIndex - 1) }))}
+                    disabled={pagination.pageIndex === 0}
+                    className="p-1.5 px-3 border border-border-default rounded-lg text-text-secondary hover:text-text-primary hover:bg-elevated transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs font-medium"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setPagination(p => ({ ...p, pageIndex: Math.min(meta.totalPages - 1, p.pageIndex + 1) }))}
+                    disabled={pagination.pageIndex === meta.totalPages - 1}
+                    className="p-1.5 px-3 border border-border-default rounded-lg text-text-secondary hover:text-text-primary hover:bg-elevated transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs font-medium"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Create Gym Modal */}
       <ResponsiveModal
         open={showCreate}
-        onOpenChange={setShowCreate}
-        title="Create New Gym"
-        description="Register a new gym on the platform."
+        onOpenChange={(open) => {
+          setShowCreate(open);
+          if (!open) setCreatedGymInfo(null);
+        }}
+        title={createdGymInfo ? "Credentials Generated" : "Create New Gym"}
+        description={createdGymInfo ? "Temporary credentials for the new gym administrator." : "Register a new gym on the platform."}
       >
         <div className="p-6">
-          <CreateGymForm
-            onSuccess={() => {
-              setShowCreate(false);
-              refetch();
-            }}
-            onCancel={() => setShowCreate(false)}
-          />
+          {createdGymInfo ? (
+            <div className="space-y-6 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 mx-auto">
+                <CheckCircle2 className="size-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-text-primary">Gym Created Successfully!</h3>
+                <p className="text-xs text-text-secondary mt-1">
+                  Please share these temporary credentials and URL with the gym administrator.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-border-default bg-surface-hover/30 p-4 text-left space-y-3.5 font-mono text-xs">
+                <div className="flex justify-between items-center py-1 border-b border-border-default/40">
+                  <span className="text-text-muted">Gym Name</span>
+                  <span className="font-semibold text-text-primary text-right truncate max-w-[200px]">{createdGymInfo.name}</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-border-default/40">
+                  <span className="text-text-muted">Subdomain</span>
+                  <span className="font-semibold text-text-primary">{createdGymInfo.subdomain}</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-border-default/40">
+                  <span className="text-text-muted">Admin Email</span>
+                  <span className="font-semibold text-text-primary">{createdGymInfo.email}</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-border-default/40">
+                  <span className="text-text-muted">Temp Password</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-primary">{createdGymInfo.temporaryPassword}</span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(createdGymInfo.temporaryPassword);
+                        toast.success("Password copied to clipboard");
+                      }}
+                      className="p-1 hover:bg-surface-hover rounded text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+                    >
+                      <Copy className="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <span className="text-text-muted block mb-1">Login URL</span>
+                  <a
+                    href={`http://${createdGymInfo.subdomain}.localhost:3000/login`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-primary hover:underline break-all block flex items-center gap-1"
+                  >
+                    http://{createdGymInfo.subdomain}.localhost:3000/login
+                    <ExternalLink className="size-3" />
+                  </a>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => {
+                  setShowCreate(false);
+                  setCreatedGymInfo(null);
+                  refetch();
+                }}
+                className="w-full"
+              >
+                Close & Finish
+              </Button>
+            </div>
+          ) : (
+            <CreateGymForm
+              onSuccess={(result) => {
+                setCreatedGymInfo({
+                  name: result.gym.name,
+                  subdomain: result.gym.subdomain,
+                  email: result.admin.email,
+                  temporaryPassword: result.temporaryPassword,
+                });
+              }}
+              onCancel={() => setShowCreate(false)}
+            />
+          )}
         </div>
       </ResponsiveModal>
     </div>

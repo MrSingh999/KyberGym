@@ -1,4 +1,5 @@
 import React from "react";
+import { format, parseISO } from "date-fns";
 import { UserPlus, RefreshCw, PauseCircle, PlayCircle, FileText, Dumbbell } from "lucide-react";
 import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
@@ -61,9 +62,7 @@ export function ActivityTimeline({ activities, isLoading }: ActivityTimelineProp
                     <span className="text-xs text-muted">{event.actorName}</span>
                     <span className="text-xs text-muted">·</span>
                     <span className="text-xs text-muted">
-                      {new Date(event.createdAt).toLocaleDateString("en-US", {
-                        month: "short", day: "numeric", year: "numeric"
-                      })}
+                      {format(parseISO(event.createdAt), "MMM d, yyyy")}
                     </span>
                   </div>
                 </div>

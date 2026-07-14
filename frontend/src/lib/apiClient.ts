@@ -2,7 +2,24 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../store/auth.store';
 import { useGymStore } from '../store/gym.store';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const getApiUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    try {
+      const url = new URL(envUrl);
+      url.hostname = window.location.hostname;
+      return url.toString();
+    } catch {
+      return envUrl;
+    }
+  }
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port ? `:${window.location.port}` : '';
+  return `${protocol}//${hostname}${port}/api`;
+};
+
+const API_URL = getApiUrl();
 
 export const apiClient = axios.create({
   baseURL: API_URL,

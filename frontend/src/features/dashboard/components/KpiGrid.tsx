@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import CountUp from "react-countup";
 import { cn } from "@/lib/utils";
 import {
   Users,
@@ -99,19 +98,12 @@ export function KpiGrid() {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3">
       {cards.map((card) => (
         <StatCard
           key={card.title}
           title={card.title}
-          value={
-            <CountUp
-              end={card.value}
-              duration={1.5}
-              separator=","
-              prefix={card.prefix ?? ""}
-            />
-          }
+          value={card.prefix ? `${card.prefix}${card.value.toLocaleString()}` : card.value.toLocaleString()}
           icon={card.icon}
           loading={isLoading}
           className={cn(

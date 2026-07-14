@@ -1,4 +1,5 @@
 import React from "react";
+import { format, parseISO } from "date-fns";
 import { Pin, Plus, Trash2, StickyNote } from "lucide-react";
 import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
@@ -11,9 +12,10 @@ import { cn } from "@/lib/utils";
 interface NotesSectionProps {
   notes?: MemberNote[];
   isLoading: boolean;
+  onAddNote?: () => void;
 }
 
-export function NotesSection({ notes, isLoading }: NotesSectionProps) {
+export function NotesSection({ notes, isLoading, onAddNote }: NotesSectionProps) {
   const sorted = notes
     ? [...notes].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))
     : [];
@@ -23,8 +25,8 @@ export function NotesSection({ notes, isLoading }: NotesSectionProps) {
       <WidgetHeader
         title="Notes"
         action={
-          <Button size="sm" className="h-7 text-xs">
-            <Plus className="h-3.5 w-3.5 mr-1" /> Add Note
+          <Button size="sm" className="h-7 text-xs cursor-pointer" onClick={onAddNote}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Edit Note
           </Button>
         }
       />
@@ -56,7 +58,7 @@ export function NotesSection({ notes, isLoading }: NotesSectionProps) {
               <p className="text-sm text-primary leading-relaxed pr-4">{note.content}</p>
               <div className="flex items-center justify-between mt-3">
                 <span className="text-xs text-muted">
-                  {note.authorName} · {new Date(note.createdAt).toLocaleDateString()}
+                  {note.authorName} · {format(parseISO(note.createdAt), "MMM d, yyyy")}
                 </span>
                 <button className="opacity-0 group-hover:opacity-100 text-muted hover:text-error transition-all touch-target">
                   <Trash2 className="h-3.5 w-3.5" />

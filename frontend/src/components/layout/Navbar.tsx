@@ -24,20 +24,33 @@ export function Breadcrumbs() {
   if (paths.length === 0) return null;
 
   return (
-    <div className="hidden md:flex items-center text-sm font-medium text-muted">
+    <div className="hidden md:flex items-center text-sm font-medium text-text-secondary">
       {paths.map((path, index) => {
         const isLast = index === paths.length - 1;
         const text = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
         return (
           <div key={path} className="flex items-center">
             {index > 0 && <ChevronRight className="w-4 h-4 mx-1 opacity-50" />}
-            <span className={isLast ? "text-primary" : "hover:text-primary cursor-pointer transition-colors"}>
+            <span className={isLast ? "text-text-primary" : "hover:text-text-primary cursor-pointer transition-colors"}>
               {text}
             </span>
           </div>
         );
       })}
     </div>
+  );
+}
+
+export function PageTitleMobile() {
+  const location = useLocation();
+  const paths = location.pathname.split('/').filter(p => p);
+  if (paths.length === 0) return <span className="md:hidden font-bold text-sm tracking-tight text-text-primary">KyberGym</span>;
+  const lastPath = paths[paths.length - 1];
+  const text = lastPath.charAt(0).toUpperCase() + lastPath.slice(1).replace(/-/g, ' ');
+  return (
+    <span className="md:hidden font-bold text-sm text-text-primary tracking-tight font-mono uppercase">
+      {text}
+    </span>
   );
 }
 
@@ -79,13 +92,14 @@ export function Navbar() {
 
   return (
     <header className="h-[64px] border-b border-border-default bg-canvas/80 backdrop-blur-md sticky top-0 flex items-center justify-between px-4 lg:px-6 z-30">
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => setMobileDrawerOpen(true)}
-          className="p-2 -ml-2 mr-2 lg:hidden text-text-muted hover:text-text-primary transition-colors"
+          className="p-2 -ml-2 lg:hidden text-text-muted hover:text-text-primary transition-colors"
         >
           <Menu className="size-5" />
         </button>
+        <PageTitleMobile />
         <Breadcrumbs />
       </div>
 

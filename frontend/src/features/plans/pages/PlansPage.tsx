@@ -94,33 +94,60 @@ export function PlansPage() {
               <PlansSkeleton mode={viewMode} />
             ) : plans.length === 0 ? (
               <EmptyPlansState variant={emptyVariant} />
-            ) : viewMode === 'table' ? (
-              <PlansTable
-                data={plans}
-                onDuplicate={handleDuplicate}
-                onArchive={handleArchive}
-                rowSelection={rowSelection}
-                onRowSelectionChange={setRowSelection}
-                sorting={sorting}
-                onSortingChange={setSorting}
-              />
             ) : (
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {plans.map((plan, i) => (
-                  <PlanCard
-                    key={plan.id}
-                    plan={plan}
-                    index={i}
-                    onDuplicate={handleDuplicate}
-                    onArchive={handleArchive}
-                  />
-                ))}
-              </motion.div>
+              <>
+                {/* Desktop View: table or cards layout depending on viewMode */}
+                <div className="hidden lg:block">
+                  {viewMode === 'table' ? (
+                    <PlansTable
+                      data={plans}
+                      onDuplicate={handleDuplicate}
+                      onArchive={handleArchive}
+                      rowSelection={rowSelection}
+                      onRowSelectionChange={setRowSelection}
+                      sorting={sorting}
+                      onSortingChange={setSorting}
+                    />
+                  ) : (
+                    <motion.div
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {plans.map((plan, i) => (
+                        <PlanCard
+                          key={plan.id}
+                          plan={plan}
+                          index={i}
+                          onDuplicate={handleDuplicate}
+                          onArchive={handleArchive}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Mobile View: always display cards layout */}
+                <div className="block lg:hidden">
+                  <motion.div
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {plans.map((plan, i) => (
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        index={i}
+                        onDuplicate={handleDuplicate}
+                        onArchive={handleArchive}
+                      />
+                    ))}
+                  </motion.div>
+                </div>
+              </>
             )}
           </div>
         </div>

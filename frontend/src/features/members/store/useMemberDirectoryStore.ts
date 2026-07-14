@@ -4,6 +4,7 @@ interface MembersFilters {
   status: string[];
   plan: string[];
   gender: string[];
+  dueStatus?: string;
 }
 
 interface MemberDirectoryState {
@@ -29,11 +30,12 @@ export const useMemberDirectoryStore = create<MemberDirectoryState>((set) => ({
     status: [],
     plan: [],
     gender: [],
+    dueStatus: "",
   },
   setFilters: (newFilters) => set((state) => ({ 
     filters: { ...state.filters, ...newFilters } 
   })),
-  clearFilters: () => set({ filters: { status: [], plan: [], gender: [] } }),
+  clearFilters: () => set({ filters: { status: [], plan: [], gender: [], dueStatus: "" } }),
   
   // Default to table for desktop, but mobile will ignore this and force card mode
   viewMode: "table",

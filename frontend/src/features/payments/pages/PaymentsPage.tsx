@@ -72,23 +72,42 @@ export function PaymentsPage() {
               <PaymentsSkeleton mode={viewMode} />
             ) : payments.length === 0 ? (
               <EmptyPaymentsState variant={emptyVariant} />
-            ) : viewMode === 'table' ? (
-              <PaymentsTable
-                data={payments}
-                rowSelection={rowSelection}
-                onRowSelectionChange={setRowSelection}
-                sorting={sorting}
-                onSortingChange={setSorting}
-              />
             ) : (
-              <motion.div
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
-              >
-                {payments.map((payment, i) => (
-                  <PaymentCard key={payment.id} payment={payment} index={i} />
-                ))}
-              </motion.div>
+              <>
+                {/* Desktop View: table or cards layout depending on viewMode */}
+                <div className="hidden lg:block">
+                  {viewMode === 'table' ? (
+                    <PaymentsTable
+                      data={payments}
+                      rowSelection={rowSelection}
+                      onRowSelectionChange={setRowSelection}
+                      sorting={sorting}
+                      onSortingChange={setSorting}
+                    />
+                  ) : (
+                    <motion.div
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
+                    >
+                      {payments.map((payment, i) => (
+                        <PaymentCard key={payment.id} payment={payment} index={i} />
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Mobile View: always display cards layout */}
+                <div className="block lg:hidden">
+                  <motion.div
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}
+                  >
+                    {payments.map((payment, i) => (
+                      <PaymentCard key={payment.id} payment={payment} index={i} />
+                    ))}
+                  </motion.div>
+                </div>
+              </>
             )}
           </div>
         </div>

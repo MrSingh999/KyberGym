@@ -139,17 +139,18 @@ export function CreateGymForm({ onSuccess, onCancel }: CreateGymFormProps) {
           )}
         />
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-border-default">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border-default w-full">
           {onCancel && (
             <LoadingButton
               type="button"
               variant="outline"
               onClick={onCancel}
+              className="w-full sm:w-auto"
             >
               Cancel
             </LoadingButton>
           )}
-          <LoadingButton type="submit" isLoading={isCreating} className="min-w-[120px]">
+          <LoadingButton type="submit" isLoading={isCreating} className="w-full sm:w-auto min-w-[120px]">
             Create Gym
           </LoadingButton>
         </div>

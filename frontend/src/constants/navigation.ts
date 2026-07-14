@@ -10,7 +10,8 @@ import {
   Palette,
   Building2,
   Megaphone,
-  LifeBuoy
+  LifeBuoy,
+  ClipboardCheck
 } from "lucide-react";
 
 export type NavItem = {
@@ -58,6 +59,7 @@ export const OWNER_NAVIGATION: NavGroup[] = [
   {
     title: "Gym Activity",
     items: [
+      { name: "Attendance", href: "/admin/attendance", icon: ClipboardCheck },
       { name: "Workouts", href: "/admin/workouts", icon: Dumbbell },
       { name: "Exercises", href: "/admin/exercises", icon: Activity },
       { name: "QR Entry", href: "/admin/qr", icon: QrCode },
@@ -86,6 +88,7 @@ export const MEMBER_NAVIGATION: NavGroup[] = [
   {
     title: "Access & Billing",
     items: [
+      { name: "Attendance", href: "/member/attendance", icon: ClipboardCheck },
       { name: "QR Pass", href: "/member/qr", icon: QrCode },
       { name: "Payment History", href: "/member/payments", icon: CreditCard },
     ],

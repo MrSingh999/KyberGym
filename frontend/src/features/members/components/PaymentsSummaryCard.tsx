@@ -1,5 +1,6 @@
 import React from "react";
-import { CreditCard, ArrowRight, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { CreditCard, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
@@ -49,7 +50,7 @@ export function PaymentsSummaryCard({ payments, isLoading }: PaymentsSummaryCard
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-primary truncate">{payment.description}</p>
-                    <p className="text-xs text-secondary">{new Date(payment.date).toLocaleDateString()}</p>
+                    <p className="text-xs text-secondary">{format(parseISO(payment.date), "MMM d, yyyy")}</p>
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-primary shrink-0">${payment.amount}</span>

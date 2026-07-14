@@ -1,5 +1,5 @@
 import React from "react";
-import { CalendarRange, Clock } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
@@ -14,7 +14,7 @@ interface MembershipCardProps {
 
 function getDaysRemaining(endDate?: string): number | null {
   if (!endDate) return null;
-  const diff = new Date(endDate).getTime() - Date.now();
+  const diff = parseISO(endDate).getTime() - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
@@ -35,11 +35,11 @@ export function MembershipCard({ member, isLoading }: MembershipCardProps) {
             <div className="grid grid-cols-2 gap-3">
               <MetricCard
                 label="Start Date"
-                value={member.membershipStartDate ? new Date(member.membershipStartDate).toLocaleDateString() : "—"}
+                value={member.membershipStartDate ? format(parseISO(member.membershipStartDate), "MMM d, yyyy") : "—"}
               />
               <MetricCard
                 label="End Date"
-                value={member.membershipEndDate ? new Date(member.membershipEndDate).toLocaleDateString() : "—"}
+                value={member.membershipEndDate ? format(parseISO(member.membershipEndDate), "MMM d, yyyy") : "—"}
               />
               <MetricCard
                 label="Days Remaining"
@@ -48,7 +48,7 @@ export function MembershipCard({ member, isLoading }: MembershipCardProps) {
               />
               <MetricCard
                 label="Joined"
-                value={new Date(member.joiningDate).toLocaleDateString()}
+                value={format(parseISO(member.joiningDate), "MMM d, yyyy")}
               />
             </div>
           </div>

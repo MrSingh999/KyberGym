@@ -120,7 +120,7 @@ export function SuperAdminGymDetailPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-5xl mx-auto animate-fade-slide-up">
+    <div className="flex-1 w-full max-w-5xl mx-auto animate-fade-slide-up">
 
       {/* Back Button */}
       <button
@@ -132,32 +132,36 @@ export function SuperAdminGymDetailPage() {
       </button>
 
       {/* Header */}
-      <div className="flex items-start gap-4 mb-8">
-        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-          <Building2 className="w-7 h-7 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight truncate">
-              {gym.name}
-            </h1>
-            <Badge variant={gym.isActive ? "success" : "secondary"} className="text-[10px]">
-              {gym.isActive ? "Active" : "Suspended"}
-            </Badge>
-            <Badge variant={subscriptionBadge[gym.subscription?.status] || "secondary"} className="text-[10px]">
-              {gym.subscription?.status}
-            </Badge>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex items-start gap-4 flex-1 min-w-0 w-full">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Building2 className="w-7 h-7 text-primary" />
           </div>
-          <p className="text-text-muted text-xs font-mono mt-1">
-            {gym.subdomain && `${gym.subdomain}.`} Created {format(parseISO(gym.createdAt), "MMMM d, yyyy")}
-          </p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight truncate">
+                {gym.name}
+              </h1>
+              <div className="flex items-center gap-1.5">
+                <Badge variant={gym.isActive ? "success" : "secondary"} className="text-[10px] px-2 py-0.5 shrink-0">
+                  {gym.isActive ? "Active" : "Suspended"}
+                </Badge>
+                <Badge variant={subscriptionBadge[gym.subscription?.status] || "secondary"} className="text-[10px] px-2 py-0.5 shrink-0">
+                  {gym.subscription?.status}
+                </Badge>
+              </div>
+            </div>
+            <p className="text-text-muted text-xs font-mono mt-1">
+              {gym.subdomain && `${gym.subdomain}.`} Created {format(parseISO(gym.createdAt), "MMMM d, yyyy")}
+            </p>
+          </div>
         </div>
         <LoadingButton
           variant={gym.isActive ? "destructive" : "outline"}
           size="sm"
           onClick={handleToggleActive}
           isLoading={isActivating || isSuspending}
-          className="text-xs cursor-pointer shrink-0"
+          className="w-full sm:w-auto text-xs cursor-pointer shrink-0 mt-2 sm:mt-0"
         >
           {gym.isActive ? "Suspend" : "Activate"}
         </LoadingButton>
@@ -332,15 +336,17 @@ function InfoRow({ label, value, icon, badge }: {
   badge?: "success" | "warning" | "destructive" | "secondary";
 }) {
   return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-xs text-text-muted font-mono flex items-center gap-1.5">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 gap-1 sm:gap-2">
+      <span className="text-xs text-text-muted font-mono flex items-center gap-1.5 shrink-0">
         {icon}
         {label}
       </span>
       {badge ? (
-        <Badge variant={badge} className="text-[10px] px-2 py-0.5">{value}</Badge>
+        <Badge variant={badge} className="text-[10px] px-2 py-0.5 w-fit shrink-0">{value}</Badge>
       ) : (
-        <span className="text-xs font-semibold text-text-primary font-mono tabular-nums">{value}</span>
+        <span className="text-xs font-semibold text-text-primary font-mono tabular-nums truncate max-w-full sm:max-w-[240px] text-left sm:text-right" title={value}>
+          {value}
+        </span>
       )}
     </div>
   );
