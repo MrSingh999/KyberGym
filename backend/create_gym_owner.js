@@ -1,5 +1,20 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 async function main() {
-  const BACKEND_URL = 'http://localhost:5000/api';
+  const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000/api';
+  const email = process.env.SUPER_ADMIN_EMAIL;
+  const password = process.env.SUPER_ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    console.error('Error: SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD must be defined in the .env file.');
+    process.exit(1);
+  }
   
   try {
     console.log('1. Logging in as Super Admin...');
@@ -9,8 +24,8 @@ async function main() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        email: 'admin@kybergym.com',
-        password: 'Admin@123'
+        email,
+        password
       })
     });
     
