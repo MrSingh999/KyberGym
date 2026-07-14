@@ -1,7 +1,9 @@
+import { format, differenceInDays, startOfDay, parseISO } from "date-fns";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserPlus, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useDashboardDues } from "../hooks/useDashboardDues";
 import { useDashboardRevenue } from "../hooks/useDashboardRevenue";
 import { KpiGrid } from "../components/KpiGrid";
@@ -24,29 +26,31 @@ export function DashboardPage() {
   const [dueTimeframe, setDueTimeframe] = useState<"today" | "3days" | "7days">("7days");
   const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "due">("all");
 
-  const { data: dues, isLoading: isDuesLoading } = useDashboardDues();
-  const { data: revenueData, isLoading: isRevenueLoading, isError: isRevenueError, error: revenueError, refetch: refetchRevenue } = useDashboardRevenue();
+  const {
+    data: dues,
+    isLoading: isDuesLoading,
+    isError: isDuesError,
+    error: duesError,
+    refetch: refetchDues,
+  } = useDashboardDues();
+  const {
+    data: revenueData,
+    isLoading: isRevenueLoading,
+    isError: isRevenueError,
+    error: revenueError,
+    refetch: refetchRevenue,
+  } = useDashboardRevenue();
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const parsed = parseISO(dateStr);
+    if (isNaN(parsed.getTime())) return "";
+    return format(parsed, "MMM d, yyyy");
   };
 
   const getDaysDiff = (dateStr: string) => {
     if (!dateStr) return 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(dateStr);
-    end.setHours(0, 0, 0, 0);
-    const diffTime = end.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return differenceInDays(startOfDay(parseISO(dateStr)), startOfDay(new Date()));
   };
 
   const activeDues =
@@ -88,8 +92,8 @@ export function DashboardPage() {
         </Button>
       </div>
 
-      {/* KPI Cards */}
-      <KpiGrid activeFilter={dueFilter} onFilterChange={setDueFilter} />
+      {/* Overview Cards */}
+      <KpiGrid />
 
       {/* Quick Actions */}
       <QuickActions />
@@ -97,7 +101,7 @@ export function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Left Column - Dues Tracker + Recent Members */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
 
           {/* Dues Tracker */}
@@ -124,11 +128,12 @@ export function DashboardPage() {
                         key={tf.val}
                         type="button"
                         onClick={() => setDueTimeframe(tf.val)}
-                        className={`px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer ${
+                        className={cn(
+                          "px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer",
                           dueTimeframe === tf.val
                             ? "bg-primary text-primary-foreground shadow-sm"
-                            : "text-text-secondary hover:text-text-primary"
-                        }`}
+                            : "text-text-secondary hover:text-text-primary",
+                        )}
                       >
                         {tf.label}
                       </button>
@@ -138,21 +143,21 @@ export function DashboardPage() {
               </div>
               <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
                 {[
-                  { key: "all" as const, label: `All Dues (${totalDuesCount})`, labelMobile: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold" },
-                  { key: "overdue" as const, label: `Overdue (${overdueCount})`, labelMobile: `Overdue (${overdueCount})`, activeClass: "bg-error/10 text-error border border-error/20 font-bold" },
-                  { key: "due" as const, label: `Due soon (${dueCount})`, labelMobile: `Due (${dueCount})`, activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold" },
+                  { key: "all" as const, label: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold" },
+                  { key: "overdue" as const, label: `Overdue (${overdueCount})`, activeClass: "bg-error/10 text-error border border-error/20 font-bold" },
+                  { key: "due" as const, label: `Due (${dueCount})`, activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold" },
                 ].map((f) => (
                   <button
                     key={f.key}
                     onClick={() => setDueFilter(f.key)}
-                    className={`px-3 py-1 rounded-[4px] text-xs transition-all duration-150 cursor-pointer shrink-0 ${
+                    className={cn(
+                      "px-3 py-1 rounded-[4px] text-xs transition-all duration-150 cursor-pointer shrink-0",
                       dueFilter === f.key
                         ? f.activeClass
-                        : "text-text-secondary hover:text-text-primary border border-transparent"
-                    }`}
+                        : "text-text-secondary hover:text-text-primary border border-transparent",
+                    )}
                   >
-                    <span className="hidden sm:inline">{f.label}</span>
-                    <span className="sm:hidden">{f.labelMobile}</span>
+                    {f.label}
                   </button>
                 ))}
               </div>
@@ -164,6 +169,12 @@ export function DashboardPage() {
                   <Skeleton key={i} className="h-24 w-full rounded-xl" />
                 ))}
               </div>
+            ) : isDuesError ? (
+              <ErrorState
+                title="Failed to load dues"
+                message={duesError?.message || "Could not load membership dues data."}
+                onRetry={() => refetchDues()}
+              />
             ) : filteredDues.length === 0 ? (
               <div className="text-center py-14">
                 <div className="w-12 h-12 border border-border-default rounded-[8px] flex items-center justify-center mx-auto mb-4 text-text-secondary">
@@ -189,43 +200,38 @@ export function DashboardPage() {
                 {filteredDues.map((member, idx) => {
                   const daysDiff = getDaysDiff(member.endDate);
                   const isOverdue = daysDiff < 0;
-
                   return (
                     <div
                       key={member._id || idx}
-                      className={`p-4 rounded-[8px] border transition-all duration-200 ${
-                        isOverdue
-                          ? "bg-error/[0.01] border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
-                          : "bg-warning/[0.01] border-warning/20 hover:border-warning/35 border-l-[3px] border-l-warning"
-                      }`}
+                    className={cn(
+                      "p-4 rounded-[8px] border transition-all duration-200",
+                      isOverdue
+                        ? "bg-error/[0.01] border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
+                        : "bg-warning/[0.01] border-warning/20 hover:border-warning/35 border-l-[3px] border-l-warning",
+                    )}
                     >
-                      <div className="flex flex-col justify-between h-full gap-4">
+                      <div className="flex flex-col justify-between h-full gap-3">
                         <div className="space-y-2">
                           <h4 className="font-bold text-sm text-text-primary truncate">
                             {member.memberId?.fullName || "Gym Member"}
                           </h4>
-                          <div className="flex items-center space-x-2 mt-1">
+                          <div className="flex items-center gap-2">
                             <MemberStatusBadge status={isOverdue ? "Expired" : "Expiring Soon"} />
                             <span className="text-[10px] text-text-muted font-mono">
                               {member.memberId?.memberCode}
                             </span>
                           </div>
-                          <div className="flex items-center text-xs text-text-secondary gap-1.5 font-mono">
-                            <span className="text-text-muted">Phone:</span>
-                            <span>{member.memberId?.phone || "N/A"}</span>
-                          </div>
-                          <div className="flex items-center text-xs text-text-secondary gap-1.5 font-mono">
-                            <span className="text-text-muted">Due:</span>
+                          <div className="text-xs text-text-secondary font-mono">
+                            Due:{" "}
                             <strong className="text-text-primary">
                               {formatDate(member.endDate)}
                             </strong>
                           </div>
                         </div>
-
-                        <div className="flex items-center justify-between border-t border-border-default pt-3 mt-1">
+                        <div className="flex items-center justify-between border-t border-border-default pt-3">
                           <div>
                             <p className="text-[9px] text-text-muted uppercase font-semibold font-mono">
-                              Dues Amount
+                              Amount
                             </p>
                             <p className="text-sm font-bold text-text-primary font-mono">
                               ₹{(member.amount || 0).toLocaleString()}
@@ -234,11 +240,11 @@ export function DashboardPage() {
                           <div className="text-right">
                             {isOverdue ? (
                               <span className="text-[10px] text-error font-semibold font-mono block mb-1">
-                                Expired {Math.abs(daysDiff)}d ago
+                                {Math.abs(daysDiff)}d overdue
                               </span>
                             ) : (
                               <span className="text-[10px] text-warning font-semibold font-mono block mb-1">
-                                Expires in {daysDiff}d
+                                {daysDiff}d left
                               </span>
                             )}
                             <Button
@@ -262,13 +268,13 @@ export function DashboardPage() {
           <RecentMembers />
         </div>
 
-        {/* Right Column - Activity Feed */}
+        {/* Right Column */}
         <div className="lg:col-span-1 space-y-6">
           <ActivityFeed />
         </div>
       </div>
 
-      {/* Revenue Chart Section */}
+      {/* Revenue Chart */}
       <WidgetContainer className="min-h-[350px]">
         <WidgetHeader title="Revenue Trend" description="Past 7 days collection" />
         <WidgetBody isLoading={false} isEmpty={false}>

@@ -19,7 +19,7 @@ export function BottomNav({ groups }: BottomNavProps) {
     .slice(0, 4);
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-[64px] pb-safe bg-surface/90 backdrop-blur-md border-t border-subtle flex items-center justify-around z-40">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-[64px] pb-safe bg-surface/90 backdrop-blur-md border-t border-border-default flex items-center justify-around z-40">
       {primaryLinks.map((item) => {
         const isActive = location.pathname.startsWith(item.href) && 
                          (!["/super-admin", "/admin", "/member"].includes(item.href) || location.pathname === item.href);
@@ -29,11 +29,11 @@ export function BottomNav({ groups }: BottomNavProps) {
             key={item.name}
             to={item.href}
             className={cn(
-              "flex flex-col items-center justify-center w-full h-full space-y-1 touch-target-icon transition-colors",
-              isActive ? "text-primary" : "text-muted hover:text-primary"
+              "flex flex-col items-center justify-center w-full h-full gap-1 touch-target-icon transition-colors",
+              isActive ? "text-text-primary" : "text-text-muted hover:text-text-primary"
             )}
           >
-            <item.icon className="w-5 h-5" />
+            <item.icon className="size-5" />
             <span className="text-[10px] font-medium tracking-tight">{item.name}</span>
           </NavLink>
         );
@@ -42,9 +42,9 @@ export function BottomNav({ groups }: BottomNavProps) {
       {/* "More" button triggers the slide-out drawer for remaining links */}
       <button 
         onClick={() => setMobileDrawerOpen(true)}
-        className="flex flex-col items-center justify-center w-full h-full space-y-1 touch-target-icon text-muted hover:text-primary transition-colors"
+        className="flex flex-col items-center justify-center w-full h-full gap-1 touch-target-icon text-text-muted hover:text-text-primary transition-colors"
       >
-        <MoreHorizontal className="w-5 h-5" />
+        <MoreHorizontal className="size-5" />
         <span className="text-[10px] font-medium tracking-tight">More</span>
       </button>
     </nav>

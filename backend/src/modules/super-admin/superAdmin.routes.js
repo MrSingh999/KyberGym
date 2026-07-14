@@ -28,6 +28,11 @@ router.post(
 router.use(authenticateSuperAdmin);
 
 router.get(
+  '/me',
+  asyncHandler(SuperAdminController.getProfile)
+);
+
+router.get(
   '/dashboard',
   asyncHandler(SuperAdminController.getDashboard)
 );

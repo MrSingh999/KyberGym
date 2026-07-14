@@ -1,3 +1,4 @@
+import { format, parseISO } from "date-fns";
 import { CreditCard, UserPlus, RefreshCw, Dumbbell, Activity } from "lucide-react";
 import { useDashboardActivities } from "../hooks/useDashboardActivities";
 import { WidgetContainer, WidgetHeader, WidgetBody } from "../widgets/WidgetContainer";
@@ -68,12 +69,7 @@ export function ActivityFeed() {
                       {activity.description}
                     </p>
                     <span className="text-[10px] text-text-muted mt-1 font-mono">
-                      {new Date(activity.timestamp).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {format(parseISO(activity.timestamp), "MMM d, h:mm a")}
                     </span>
                   </div>
                 </div>

@@ -28,12 +28,12 @@ export function EmptyState({
       {...props}
     >
       {icon && (
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-hover text-muted shadow-sm ring-1 ring-subtle">
+        <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-surface-hover text-text-muted shadow-sm ring-1 ring-border-default">
           {icon}
         </div>
       )}
-      <h3 className="mb-2 text-lg font-heading font-semibold text-primary">{title}</h3>
-      <p className="mb-6 max-w-sm text-sm text-secondary leading-relaxed">
+      <h3 className="mb-2 text-lg font-semibold text-text-primary">{title}</h3>
+      <p className="mb-6 max-w-sm text-sm text-text-secondary leading-relaxed">
         {description}
       </p>
       {actionLabel && onAction && (

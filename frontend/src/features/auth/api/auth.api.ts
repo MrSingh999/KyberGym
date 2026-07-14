@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiClient } from "../../../lib/apiClient";
+import { useAuthStore } from "../../../store/auth.store";
 import type { LoginFormData } from "../schemas/auth.schema";
 
 const SUPER_ADMIN_API = import.meta.env.VITE_API_URL
@@ -64,6 +65,25 @@ export const authApi = {
   },
 
   getMe: async (): Promise<UserProfile> => {
+    // Super admin uses a separate JWT secret and has no gym context,
+    // so apiClient (which hits tenant-scoped /auth/me) would 401 and log them out.
+    const storedUser = useAuthStore.getState().user;
+    if (storedUser?.role === "superadmin") {
+      const token = useAuthStore.getState().token;
+      const response = await axios.get(`${SUPER_ADMIN_API}/super-admin/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      const sa = response.data.data.superAdmin;
+      return {
+        id: sa.id,
+        name: sa.fullName,
+        email: sa.email,
+        role: "superadmin",
+        gymId: "",
+        isEmailVerified: true,
+      };
+    }
     const response = await apiClient.get("/auth/me");
     return response.data.data.user as UserProfile;
   },

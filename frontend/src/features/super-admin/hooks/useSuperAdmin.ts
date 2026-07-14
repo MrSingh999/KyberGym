@@ -51,7 +51,7 @@ export function useSAGyms(params: UseSAGymsParams = {}) {
       const gyms = response.data.data;
       const meta = response.data.meta;
       return {
-        data: (gyms || []).map((g: any): GymTenantListItem => ({
+        data: (gyms || []).map((g: Record<string, unknown>): GymTenantListItem => ({
           id: g._id,
           name: g.name,
           subdomain: g.subdomain,
@@ -62,7 +62,6 @@ export function useSAGyms(params: UseSAGymsParams = {}) {
         meta: meta || { page: 1, limit: 10, total: 0, totalPages: 0 },
       };
     },
-    enabled: true,
     staleTime: 30 * 1000,
   });
 }

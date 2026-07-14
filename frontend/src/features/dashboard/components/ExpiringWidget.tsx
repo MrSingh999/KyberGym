@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { differenceInDays, startOfDay, parseISO } from "date-fns";
 import { CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useDashboardDues, DueMember } from "../hooks/useDashboardDues";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/data-display/Avatar";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
+import { cn } from "@/lib/utils";
 
 type Timeframe = "today" | "3days" | "7days";
 
@@ -25,11 +27,7 @@ export function ExpiringWidget() {
 
   const getDaysDiff = (dateStr: string) => {
     if (!dateStr) return 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(dateStr);
-    end.setHours(0, 0, 0, 0);
-    return Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return differenceInDays(startOfDay(parseISO(dateStr)), startOfDay(new Date()));
   };
 
   return (
@@ -48,11 +46,12 @@ export function ExpiringWidget() {
                 key={tf.val}
                 type="button"
                 onClick={() => setTimeframe(tf.val)}
-                className={`px-2 py-0.5 rounded-[4px] text-[9px] font-bold transition-all duration-200 cursor-pointer ${
+                className={cn(
+                  "px-2 py-0.5 rounded-[4px] text-[9px] font-bold transition-all duration-200 cursor-pointer",
                   timeframe === tf.val
                     ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-text-secondary hover:text-text-primary"
-                }`}
+                    : "text-text-secondary hover:text-text-primary",
+                )}
               >
                 {tf.label}
               </button>
@@ -97,11 +96,12 @@ export function ExpiringWidget() {
               return (
                 <div
                   key={member._id}
-                  className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer hover:bg-surface-hover/30 ${
-                    isOverdue
-                      ? "border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
-                      : "border-border-default hover:border-border-hover border-l-[3px] border-l-warning"
-                  }`}
+                  className={cn(
+                  "flex items-center justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer hover:bg-surface-hover/30",
+                  isOverdue
+                    ? "border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
+                    : "border-border-default hover:border-border-hover border-l-[3px] border-l-warning",
+                )}
                   onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?._id}`)}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">

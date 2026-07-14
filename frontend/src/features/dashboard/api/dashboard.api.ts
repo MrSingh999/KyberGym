@@ -1,3 +1,4 @@
+import { subDays, format } from "date-fns";
 import { apiClient } from "@/lib/apiClient";
 import { DashboardStats } from "../hooks/useDashboardStats";
 import { DueTrackingResponse } from "../hooks/useDashboardDues";
@@ -30,16 +31,15 @@ export async function fetchRevenueData(days: number = 7): Promise<RevenueDataPoi
 
   const dayMap = new Map<string, { revenue: number; members: Set<string> }>();
 
+  const today = new Date();
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().split("T")[0];
+    const key = format(subDays(today, i), "yyyy-MM-dd");
     dayMap.set(key, { revenue: 0, members: new Set() });
   }
 
   for (const payment of payments) {
     if (payment.status !== "completed") continue;
-    const dateKey = new Date(payment.paymentDate).toISOString().split("T")[0];
+    const dateKey = format(new Date(payment.paymentDate), "yyyy-MM-dd");
     if (dayMap.has(dateKey)) {
       const entry = dayMap.get(dateKey)!;
       entry.revenue += payment.amount;

@@ -44,7 +44,6 @@ export interface GymTenantListItem {
   subdomain?: string;
   subscriptionStatus: string;
   isActive: boolean;
-  memberCount?: number;
   createdAt: string;
 }
 

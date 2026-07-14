@@ -42,13 +42,16 @@ export function Sidebar({ groups, role }: SidebarProps) {
                   to={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
                   className={cn(
-                    "flex items-center gap-2.5 px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all relative group cursor-pointer border",
+                    "flex items-center gap-2.5 px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all duration-150 relative group cursor-pointer border press-effect",
                     isActive 
-                      ? "bg-surface border-border-default text-text-primary font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-none" 
-                      : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-hover/30"
+                      ? "bg-surface border-border-default text-text-primary font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:shadow-none" 
+                      : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-hover/50"
                   )}
                 >
-                  <item.icon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-text-primary" : "text-text-muted group-hover:text-text-primary")} />
+                  {isActive && !sidebarCollapsed && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-text-primary rounded-full" />
+                  )}
+                  <item.icon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-text-primary" : "text-text-muted group-hover:text-text-primary transition-colors duration-150")} />
                   
                   {!sidebarCollapsed && <span>{item.name}</span>}
                 </NavLink>

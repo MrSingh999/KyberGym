@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/apiClient";
 import { useGymStore } from "@/store/gym.store";
+import { fetchDueTracking } from "../api/dashboard.api";
 
 export interface DueMember {
   _id: string;
@@ -29,10 +29,7 @@ export function useDashboardDues() {
 
   return useQuery<DueTrackingResponse>({
     queryKey: ["dashboard", "due-tracking", selectedGymId],
-    queryFn: async () => {
-      const response = await apiClient.get("/dashboard/due-tracking");
-      return response.data.data;
-    },
+    queryFn: fetchDueTracking,
     enabled: !!selectedGymId,
     staleTime: 5 * 60 * 1000,
   });

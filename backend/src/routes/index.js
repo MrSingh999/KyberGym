@@ -29,8 +29,10 @@ import notificationRoutes    from '../modules/notification/notification.routes.j
 import deliveryLogRoutes     from '../modules/deliveryLog/deliveryLog.routes.js';
 import gymRoutes             from '../modules/gyms/gym.routes.js';
 import memberQrRoutes        from '../modules/memberQr/memberQr.routes.js';
+import superAdminRoutes      from '../modules/super-admin/superAdmin.routes.js';
 
 // ── Route Registration ─────────────────────────────────────────────────────
+router.use('/super-admin',         superAdminRoutes);
 router.use('/auth',               authRoutes);
 router.use('/members',            memberRoutes);
 router.use('/membership-plans',   membershipPlanRoutes);

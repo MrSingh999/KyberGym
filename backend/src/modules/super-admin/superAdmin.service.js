@@ -12,6 +12,14 @@ import { logger } from '../../config/logger.js';
 
 export class SuperAdminService {
 
+  static async getProfile(superAdminId) {
+    const superAdmin = await SuperAdmin.findById(superAdminId);
+    if (!superAdmin) {
+      throw createError.NotFound('Super Admin not found');
+    }
+    return superAdmin;
+  }
+
   static async login(email, password) {
     const superAdmin = await SuperAdmin.findOne({ email });
     if (!superAdmin) {

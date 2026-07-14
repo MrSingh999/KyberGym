@@ -1,4 +1,3 @@
-import React from "react";
 import { EmptyState, EmptyStateProps } from "@/components/feedback/EmptyState";
 import { cn } from "@/lib/utils";
 

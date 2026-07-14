@@ -4,6 +4,16 @@ import { ApiSuccess } from '../../shared/ApiSuccess.js';
 
 export class SuperAdminController {
 
+  static async getProfile(req, res) {
+    return ApiSuccess.send(res, httpStatus.OK, 'Profile retrieved', {
+      superAdmin: {
+        id: req.superAdmin._id,
+        fullName: req.superAdmin.fullName,
+        email: req.superAdmin.email,
+      },
+    });
+  }
+
   static async login(req, res) {
     const { email, password } = req.body;
     const { superAdmin, token } = await SuperAdminService.login(email, password);

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/apiClient";
 import { useGymStore } from "@/store/gym.store";
+import { fetchDashboardStats } from "../api/dashboard.api";
 
 export interface DashboardStats {
   totalMembers: number;
@@ -15,10 +15,7 @@ export function useDashboardStats() {
 
   return useQuery<DashboardStats>({
     queryKey: ["dashboard", "stats", selectedGymId],
-    queryFn: async () => {
-      const response = await apiClient.get(`/dashboard/overview`);
-      return response.data.data;
-    },
+    queryFn: fetchDashboardStats,
     enabled: !!selectedGymId,
     staleTime: 5 * 60 * 1000,
   });

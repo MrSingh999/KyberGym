@@ -78,49 +78,49 @@ export function Navbar() {
   };
 
   return (
-    <header className="h-[64px] border-b border-subtle bg-canvas/80 backdrop-blur-md sticky top-0 flex items-center justify-between px-4 lg:px-6 z-30">
+    <header className="h-[64px] border-b border-border-default bg-canvas/80 backdrop-blur-md sticky top-0 flex items-center justify-between px-4 lg:px-6 z-30">
       <div className="flex items-center">
         <button
           onClick={() => setMobileDrawerOpen(true)}
-          className="p-2 -ml-2 mr-2 lg:hidden text-muted hover:text-primary"
+          className="p-2 -ml-2 mr-2 lg:hidden text-text-muted hover:text-text-primary transition-colors"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="size-5" />
         </button>
         <Breadcrumbs />
       </div>
 
-      <div className="flex items-center space-x-2 sm:space-x-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={() => setSearchOpen(true)}
-          className="hidden sm:flex items-center text-sm text-muted bg-surface border border-default hover:border-hover px-3 py-1.5 rounded-md transition-all shadow-sm w-64"
+          className="hidden sm:flex items-center text-sm text-text-muted bg-surface border border-border-default hover:border-border-hover px-3 py-1.5 rounded-md transition-all shadow-sm w-64"
         >
-          <Search className="w-4 h-4 mr-2" />
+          <Search className="size-4 mr-2" />
           <span>Search...</span>
-          <kbd className="ml-auto text-xs bg-canvas px-1.5 py-0.5 rounded border border-subtle font-sans">
+          <kbd className="ml-auto text-xs bg-canvas px-1.5 py-0.5 rounded border border-border-default font-sans text-text-muted">
             ⌘K
           </kbd>
         </button>
 
         <button
           onClick={() => setSearchOpen(true)}
-          className="sm:hidden p-2 text-muted hover:text-primary rounded-full hover:bg-surface-hover transition-colors"
+          className="sm:hidden p-2 text-text-muted hover:text-text-primary rounded-full hover:bg-surface-hover transition-colors"
         >
-          <Search className="w-5 h-5" />
+          <Search className="size-5" />
         </button>
 
         <NotificationCenter />
 
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-full hover:bg-surface-hover transition-colors text-muted hover:text-primary outline-none"
+          className="p-2 rounded-full hover:bg-surface-hover transition-colors text-text-muted hover:text-text-primary outline-none"
         >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
         </button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 ml-2 p-1 rounded-full hover:bg-surface-hover transition-colors outline-none">
-              <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm">
+              <div className="size-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm">
                 {initials}
               </div>
             </button>
@@ -128,28 +128,28 @@ export function Navbar() {
           <DropdownMenuContent className="w-56 mr-4" align="end">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span className="font-medium text-primary truncate">{user?.name || "User"}</span>
-                <span className="text-xs text-muted font-normal truncate">{user?.email}</span>
+                <span className="font-medium text-text-primary truncate">{user?.name || "User"}</span>
+                <span className="text-xs text-text-muted font-normal truncate">{user?.email}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => navigate(getProfilePath())}>
-                <User className="w-4 h-4 mr-2" />
+                <User className="size-4 mr-2" />
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate(getDashboardPath())}>
-                <Shield className="w-4 h-4 mr-2" />
+                <Shield className="size-4 mr-2" />
                 Dashboard
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/admin/settings")}>
-                <Settings className="w-4 h-4 mr-2" />
+                <Settings className="size-4 mr-2" />
                 Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="size-4 mr-2" />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

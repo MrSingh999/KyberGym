@@ -1,3 +1,4 @@
+import { format, parseISO } from "date-fns";
 import { Users, Phone, Calendar, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useRecentMembers } from "../hooks/useRecentMembers";
@@ -102,7 +103,7 @@ export function RecentMembers() {
                   </Badge>
                   <span className="flex items-center gap-1 text-[9px] text-text-muted font-mono">
                     <Calendar className="h-2.5 w-2.5" />
-                    {new Date(member.joinDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    {format(parseISO(member.joinDate), "MMM d")}
                   </span>
                 </div>
               </div>

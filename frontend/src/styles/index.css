@@ -30,9 +30,11 @@
   --secondary-btn-hover-border: #a1a1aa;
   --secondary-btn-text: #09090b;
 
-  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-elevated-medium: 0 20px 48px rgba(0, 0, 0, 0.07);
   --shadow-glow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 2px rgba(0, 0, 0, 0.08);
   --gradient-accent: linear-gradient(180deg, #09090b, #52525b);
   --gradient-card-border: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.01));
 
@@ -87,7 +89,9 @@
 
   --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.8);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --shadow-elevated-medium: 0 20px 48px rgba(0, 0, 0, 0.7);
   --shadow-glow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-focus: 0 0 0 2px rgba(255, 255, 255, 0.12);
   --gradient-accent: linear-gradient(180deg, #ffffff, #a1a1aa);
   --gradient-card-border: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01));
 
@@ -153,7 +157,9 @@
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --shadow-card: var(--shadow-card);
   --shadow-elevated: var(--shadow-hover);
+  --shadow-elevated-lg: var(--shadow-elevated-medium);
   --shadow-glow: var(--shadow-glow);
+  --shadow-focus: var(--shadow-focus);
 
   --animate-fade-slide-up: fade-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -240,6 +246,7 @@
     font-weight: 600;
     letter-spacing: -0.03em;
     color: var(--text-primary);
+    text-wrap: balance;
   }
 }
 
@@ -403,6 +410,57 @@ textarea {
 
 .light .bg-radial-vignette {
   background: radial-gradient(circle, transparent 45%, rgba(255, 255, 255, 0.8) 100%);
+}
+
+/* ─── NOISE TEXTURE OVERLAY ─── */
+.bg-noise {
+  position: relative;
+}
+.bg-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: overlay;
+}
+
+.dark .bg-noise::before {
+  opacity: 0.04;
+}
+
+/* ─── ENHANCED CARD INTERACTIONS ─── */
+.card-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-elevated-medium);
+}
+
+.card-hover:active {
+  transform: translateY(0);
+}
+
+/* ─── ACTIVE PRESS UTILITY ─── */
+.press-effect {
+  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.press-effect:active {
+  transform: scale(0.98);
+}
+
+/* ─── SUBTLE DIVIDER ─── */
+.divider-subtle {
+  height: 1px;
+  background: var(--border-default);
+  border: none;
+  margin: 0;
 }
 
 /* Hide scrollbar for mobile tab bar */
