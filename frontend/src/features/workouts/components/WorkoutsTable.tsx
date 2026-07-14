@@ -33,7 +33,7 @@ export function WorkoutsTable({
       header: ({ column }) => <SortHeader label="Workout" column={column} />,
       cell: ({ row }) => (
         <div>
-          <span className="font-medium text-primary">{row.original.title}</span>
+          <span className="font-medium text-primary font-mono text-[13px]">{row.original.title}</span>
           {row.original.description && (
             <p className="text-xs text-muted truncate max-w-[300px] mt-0.5">
               {row.original.description}
@@ -49,10 +49,10 @@ export function WorkoutsTable({
         const val = getValue<WorkoutListItem["assignmentType"]>();
         return (
           <span className={cn(
-            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border font-mono",
             val === "ALL"
-              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-              : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/15"
+              : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 dark:border-indigo-500/15",
           )}>
             {val === "ALL" ? "All Members" : "Selected"}
           </span>
@@ -64,7 +64,7 @@ export function WorkoutsTable({
       id: "members",
       header: "Members",
       cell: ({ row }) => (
-        <span className="flex items-center gap-1.5 text-sm text-muted">
+        <span className="flex items-center gap-1.5 text-sm text-muted font-mono">
           <Users className="w-3.5 h-3.5" />
           {row.original.assignedMemberCount}
         </span>
@@ -75,7 +75,7 @@ export function WorkoutsTable({
       id: "days",
       header: "Days",
       cell: ({ row }) => (
-        <span className="flex items-center gap-1.5 text-sm text-muted">
+        <span className="flex items-center gap-1.5 text-sm text-muted font-mono">
           <Calendar className="w-3.5 h-3.5" />
           {row.original.daysCount}
         </span>
@@ -92,7 +92,7 @@ export function WorkoutsTable({
       accessorKey: "createdAt",
       header: ({ column }) => <SortHeader label="Created" column={column} />,
       cell: ({ getValue }) => (
-        <span className="text-sm text-muted">
+        <span className="text-sm text-muted font-mono">
           {new Date(getValue<string>()).toLocaleDateString()}
         </span>
       ),
@@ -112,13 +112,13 @@ export function WorkoutsTable({
                 onClick={() => navigate(`/admin/workouts/${row.original.id}/edit`)}
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
               >
-                <Edit3 className="w-3.5 h-3.5" /> Edit
+                <Edit3 className="h-3.5 w-3.5" /> Edit
               </button>
               <button
                 onClick={() => onDelete(row.original.id)}
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-destructive transition-colors"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Deactivate
+                <Trash2 className="h-3.5 w-3.5" /> Deactivate
               </button>
             </div>
           </details>
@@ -139,17 +139,17 @@ export function WorkoutsTable({
   });
 
   return (
-    <div className="rounded-xl border border-default overflow-hidden bg-surface shadow-sm">
+    <div className="rounded-[16px] border border-default overflow-hidden bg-surface shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-default bg-surface-hover">
+              <tr key={hg.id} className="border-b border-default bg-elevated/50">
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     style={{ width: header.getSize() }}
-                    className="text-left px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wide"
+                    className="text-left px-5 py-3.5 text-[10px] font-bold text-muted uppercase tracking-wider font-mono"
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
@@ -163,11 +163,11 @@ export function WorkoutsTable({
                 key={row.id}
                 onClick={() => navigate(`/admin/workouts/${row.original.id}`)}
                 className={cn(
-                  "border-b border-subtle hover:bg-surface-hover transition-colors cursor-pointer",
+                  "border-b border-default/30 hover:bg-surface-hover transition-colors cursor-pointer table-row-hover table-zebra",
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3.5">
+                  <td key={cell.id} className="px-5 py-3">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

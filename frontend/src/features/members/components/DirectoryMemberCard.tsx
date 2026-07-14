@@ -1,6 +1,5 @@
 import React from "react";
-import { MoreVertical, Phone, ChevronRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Phone, Calendar, History, Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
@@ -11,66 +10,103 @@ interface DirectoryMemberCardProps {
   onSelect?: () => void;
 }
 
+const formatDate = (dateStr: string | undefined | null) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+};
+
 export function DirectoryMemberCard({ member, isSelected, onSelect }: DirectoryMemberCardProps) {
+  const initials = member.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
   return (
-    <Card className={`relative overflow-hidden transition-all ${isSelected ? 'ring-2 ring-primary bg-primary/5' : 'hover:border-hover'}`}>
-      <CardContent className="p-4 flex flex-col gap-3">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            {/* Custom Checkbox area for mobile bulk select */}
-            {onSelect && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onSelect(); }}
-                className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary border-primary' : 'border-default bg-surface'}`}
-              >
-                {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-surface" />}
-              </button>
-            )}
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={member.profilePhoto} />
-              <AvatarFallback>{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col min-w-0">
-              <span className="font-semibold text-primary truncate text-sm">{member.name}</span>
-              <span className="text-xs text-secondary truncate">{member.memberCode}</span>
+    <div className={`p-4 space-y-3 bg-surface border border-border-default rounded-[16px] transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`}>
+      {/* Header row: avatar + name/gender/dob, status badge */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center space-x-3 min-w-0">
+          {onSelect && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(); }}
+              className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary border-primary' : 'border-border-default bg-surface'}`}
+            >
+              {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-surface" />}
+            </button>
+          )}
+          <Avatar className="w-9 h-9 rounded-full border border-border-default shrink-0">
+            <AvatarImage src={member.profilePhoto} />
+            <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-black uppercase shrink-0">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <h3 className="font-bold text-sm text-text-primary leading-snug truncate">{member.name}</h3>
+            <div className="flex items-center text-xs text-text-muted mt-1 space-x-2">
+              <span className="capitalize">{member.gender || "—"}</span>
+              <span>&bull;</span>
+              <span className="font-mono">{member.membershipStatus}</span>
             </div>
           </div>
-          <button className="h-8 w-8 rounded-full flex items-center justify-center text-muted hover:bg-surface-hover transition-colors touch-target">
-            <MoreVertical className="h-4 w-4" />
+        </div>
+        <div className="shrink-0">
+          <MemberStatusBadge status={member.membershipStatus} />
+        </div>
+      </div>
+
+      {/* Details block */}
+      <div className="grid grid-cols-2 gap-3 text-xs bg-white/[0.01] border border-border-default/40 rounded-[8px] p-3">
+        <div className="space-y-1">
+          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Plan Type</p>
+          <p className="font-semibold text-text-primary capitalize font-mono">{member.planName || "N/A"}</p>
+        </div>
+        <div className="space-y-1">
+          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Member Code</p>
+          <p className="font-bold text-text-primary font-mono">{member.memberCode}</p>
+        </div>
+        <div className="space-y-1 col-span-2 pt-2 border-t border-border-default/20">
+          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Timeline</p>
+          <p className="text-text-secondary font-medium tabular-nums font-mono flex items-center space-x-1">
+            <Calendar className="h-3 w-3 text-text-muted shrink-0" />
+            <span>{formatDate(member.joiningDate)}&nbsp;→&nbsp;{formatDate(member.membershipEndDate)}</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Actions & Contact */}
+      <div className="flex items-center justify-between pt-1">
+        <a
+          href={`tel:${member.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center space-x-1.5 text-xs text-text-primary hover:opacity-80 font-bold transition-all duration-200 h-10 px-1 rounded-[6px] font-mono"
+        >
+          <Phone className="h-3.5 w-3.5" />
+          <span className="tabular-nums">{member.phone}</span>
+        </a>
+
+        <div className="flex items-center space-x-2">
+          <button className="bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 rounded-[6px] text-xs font-bold transition-colors duration-200 cursor-pointer min-h-[44px] flex-1 flex items-center justify-center active:scale-[0.97] border border-border-hover">
+            Renew
           </button>
-        </div>
-
-        {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-2">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-muted font-medium">Plan</span>
-            <span className="text-xs text-primary truncate font-medium">{member.planName || "N/A"}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-muted font-medium">Status</span>
-            <div className="mt-0.5">
-              <MemberStatusBadge status={member.membershipStatus} className="text-[10px] px-1.5 py-0" />
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-subtle mt-1">
-          <a 
-            href={`tel:${member.phone}`}
-            onClick={(e) => e.stopPropagation()} 
-            className="flex items-center text-xs font-medium text-secondary hover:text-primary transition-colors touch-target"
+          <button
+            aria-label="Payment History"
+            className="p-2.5 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
           >
-            <Phone className="h-3.5 w-3.5 mr-1.5" />
-            Call
-          </a>
-          <button className="flex items-center text-xs font-medium text-primary touch-target group">
-            View Details
-            <ChevronRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-1" />
+            <History className="h-4 w-4" />
+          </button>
+          <button
+            aria-label="Edit Member"
+            className="p-2.5 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
+          >
+            <Edit className="h-4 w-4" />
+          </button>
+          <button
+            aria-label="Delete Member"
+            className="p-2.5 border border-border-default rounded-[6px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
+          >
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/apiClient";
 import { useGymStore } from "@/store/gym.store";
+import { fetchRevenueData } from "../api/dashboard.api";
 
 export interface RevenueDataPoint {
   date: string;
@@ -13,21 +13,8 @@ export function useDashboardRevenue() {
 
   return useQuery<RevenueDataPoint[]>({
     queryKey: ["dashboard", "revenue", selectedGymId],
-    queryFn: async () => {
-      // Mocking 7 days of revenue data
-      const data: RevenueDataPoint[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        data.push({
-          date: d.toISOString().split("T")[0],
-          revenue: Math.floor(Math.random() * 500) + 100,
-          members: Math.floor(Math.random() * 10) + 1,
-        });
-      }
-      return data;
-    },
+    queryFn: () => fetchRevenueData(7),
     enabled: !!selectedGymId,
-    staleTime: 15 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }

@@ -1,12 +1,11 @@
 import React from "react";
 import { ColumnDef, PaginationState, SortingState, RowSelectionState } from "@tanstack/react-table";
-import { MoreHorizontal, Eye } from "lucide-react";
+import { History, Edit, Trash2, Phone, Calendar } from "lucide-react";
 import { useNavigate } from "react-router";
 import { DataTable } from "@/components/data-display/DataTable";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
 interface MembersTableProps {
@@ -21,46 +20,32 @@ interface MembersTableProps {
   isLoading: boolean;
 }
 
+const formatDate = (dateStr: string | undefined | null) => {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+};
+
 const columns: ColumnDef<MemberDirectoryItem>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "name",
     header: "Member",
     cell: ({ row }) => {
       const member = row.original;
       return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 border border-border-default">
+        <div className="flex items-center space-x-3">
+          <Avatar className="w-8 h-8 rounded-full border border-border-default shrink-0">
             <AvatarImage src={member.profilePhoto} />
-            <AvatarFallback className="bg-surface text-text-secondary text-[10px] font-bold font-sans">
+            <AvatarFallback className="bg-surface text-text-secondary text-[10px] font-black uppercase shrink-0">
               {member.name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
             <div className="font-semibold text-text-primary text-[13px] truncate">{member.name}</div>
             <div className="flex items-center text-xs text-text-muted space-x-1.5 mt-0.5 font-mono">
-              <span className="truncate">{member.email}</span>
+              <Phone className="h-3 w-3 shrink-0" />
+              <span className="truncate">{member.phone}</span>
             </div>
           </div>
         </div>
@@ -68,31 +53,37 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     },
   },
   {
-    accessorKey: "memberCode",
-    header: "Code",
+    accessorKey: "gender",
+    header: "Gender",
     cell: ({ row }) => (
-      <span className="text-xs font-semibold text-text-secondary font-mono">
-        {row.getValue("memberCode")}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ row }) => (
-      <span className="text-xs text-text-secondary font-mono">
-        {row.getValue("phone") || "—"}
-      </span>
+      <div className="text-text-secondary capitalize text-[13px]">
+        {row.original.gender || "—"}
+      </div>
     ),
   },
   {
     accessorKey: "planName",
     header: "Plan",
     cell: ({ row }) => (
-      <span className="text-xs text-text-secondary font-mono capitalize">
+      <span className="text-text-secondary font-medium capitalize text-[13px] font-mono">
         {row.getValue("planName") || "—"}
       </span>
     ),
+  },
+  {
+    id: "timeline",
+    header: "Timeline",
+    cell: ({ row }) => {
+      const member = row.original;
+      return (
+        <div className="flex items-center text-xs text-text-secondary space-x-1 font-mono">
+          <Calendar className="h-3 w-3 text-text-muted shrink-0" />
+          <span className="tabular-nums">
+            {formatDate(member.joiningDate)} → {formatDate(member.membershipEndDate)}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "membershipStatus",
@@ -104,51 +95,49 @@ const columns: ColumnDef<MemberDirectoryItem>[] = [
     ),
   },
   {
-    accessorKey: "joiningDate",
-    header: "Joined",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("joiningDate"));
-      return (
-        <span className="text-xs text-text-muted font-mono">
-          {isNaN(date.getTime()) ? "—" : date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
-        </span>
-      );
-    },
-  },
-  {
     id: "actions",
+    header: "Actions",
     cell: ({ row }) => {
       const member = row.original;
-      return <ActionButtons memberId={member.id} />;
+      return <ActionButtons member={member} />;
     },
   },
 ];
 
 interface ActionButtonsProps {
-  memberId: string;
+  member: MemberDirectoryItem;
 }
 
-function ActionButtons({ memberId }: ActionButtonsProps) {
+function ActionButtons({ member }: ActionButtonsProps) {
   const navigate = useNavigate();
   return (
-    <div className="flex items-center gap-1.5 justify-end">
+    <div className="flex items-center justify-end space-x-1.5">
       <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => navigate(`/admin/members/${memberId}`)}
-        title="View Profile"
-        className="text-text-secondary hover:text-text-primary border border-border-default h-7 w-7 rounded-[4px] cursor-pointer"
+        onClick={() => navigate(`/admin/payments/collect?memberId=${member.id}`)}
+        className="bg-primary hover:opacity-90 text-primary-foreground px-3 py-1.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer border border-border-hover h-auto min-h-0"
       >
-        <Eye className="h-3.5 w-3.5" />
+        Renew
       </Button>
-      <Button
-        variant="default"
-        size="xs"
-        onClick={() => navigate(`/admin/payments/collect?memberId=${memberId}`)}
-        className="text-[10px] font-bold h-7 rounded-[4px] cursor-pointer"
+      <button
+        onClick={() => navigate(`/admin/members/${member.id}`)}
+        title="Payment History"
+        className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all duration-200 cursor-pointer"
       >
-        Collect
-      </Button>
+        <History className="h-3.5 w-3.5" />
+      </button>
+      <button
+        onClick={() => navigate(`/admin/members/${member.id}`)}
+        title="Edit Details"
+        className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all duration-200 cursor-pointer"
+      >
+        <Edit className="h-3.5 w-3.5" />
+      </button>
+      <button
+        title="Delete Member"
+        className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 }

@@ -35,6 +35,8 @@ export function ThemeProvider({
 
     root.classList.remove("light", "dark")
 
+    root.classList.add("theme-transitioning")
+
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
         .matches
@@ -42,10 +44,15 @@ export function ThemeProvider({
         : "light"
 
       root.classList.add(systemTheme)
-      return
+    } else {
+      root.classList.add(theme)
     }
 
-    root.classList.add(theme)
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        root.classList.remove("theme-transitioning")
+      }, 400)
+    })
   }, [theme])
 
   const value = {

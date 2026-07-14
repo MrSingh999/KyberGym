@@ -2,7 +2,7 @@ import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { WorkoutDayFormData } from "../schemas/workout.schema";
 
 interface ExerciseFormProps {
@@ -18,7 +18,7 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-primary">Exercises</Label>
+        <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Exercises</Label>
         <Button
           type="button"
           variant="outline"
@@ -33,7 +33,7 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
       </div>
 
       {fields.length === 0 && (
-        <p className="text-sm text-muted py-4 text-center border border-dashed border-default rounded-lg">
+        <p className="text-sm text-text-muted py-4 text-center border border-dashed border-border-default rounded-lg">
           No exercises added yet. Click "Add Exercise" to begin.
         </p>
       )}
@@ -42,25 +42,11 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
         {fields.map((field, index) => (
           <div
             key={field.id}
-            className="relative border border-default rounded-lg p-4 bg-surface-hover/30"
+            className="bg-surface/45 border border-border-default p-3 rounded-[6px] space-y-2 relative group"
           >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <GripVertical className="w-4 h-4 text-muted cursor-grab" />
-                <span className="text-sm font-medium text-primary">Exercise {index + 1}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                className="p-1 text-muted hover:text-destructive transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Name */}
-              <div className="sm:col-span-2">
+            <div className="flex items-start justify-between gap-1">
+              <div className="min-w-0 flex-1">
+                {/* Name */}
                 <Input
                   placeholder="Exercise name *"
                   {...form.register(`exercises.${index}.name`)}
@@ -71,46 +57,56 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
                     {form.formState.errors.exercises[index]?.name?.message}
                   </p>
                 )}
+
+                {/* Sets, Reps, Duration row */}
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  <div>
+                    <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Sets</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 4"
+                      className="mt-0.5 text-center font-mono"
+                      {...form.register(`exercises.${index}.sets`, { valueAsNumber: true })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Reps</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 12"
+                      className="mt-0.5 text-center font-mono"
+                      {...form.register(`exercises.${index}.reps`, { valueAsNumber: true })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Duration</Label>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 45"
+                      className="mt-0.5 text-center font-mono"
+                      {...form.register(`exercises.${index}.duration`, { valueAsNumber: true })}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="mt-2">
+                  <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Notes</Label>
+                  <Input
+                    placeholder="e.g. Slow negative, push with chest explosive"
+                    className="mt-0.5"
+                    {...form.register(`exercises.${index}.notes`)}
+                  />
+                </div>
               </div>
 
-              {/* Sets */}
-              <div>
-                <Label className="text-xs text-muted mb-1 block">Sets</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 3"
-                  {...form.register(`exercises.${index}.sets`, { valueAsNumber: true })}
-                />
-              </div>
-
-              {/* Reps */}
-              <div>
-                <Label className="text-xs text-muted mb-1 block">Reps</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 12"
-                  {...form.register(`exercises.${index}.reps`, { valueAsNumber: true })}
-                />
-              </div>
-
-              {/* Duration */}
-              <div>
-                <Label className="text-xs text-muted mb-1 block">Duration (sec)</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 60"
-                  {...form.register(`exercises.${index}.duration`, { valueAsNumber: true })}
-                />
-              </div>
-
-              {/* Notes */}
-              <div>
-                <Label className="text-xs text-muted mb-1 block">Notes</Label>
-                <Input
-                  placeholder="Optional notes"
-                  {...form.register(`exercises.${index}.notes`)}
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                className="p-1 text-zinc-500 hover:text-red-400 transition-colors cursor-pointer shrink-0 mt-1"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           </div>
         ))}

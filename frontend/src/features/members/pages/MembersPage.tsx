@@ -28,18 +28,18 @@ export function MembersPage() {
     <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
-            Member <span className="text-text-secondary font-normal">Directory</span>
+            Members <span className="text-text-secondary font-normal ml-0.5">Directory</span>
           </h1>
           <p className="text-text-secondary mt-1 text-xs font-mono">
-            Manage gym memberships, plans, and statuses.
+            Registry list of active and inactive gym members.
           </p>
         </div>
         <Button
           onClick={() => setIsAddMemberOpen(true)}
-          className="flex items-center gap-2 text-xs font-semibold"
+          className="flex items-center gap-2 text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] border border-border-hover min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
         >
           <UserPlus className="h-3.5 w-3.5" />
           <span>Register Member</span>

@@ -1,19 +1,20 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { UserPlus, Calendar, Phone, CheckCircle, Clock } from "lucide-react";
-import { useDashboardStats } from "../hooks/useDashboardStats";
+import { UserPlus, TrendingUp } from "lucide-react";
 import { useDashboardDues } from "../hooks/useDashboardDues";
 import { useDashboardRevenue } from "../hooks/useDashboardRevenue";
 import { KpiGrid } from "../components/KpiGrid";
 import { QuickActions } from "../components/QuickActions";
 import { ActivityFeed } from "../components/ActivityFeed";
+import { RecentMembers } from "../components/RecentMembers";
 import { RevenueChart } from "../../../components/data-display/charts/RevenueChart";
 import { WidgetContainer, WidgetHeader, WidgetBody } from "../widgets/WidgetContainer";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { CreateMemberWizard } from "../../members/components/CreateMemberWizard";
 import { Button } from "@/components/ui/button";
-
+import { Skeleton } from "@/components/feedback/Skeleton";
+import { ErrorState } from "@/components/feedback/ErrorState";
 import { MemberStatusBadge } from "../../members/components/MemberStatusBadge";
 
 export function DashboardPage() {
@@ -23,9 +24,8 @@ export function DashboardPage() {
   const [dueTimeframe, setDueTimeframe] = useState<"today" | "3days" | "7days">("7days");
   const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "due">("all");
 
-  const { data: stats } = useDashboardStats();
   const { data: dues, isLoading: isDuesLoading } = useDashboardDues();
-  const { data: revenueData, isLoading: isRevenueLoading } = useDashboardRevenue();
+  const { data: revenueData, isLoading: isRevenueLoading, isError: isRevenueError, error: revenueError, refetch: refetchRevenue } = useDashboardRevenue();
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -49,7 +49,7 @@ export function DashboardPage() {
     return diffDays;
   };
 
-  const activeDues = 
+  const activeDues =
     dueTimeframe === "today" ? dues?.dueToday || [] :
     dueTimeframe === "3days" ? dues?.dueIn3Days || [] :
     dues?.dueIn7Days || [];
@@ -61,19 +61,15 @@ export function DashboardPage() {
   const filteredDues = activeDues.filter((member) => {
     const daysDiff = getDaysDiff(member.endDate);
     const isOverdue = daysDiff < 0;
-    if (dueFilter === "overdue") {
-      return isOverdue;
-    }
-    if (dueFilter === "due") {
-      return !isOverdue;
-    }
+    if (dueFilter === "overdue") return isOverdue;
+    if (dueFilter === "due") return !isOverdue;
     return true;
   });
 
   return (
     <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
-      
-      {/* Console Overview Header */}
+
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
@@ -85,24 +81,26 @@ export function DashboardPage() {
         </div>
         <Button
           onClick={() => setIsAddMemberOpen(true)}
-          className="bg-primary text-primary-foreground hover:opacity-90 px-4 py-2 rounded-[6px] font-semibold text-xs transition-opacity duration-150 cursor-pointer border border-border-hover flex items-center gap-2"
+          className="bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-xs transition-opacity duration-150 cursor-pointer border border-border-hover flex items-center gap-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
         >
           <UserPlus className="h-3.5 w-3.5" />
           <span>Register Member</span>
         </Button>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Cards */}
       <KpiGrid activeFilter={dueFilter} onFilterChange={setDueFilter} />
 
-      {/* Quick Actions (B&W minimal) */}
+      {/* Quick Actions */}
       <QuickActions />
 
-      {/* Main Grid: Dues Tracker and Activity Feed */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Dues Tracker Column */}
+
+        {/* Left Column - Dues Tracker + Recent Members */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Dues Tracker */}
           <div className="glass-panel p-4 sm:p-5 md:p-6 rounded-[16px] space-y-5">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-default pb-4">
               <div className="space-y-1.5 flex-1">
@@ -112,22 +110,20 @@ export function DashboardPage() {
                 <p className="text-xs text-text-secondary">
                   Active memberships expiring or overdue within the selected timeframe.
                 </p>
-                
-                {/* Timeframe Selector Pills */}
                 <div className="flex items-center space-x-2 pt-1.5 overflow-x-auto hide-scrollbar">
                   <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono shrink-0">
                     Timeframe:
                   </span>
                   <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px]">
                     {[
-                      { val: "today", label: "Today" },
-                      { val: "3days", label: "3 Days" },
-                      { val: "7days", label: "7 Days" },
+                      { val: "today" as const, label: "Today" },
+                      { val: "3days" as const, label: "3 Days" },
+                      { val: "7days" as const, label: "7 Days" },
                     ].map((tf) => (
                       <button
                         key={tf.val}
                         type="button"
-                        onClick={() => setDueTimeframe(tf.val as any)}
+                        onClick={() => setDueTimeframe(tf.val)}
                         className={`px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer ${
                           dueTimeframe === tf.val
                             ? "bg-primary text-primary-foreground shadow-sm"
@@ -140,32 +136,15 @@ export function DashboardPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Status Toggle Filters (All, Overdue, Due) */}
               <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
                 {[
-                  {
-                    key: "all",
-                    label: `All Dues (${totalDuesCount})`,
-                    labelMobile: `All (${totalDuesCount})`,
-                    activeClass: "bg-primary text-primary-foreground font-bold",
-                  },
-                  {
-                    key: "overdue",
-                    label: `Overdue (${overdueCount})`,
-                    labelMobile: `Overdue (${overdueCount})`,
-                    activeClass: "bg-error/10 text-error border border-error/20 font-bold",
-                  },
-                  {
-                    key: "due",
-                    label: `Due soon (${dueCount})`,
-                    labelMobile: `Due (${dueCount})`,
-                    activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold",
-                  },
+                  { key: "all" as const, label: `All Dues (${totalDuesCount})`, labelMobile: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold" },
+                  { key: "overdue" as const, label: `Overdue (${overdueCount})`, labelMobile: `Overdue (${overdueCount})`, activeClass: "bg-error/10 text-error border border-error/20 font-bold" },
+                  { key: "due" as const, label: `Due soon (${dueCount})`, labelMobile: `Due (${dueCount})`, activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold" },
                 ].map((f) => (
                   <button
                     key={f.key}
-                    onClick={() => setDueFilter(f.key as any)}
+                    onClick={() => setDueFilter(f.key)}
                     className={`px-3 py-1 rounded-[4px] text-xs transition-all duration-150 cursor-pointer shrink-0 ${
                       dueFilter === f.key
                         ? f.activeClass
@@ -179,16 +158,16 @@ export function DashboardPage() {
               </div>
             </div>
 
-            {/* List / Grid of dues */}
             {isDuesLoading ? (
-              <div className="text-center py-14">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-border-default border-t-text-primary mx-auto mb-2"></div>
-                <p className="text-text-muted text-xs font-mono uppercase tracking-wider">Loading dues tracker...</p>
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                ))}
               </div>
             ) : filteredDues.length === 0 ? (
               <div className="text-center py-14">
                 <div className="w-12 h-12 border border-border-default rounded-[8px] flex items-center justify-center mx-auto mb-4 text-text-secondary">
-                  <CheckCircle className="h-5 w-5" />
+                  <TrendingUp className="h-5 w-5" />
                 </div>
                 <h3 className="text-sm font-bold text-text-primary mb-1 font-mono">
                   Diagnostics Clear
@@ -199,7 +178,7 @@ export function DashboardPage() {
                 <Button
                   onClick={() => setIsAddMemberOpen(true)}
                   variant="outline"
-                  className="text-xs flex items-center gap-2 mx-auto"
+                  className="text-xs flex items-center gap-2 mx-auto rounded-[6px] cursor-pointer"
                 >
                   <UserPlus className="h-3.5 w-3.5" />
                   <span>Register Member</span>
@@ -225,27 +204,21 @@ export function DashboardPage() {
                           <h4 className="font-bold text-sm text-text-primary truncate">
                             {member.memberId?.fullName || "Gym Member"}
                           </h4>
-                          
                           <div className="flex items-center space-x-2 mt-1">
                             <MemberStatusBadge status={isOverdue ? "Expired" : "Expiring Soon"} />
                             <span className="text-[10px] text-text-muted font-mono">
                               {member.memberId?.memberCode}
                             </span>
                           </div>
-
                           <div className="flex items-center text-xs text-text-secondary gap-1.5 font-mono">
-                            <Phone className="h-3.5 w-3.5 text-text-muted" />
-                            <span>{member.memberId?.phone || "No phone"}</span>
+                            <span className="text-text-muted">Phone:</span>
+                            <span>{member.memberId?.phone || "N/A"}</span>
                           </div>
-
                           <div className="flex items-center text-xs text-text-secondary gap-1.5 font-mono">
-                            <Calendar className="h-3.5 w-3.5 text-text-muted" />
-                            <span>
-                              Due:{" "}
-                              <strong className="text-text-primary">
-                                {formatDate(member.endDate)}
-                              </strong>
-                            </span>
+                            <span className="text-text-muted">Due:</span>
+                            <strong className="text-text-primary">
+                              {formatDate(member.endDate)}
+                            </strong>
                           </div>
                         </div>
 
@@ -258,7 +231,6 @@ export function DashboardPage() {
                               ₹{(member.amount || 0).toLocaleString()}
                             </p>
                           </div>
-                          
                           <div className="text-right">
                             {isOverdue ? (
                               <span className="text-[10px] text-error font-semibold font-mono block mb-1">
@@ -285,23 +257,42 @@ export function DashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Recent Members */}
+          <RecentMembers />
         </div>
 
-        {/* Activity Feed Column */}
-        <div className="lg:col-span-1">
+        {/* Right Column - Activity Feed */}
+        <div className="lg:col-span-1 space-y-6">
           <ActivityFeed />
         </div>
       </div>
 
-      {/* Revenue Chart Section (Full width / lower hierarchy) */}
+      {/* Revenue Chart Section */}
       <WidgetContainer className="min-h-[350px]">
-        <WidgetHeader title="Revenue Trend" description="Past 7 days collection vs active members" />
-        <WidgetBody isLoading={isRevenueLoading} isEmpty={revenueData?.length === 0}>
-          {revenueData && <RevenueChart data={revenueData} />}
+        <WidgetHeader title="Revenue Trend" description="Past 7 days collection" />
+        <WidgetBody isLoading={false} isEmpty={false}>
+          {isRevenueLoading ? (
+            <Skeleton className="h-[220px] w-full rounded-xl" />
+          ) : isRevenueError ? (
+            <ErrorState
+              title="Failed to load revenue"
+              message={revenueError?.message || "Could not load revenue data"}
+              onRetry={() => refetchRevenue()}
+            />
+          ) : !revenueData || revenueData.length === 0 || revenueData.every(d => d.revenue === 0) ? (
+            <div className="flex flex-col items-center justify-center h-[220px]">
+              <TrendingUp className="h-10 w-10 text-text-muted mb-3" />
+              <p className="text-sm text-text-secondary">No revenue data for the past 7 days.</p>
+              <p className="text-xs text-text-muted mt-1">Revenue will appear once payments are recorded.</p>
+            </div>
+          ) : (
+            <RevenueChart data={revenueData} />
+          )}
         </WidgetBody>
       </WidgetContainer>
 
-      {/* Register Member Modal Wizard */}
+      {/* Register Member Modal */}
       <ResponsiveModal
         open={isAddMemberOpen}
         onOpenChange={setIsAddMemberOpen}
@@ -311,11 +302,11 @@ export function DashboardPage() {
           onSuccess={() => {
             setIsAddMemberOpen(false);
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["members"] });
           }}
           onCancel={() => setIsAddMemberOpen(false)}
         />
       </ResponsiveModal>
-
     </div>
   );
 }

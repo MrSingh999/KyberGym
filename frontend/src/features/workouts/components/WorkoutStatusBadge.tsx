@@ -1,5 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-
 interface WorkoutStatusBadgeProps {
   isActive: boolean;
 }
@@ -7,14 +5,16 @@ interface WorkoutStatusBadgeProps {
 export function WorkoutStatusBadge({ isActive }: WorkoutStatusBadgeProps) {
   if (isActive) {
     return (
-      <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
-        Active
-      </Badge>
+      <span className="inline-flex items-center space-x-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/20 dark:border-emerald-500/15 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-mono">
+        <span className="status-dot status-dot-active" />
+        <span>Active</span>
+      </span>
     );
   }
   return (
-    <Badge variant="secondary" className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
-      Inactive
-    </Badge>
+    <span className="inline-flex items-center space-x-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full border border-red-500/20 dark:border-red-500/15 text-red-600 dark:text-red-400 bg-red-500/10 font-mono">
+      <span className="status-dot status-dot-overdue" />
+      <span>Inactive</span>
+    </span>
   );
 }

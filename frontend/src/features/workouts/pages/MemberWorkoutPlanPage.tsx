@@ -83,11 +83,11 @@ export function MemberWorkoutPlanPage() {
     return (
       <div className="p-4 sm:p-6">
         <div className="text-center py-16">
-          <div className="w-16 h-16 rounded-2xl bg-surface-hover border border-default flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-surface/45 border border-border-default rounded-full flex items-center justify-center mx-auto mb-4">
             <Dumbbell className="w-7 h-7 text-muted" />
           </div>
-          <h2 className="font-heading font-semibold text-lg text-primary mb-2">No Workouts Assigned</h2>
-          <p className="text-sm text-muted max-w-xs mx-auto">
+          <h2 className="font-bold text-base text-text-primary font-mono mb-2">No Workouts Assigned</h2>
+          <p className="text-xs text-text-secondary max-w-xs mx-auto">
             You don't have any workout plans yet. Contact your gym staff to get started.
           </p>
         </div>
@@ -98,27 +98,29 @@ export function MemberWorkoutPlanPage() {
   return (
     <div className="p-4 sm:p-6 flex-1 w-full max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-h2 font-heading font-bold text-primary">My Workout Plan</h1>
-        <p className="text-sm text-muted mt-1">View your assigned workouts and exercises.</p>
+        <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
+          Workout <span className="text-text-secondary font-normal ml-0.5">Plan</span>
+        </h1>
+        <p className="text-text-secondary mt-1 text-xs font-mono">View your assigned workouts and exercises.</p>
       </div>
 
       <div className="space-y-4">
         {workouts.map((workout) => (
-          <div key={workout.id} className="rounded-xl border border-default bg-surface overflow-hidden">
+          <div key={workout.id} className="glass-panel rounded-[12px] border border-border-hover overflow-hidden">
             <button
               onClick={() => toggleExpanded(workout.id)}
-              className="w-full flex items-center justify-between p-4 hover:bg-surface-hover transition-colors"
+              className="w-full flex items-center justify-between p-4 hover:bg-surface/25 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-[8px] bg-primary/10 flex items-center justify-center">
                   <Dumbbell className="w-5 h-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold text-primary">{workout.title}</h3>
+                  <h3 className="font-bold text-sm text-text-primary font-mono">{workout.title}</h3>
                   {workout.description && (
-                    <p className="text-xs text-muted mt-0.5">{workout.description}</p>
+                    <p className="text-xs text-text-muted mt-0.5">{workout.description}</p>
                   )}
-                  <p className="text-xs text-muted mt-1">
+                  <p className="text-[10px] text-text-muted mt-1 font-mono">
                     {workout.days.length} day{workout.days.length !== 1 ? "s" : ""}
                     {" • "}
                     {workout.days.reduce((s, d) => s + d.exercises.length, 0)} exercise
@@ -127,16 +129,16 @@ export function MemberWorkoutPlanPage() {
                 </div>
               </div>
               {expandedIds.has(workout.id) ? (
-                <ChevronUp className="w-5 h-5 text-muted" />
+                <ChevronUp className="w-5 h-5 text-text-muted" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-muted" />
+                <ChevronDown className="w-5 h-5 text-text-muted" />
               )}
             </button>
 
             {expandedIds.has(workout.id) && (
-              <div className="border-t border-default p-4 space-y-3">
+              <div className="border-t border-border-default/40 p-4 space-y-3">
                 {workout.days.length === 0 ? (
-                  <p className="text-sm text-muted text-center py-4">No days added to this workout yet.</p>
+                  <p className="text-sm text-text-muted text-center py-4">No days added to this workout yet.</p>
                 ) : (
                   workout.days
                     .sort((a, b) => a.dayNumber - b.dayNumber)

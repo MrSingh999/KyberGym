@@ -34,16 +34,15 @@ export function WorkoutForm({ defaultValues, onSubmit, isSubmitting }: WorkoutFo
   const assignmentType = watch("assignmentType");
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Title */}
-      <div>
-        <Label htmlFor="title" className="text-sm font-medium text-primary">
-          Workout Title <span className="text-destructive">*</span>
+      <div className="space-y-1.5">
+        <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
+          Program Title <span className="text-destructive">*</span>
         </Label>
         <Input
-          id="title"
-          placeholder="e.g. Beginner Full Body"
-          className="mt-1.5"
+          placeholder="e.g. 6 Days Beginner Program"
+          className="mt-1"
           {...register("title")}
         />
         {errors.title && (
@@ -52,14 +51,13 @@ export function WorkoutForm({ defaultValues, onSubmit, isSubmitting }: WorkoutFo
       </div>
 
       {/* Description */}
-      <div>
-        <Label htmlFor="description" className="text-sm font-medium text-primary">
+      <div className="space-y-1.5">
+        <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
           Description
         </Label>
         <Textarea
-          id="description"
-          placeholder="Brief description of this workout..."
-          className="mt-1.5 resize-none"
+          placeholder="Brief description of the routines focus (hypertrophy, endurance, etc.)"
+          className="mt-1 resize-none"
           rows={3}
           {...register("description")}
         />
@@ -69,40 +67,56 @@ export function WorkoutForm({ defaultValues, onSubmit, isSubmitting }: WorkoutFo
       </div>
 
       {/* Assignment Type */}
-      <div>
-        <Label className="text-sm font-medium text-primary">
+      <div className="space-y-1.5">
+        <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
           Assignment Type <span className="text-destructive">*</span>
         </Label>
-        <RadioGroup
-          value={assignmentType}
-          onValueChange={(v) => setValue("assignmentType", v as "ALL" | "SELECTED")}
-          className="flex gap-4 mt-2"
-        >
-          <div className="flex items-center gap-2">
-            <RadioGroupItem value="ALL" id="all" />
-            <Label htmlFor="all" className="text-sm text-primary cursor-pointer">All Members</Label>
+        <div className="grid grid-cols-2 gap-4 mt-1">
+          <div
+            className={`border rounded-[6px] p-3 cursor-pointer transition-all ${
+              assignmentType === "ALL"
+                ? "border-primary bg-primary/5"
+                : "border-border-default hover:border-border-hover"
+            }`}
+            onClick={() => setValue("assignmentType", "ALL")}
+          >
+            <RadioGroupItem value="ALL" id="all" className="sr-only" />
+            <Label htmlFor="all" className="text-xs font-semibold text-text-primary cursor-pointer font-mono">
+              All Members
+            </Label>
+            <p className="text-[10px] text-text-muted mt-0.5">Assign to all active members</p>
           </div>
-          <div className="flex items-center gap-2">
-            <RadioGroupItem value="SELECTED" id="selected" />
-            <Label htmlFor="selected" className="text-sm text-primary cursor-pointer">Selected Members</Label>
+          <div
+            className={`border rounded-[6px] p-3 cursor-pointer transition-all ${
+              assignmentType === "SELECTED"
+                ? "border-primary bg-primary/5"
+                : "border-border-default hover:border-border-hover"
+            }`}
+            onClick={() => setValue("assignmentType", "SELECTED")}
+          >
+            <RadioGroupItem value="SELECTED" id="selected" className="sr-only" />
+            <Label htmlFor="selected" className="text-xs font-semibold text-text-primary cursor-pointer font-mono">
+              Selected Members
+            </Label>
+            <p className="text-[10px] text-text-muted mt-0.5">Choose specific members</p>
           </div>
-        </RadioGroup>
+        </div>
       </div>
 
       {/* Assigned Members - only shown when SELECTED */}
       {assignmentType === "SELECTED" && (
-        <div>
-          <Label className="text-sm font-medium text-primary">
-            Assigned Members (IDs)
+        <div className="space-y-1.5">
+          <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
+            Assigned Members
           </Label>
-          <p className="text-xs text-muted mt-1">
+          <p className="text-xs text-text-muted mt-1">
             Member selection will be available after creation.
           </p>
         </div>
       )}
 
       {/* Submit */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-default">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border-default">
         <Button type="button" variant="outline" onClick={() => window.history.back()}>
           Cancel
         </Button>

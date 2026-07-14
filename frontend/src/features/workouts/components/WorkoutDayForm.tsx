@@ -33,50 +33,49 @@ export function WorkoutDayForm({ defaultValues, onSubmit, isSubmitting, onCancel
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      {/* Day Number */}
-      <div>
-        <Label htmlFor="dayNumber" className="text-sm font-medium text-primary">
-          Day Number <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="dayNumber"
-          type="number"
-          min={1}
-          max={7}
-          placeholder="1-7"
-          className="mt-1.5 w-24"
-          {...register("dayNumber", { valueAsNumber: true })}
-        />
-        {errors.dayNumber && (
-          <p className="text-xs text-destructive mt-1">{errors.dayNumber.message}</p>
-        )}
+      <div className="grid grid-cols-3 gap-3">
+        {/* Day Number */}
+        <div className="space-y-1.5 col-span-1">
+          <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
+            Day # <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="number"
+            min={1}
+            max={7}
+            placeholder="e.g. 3"
+            className="mt-1 text-center font-mono"
+            {...register("dayNumber", { valueAsNumber: true })}
+          />
+          {errors.dayNumber && (
+            <p className="text-xs text-destructive mt-1">{errors.dayNumber.message}</p>
+          )}
+        </div>
+
+        {/* Day Name */}
+        <div className="space-y-1.5 col-span-2">
+          <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
+            Day Name <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            placeholder="e.g. Monday"
+            className="mt-1"
+            {...register("dayName")}
+          />
+          {errors.dayName && (
+            <p className="text-xs text-destructive mt-1">{errors.dayName.message}</p>
+          )}
+        </div>
       </div>
 
-      {/* Day Name */}
-      <div>
-        <Label htmlFor="dayName" className="text-sm font-medium text-primary">
-          Day Name <span className="text-destructive">*</span>
+      {/* Title */}
+      <div className="space-y-1.5">
+        <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
+          Workout Focus / Title <span className="text-destructive">*</span>
         </Label>
         <Input
-          id="dayName"
-          placeholder="e.g. Push Day, Upper Body, Cardio"
-          className="mt-1.5"
-          {...register("dayName")}
-        />
-        {errors.dayName && (
-          <p className="text-xs text-destructive mt-1">{errors.dayName.message}</p>
-        )}
-      </div>
-
-      {/* Title (optional) */}
-      <div>
-        <Label htmlFor="title" className="text-sm font-medium text-primary">
-          Title (optional)
-        </Label>
-        <Input
-          id="title"
-          placeholder="e.g. Week 1 - Monday"
-          className="mt-1.5"
+          placeholder="e.g. Chest & Triceps"
+          className="mt-1"
           {...register("title")}
         />
         {errors.title && (
@@ -88,7 +87,7 @@ export function WorkoutDayForm({ defaultValues, onSubmit, isSubmitting, onCancel
       <ExerciseForm form={form} />
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-default">
+      <div className="flex justify-end gap-3 pt-4 border-t border-border-default">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

@@ -27,11 +27,11 @@ export function Sidebar({ groups, role }: SidebarProps) {
       {groups.map((group, index) => (
         <div key={index} className="px-3">
           {!sidebarCollapsed && (
-            <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 px-3 font-mono">
+            <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-[0.12em] mb-2 px-3">
               {group.title}
             </h4>
           )}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {group.items.map((item) => {
               const isActive = location.pathname.startsWith(item.href) && 
                                (!["/super-admin", "/admin", "/member"].includes(item.href) || location.pathname === item.href);
@@ -42,22 +42,15 @@ export function Sidebar({ groups, role }: SidebarProps) {
                   to={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
                   className={cn(
-                    "flex items-center px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all relative group cursor-pointer border border-transparent",
+                    "flex items-center gap-2.5 px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all relative group cursor-pointer border",
                     isActive 
-                      ? "bg-surface border-border-default text-text-primary font-semibold shadow-xs" 
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface-hover/30"
+                      ? "bg-surface border-border-default text-text-primary font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-none" 
+                      : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-hover/30"
                   )}
                 >
-                  <item.icon className={cn("w-3.5 h-3.5 shrink-0", sidebarCollapsed ? "mx-auto" : "mr-2.5", isActive ? "text-text-primary" : "text-text-muted group-hover:text-text-primary")} />
+                  <item.icon className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-text-primary" : "text-text-muted group-hover:text-text-primary")} />
                   
                   {!sidebarCollapsed && <span>{item.name}</span>}
-                  
-                  {/* Tooltip for collapsed state */}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-surface border border-border-default text-text-primary text-[10px] rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-elevated">
-                      {item.name}
-                    </div>
-                  )}
                 </NavLink>
               );
             })}
@@ -77,13 +70,13 @@ export function Sidebar({ groups, role }: SidebarProps) {
         )}
       >
         <div className="h-14 flex items-center border-b border-border-default px-4 justify-between relative">
-          <div className={cn("font-bold text-base tracking-tight text-text-primary truncate transition-opacity flex items-center gap-2", sidebarCollapsed ? "opacity-0 w-0" : "opacity-100")}>
-            <Dumbbell className="w-4 h-4 text-text-primary shrink-0" />
+          <div className={cn("font-bold text-sm tracking-tight text-text-primary truncate transition-opacity flex items-center gap-2", sidebarCollapsed ? "opacity-0 w-0" : "opacity-100")}>
+            <Dumbbell className="w-4 h-4 shrink-0" />
             {brandName}
           </div>
           <button 
             onClick={toggleSidebar}
-            className="absolute -right-3 top-4 bg-surface border border-border-default rounded-full p-1 text-text-muted hover:text-text-primary shadow-sm z-50 transition-colors"
+            className="absolute -right-3 top-4 bg-surface border border-border-default rounded-[6px] p-1 text-text-muted hover:text-text-primary hover:bg-surface-hover shadow-xs z-50 transition-all"
           >
             {sidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
@@ -107,12 +100,12 @@ export function Sidebar({ groups, role }: SidebarProps) {
         )}
       >
         <div className="h-14 flex items-center justify-between border-b border-border-default px-4">
-          <div className="font-bold text-sm text-text-primary flex items-center gap-2">
-            <Dumbbell className="w-4 h-4 text-text-primary shrink-0" />
+          <div className="font-bold text-sm tracking-tight text-text-primary flex items-center gap-2">
+            <Dumbbell className="w-4 h-4 shrink-0" />
             {brandName}
           </div>
           <button onClick={() => setMobileDrawerOpen(false)} className="p-2 text-text-muted hover:text-text-primary">
-            <X className="w-4 h-4" />
+            <X className="w-4" />
           </button>
         </div>
         {renderNavItems(groups)}

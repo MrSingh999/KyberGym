@@ -22,7 +22,7 @@ export function WidgetBody({
   
   if (isLoading) {
     return (
-      <div className="p-6 pt-4 flex-1">
+      <div className="p-5 pt-4 flex-1">
         <Skeleton className="h-full min-h-[200px] w-full rounded-xl" />
       </div>
     );
@@ -30,7 +30,7 @@ export function WidgetBody({
 
   if (isEmpty && emptyState) {
     return (
-      <div className="p-6 pt-4 flex-1 flex items-center justify-center">
+      <div className="p-5 pt-4 flex-1 flex items-center justify-center">
         {emptyState}
       </div>
     );
@@ -39,7 +39,7 @@ export function WidgetBody({
   return (
     <div 
       className={cn(
-        "p-6 pt-4 flex-1", 
+        "p-5 pt-4 flex-1", 
         scrollable && "overflow-y-auto max-h-[400px] custom-scrollbar",
         className
       )} 

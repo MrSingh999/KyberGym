@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Edit3, Trash2, Plus, Dumbbell, Users, Calendar,
+  ArrowLeft, Edit3, Trash2, Plus, Dumbbell, Users, Calendar, Check, X, UserPlus,
 } from "lucide-react";
 import { useWorkout, useDeleteWorkout, useCreateWorkoutDay, useUpdateWorkoutDay, useDeleteWorkoutDay } from "../hooks/useWorkouts";
 import { WorkoutStatusBadge } from "../components/WorkoutStatusBadge";
@@ -113,168 +113,198 @@ export function WorkoutDetailPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-full bg-canvas">
-      <div className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-4xl mx-auto">
-        {/* Back navigation */}
-        <button
-          onClick={() => navigate("/admin/workouts")}
-          className="flex items-center gap-1.5 text-sm text-muted hover:text-primary transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Workouts
-        </button>
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-4xl mx-auto space-y-6">
+      {/* Back navigation */}
+      <button
+        onClick={() => navigate("/admin/workouts")}
+        className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Workouts
+      </button>
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Dumbbell className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-h2 font-heading font-bold text-primary">{workout.title}</h1>
-                {workout.description && (
-                  <p className="text-sm text-muted mt-0.5">{workout.description}</p>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <WorkoutStatusBadge isActive={workout.isActive} />
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
-                {workout.assignmentType === "ALL" ? "All Members" : "Selected Members"}
+      {/* Glass-panel detail card */}
+      <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-border-hover space-y-4">
+        {/* Header with title and actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-border-default/40">
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <h2 className="font-bold text-lg sm:text-xl text-text-primary font-mono">{workout.title}</h2>
+              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-[4px] font-mono uppercase border ${
+                workout.assignmentType === "ALL"
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/15"
+                  : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 dark:border-indigo-500/15"
+              }`}>
+                {workout.assignmentType === "ALL" ? "Assigned to All Members" : "Personal Assignment"}
               </span>
             </div>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              {workout.description || "No description provided."}
+            </p>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate(`/admin/workouts/${workoutId}/edit`)}>
-              <Edit3 className="w-4 h-4 mr-1.5" />
-              Edit
-            </Button>
-            {workout.isActive && (
-              <Button variant="destructive" onClick={handleDeleteWorkout}>
-                <Trash2 className="w-4 h-4 mr-1.5" />
-                Deactivate
-              </Button>
-            )}
+          <div className="flex items-center space-x-1.5 shrink-0 self-end sm:self-center">
+            <button
+              onClick={() => navigate(`/admin/workouts/${workoutId}/edit`)}
+              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover cursor-pointer"
+              title="Edit Details"
+            >
+              <Edit3 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleDeleteWorkout}
+              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 cursor-pointer"
+              title="Delete Program"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="rounded-xl border border-default bg-surface p-4">
-            <div className="flex items-center gap-2 text-muted mb-1">
+        {/* Stats row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-[12px] border border-border-default bg-surface p-4">
+            <div className="flex items-center gap-2 text-text-muted mb-1">
               <Calendar className="w-4 h-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Days</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Days</span>
             </div>
-            <p className="text-2xl font-bold text-primary">{workout.days.length}</p>
+            <p className="text-2xl font-bold text-text-primary font-mono">{workout.days.length}</p>
           </div>
-          <div className="rounded-xl border border-default bg-surface p-4">
-            <div className="flex items-center gap-2 text-muted mb-1">
+          <div className="rounded-[12px] border border-border-default bg-surface p-4">
+            <div className="flex items-center gap-2 text-text-muted mb-1">
               <Users className="w-4 h-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Members</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Members</span>
             </div>
-            <p className="text-2xl font-bold text-primary">{workout.assignedMembers.length}</p>
+            <p className="text-2xl font-bold text-text-primary font-mono">{workout.assignedMembers.length}</p>
           </div>
-          <div className="rounded-xl border border-default bg-surface p-4">
-            <div className="flex items-center gap-2 text-muted mb-1">
+          <div className="rounded-[12px] border border-border-default bg-surface p-4">
+            <div className="flex items-center gap-2 text-text-muted mb-1">
               <Dumbbell className="w-4 h-4" />
-              <span className="text-xs font-medium uppercase tracking-wide">Exercises</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Exercises</span>
             </div>
-            <p className="text-2xl font-bold text-primary">
+            <p className="text-2xl font-bold text-text-primary font-mono">
               {workout.days.reduce((sum, d) => sum + d.exercises.length, 0)}
             </p>
           </div>
         </div>
 
-        {/* Days Section */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-primary">Workout Days</h2>
-          <Button onClick={() => setShowAddDay(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Day
-          </Button>
-        </div>
+        {/* Assigned Members section (for SELECTED type) */}
+        {workout.assignmentType === "SELECTED" && (
+          <div className="bg-surface/25 border border-border-default rounded-[8px] p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4 text-text-secondary" />
+                <h4 className="font-bold text-xs text-text-primary font-mono uppercase tracking-wider">
+                  Assigned Members ({workout.assignedMembers.length})
+                </h4>
+              </div>
+            </div>
 
-        {workout.days.length === 0 && !showAddDay ? (
-          <div className="rounded-xl border border-dashed border-default p-12 text-center">
-            <Dumbbell className="w-10 h-10 text-muted mx-auto mb-3" />
-            <h3 className="font-semibold text-primary mb-1">No days added yet</h3>
-            <p className="text-sm text-muted mb-4">
-              Start building your workout by adding days with exercises.
-            </p>
-            <Button onClick={() => setShowAddDay(true)}>
-              <Plus className="w-4 h-4 mr-1.5" />
-              Add First Day
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {workout.days.map((day, i) => (
-              <WorkoutDayCard
-                key={day.id}
-                day={day}
-                index={i}
-                onEdit={handleEditDay}
-                onDelete={handleDeleteDay}
-              />
-            ))}
+            {workout.assignedMembers.length === 0 ? (
+              <p className="text-[11px] text-text-muted italic">No members assigned yet. This routine won't be visible to anyone.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2 pt-1 max-h-[120px] overflow-y-auto pr-1">
+                {workout.assignedMembers.map((memberId) => (
+                  <div
+                    key={memberId}
+                    className="flex items-center space-x-1.5 bg-surface/50 border border-border-hover pl-2 pr-1 py-0.5 rounded-[4px] text-[10px] text-text-secondary font-mono"
+                  >
+                    <span>{memberId}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Add Day Modal */}
-        <ResponsiveModal open={showAddDay} onClose={() => setShowAddDay(false)}>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-primary mb-6">Add Workout Day</h3>
-            <WorkoutDayForm
-              onSubmit={handleAddDay}
-              isSubmitting={isCreatingDay}
-              onCancel={() => setShowAddDay(false)}
-            />
+        {/* Day-wise Schedule */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-sm text-text-primary font-mono uppercase tracking-wider">
+              Day-wise Schedule
+            </h3>
+            <button
+              onClick={() => setShowAddDay(true)}
+              className="flex items-center space-x-1 bg-surface/55 border border-border-default hover:border-border-hover text-text-secondary hover:text-text-primary px-3 py-1.5 rounded-[6px] text-xs font-bold transition-all cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Day</span>
+            </button>
           </div>
-        </ResponsiveModal>
 
-        {/* Edit Day Modal */}
-        <ResponsiveModal open={!!editingDay} onClose={() => setEditingDay(null)}>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-primary mb-6">Edit Workout Day</h3>
-            {editingDay && (
-              <WorkoutDayForm
-                defaultValues={{
-                  dayNumber: editingDay.dayNumber,
-                  dayName: editingDay.dayName,
-                  title: editingDay.title,
-                  exercises: editingDay.exercises,
-                }}
-                onSubmit={handleUpdateDay}
-                isSubmitting={isUpdatingDay}
-                onCancel={() => setEditingDay(null)}
-              />
-            )}
-          </div>
-        </ResponsiveModal>
-
-        {/* Delete Day Confirmation */}
-        <ResponsiveModal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
-          <div className="p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-6 h-6 text-destructive" />
+          {workout.days.length === 0 && !showAddDay ? (
+            <div className="border border-dashed border-border-hover p-8 text-center rounded-[8px] text-text-muted text-xs italic">
+              No training days configured. Click "Add Day" to define routines like chest, back, legs split.
             </div>
-            <h3 className="text-lg font-semibold text-primary mb-2">Remove Day?</h3>
-            <p className="text-sm text-muted mb-6">
-              This will permanently remove this day and its exercises from the workout.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={confirmDeleteDay}>
-                Remove
-              </Button>
+          ) : (
+            <div className="space-y-2">
+              {workout.days.map((day, i) => (
+                <WorkoutDayCard
+                  key={day.id}
+                  day={day}
+                  index={i}
+                  onEdit={handleEditDay}
+                  onDelete={handleDeleteDay}
+                />
+              ))}
             </div>
-          </div>
-        </ResponsiveModal>
+          )}
+        </div>
       </div>
+
+      {/* Modals */}
+      {/* Add Day Modal */}
+      <ResponsiveModal open={showAddDay} onClose={() => setShowAddDay(false)}>
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-primary mb-6">Add Training Day</h3>
+          <WorkoutDayForm
+            onSubmit={handleAddDay}
+            isSubmitting={isCreatingDay}
+            onCancel={() => setShowAddDay(false)}
+          />
+        </div>
+      </ResponsiveModal>
+
+      {/* Edit Day Modal */}
+      <ResponsiveModal open={!!editingDay} onClose={() => setEditingDay(null)}>
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-primary mb-6">Edit Training Day</h3>
+          {editingDay && (
+            <WorkoutDayForm
+              defaultValues={{
+                dayNumber: editingDay.dayNumber,
+                dayName: editingDay.dayName,
+                title: editingDay.title,
+                exercises: editingDay.exercises,
+              }}
+              onSubmit={handleUpdateDay}
+              isSubmitting={isUpdatingDay}
+              onCancel={() => setEditingDay(null)}
+            />
+          )}
+        </div>
+      </ResponsiveModal>
+
+      {/* Delete Day Confirmation */}
+      <ResponsiveModal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
+        <div className="p-6 text-center">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-6 h-6 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold text-primary mb-2">Remove Day?</h3>
+          <p className="text-sm text-muted mb-6">
+            This will permanently remove this day and its exercises from the workout.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteDay}>
+              Remove
+            </Button>
+          </div>
+        </div>
+      </ResponsiveModal>
     </div>
   );
 }

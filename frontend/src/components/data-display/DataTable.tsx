@@ -11,8 +11,7 @@ import {
 } from "@tanstack/react-table";
 import { cn } from "../../lib/utils";
 import { Skeleton } from "../feedback/Skeleton";
-import { EmptyState } from "../feedback/EmptyState";
-import { FileWarning } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -41,7 +40,7 @@ export function DataTable<TData, TValue>({
   onRowSelectionChange,
   isLoading,
   className,
-  emptyMessage = "No results found.",
+  emptyMessage = "No records match your query.",
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -61,36 +60,34 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className={cn("w-full rounded-xl border border-default bg-surface shadow-sm overflow-hidden flex flex-col", className)}>
+    <div className={cn("glass-panel rounded-[16px] overflow-hidden flex flex-col", className)}>
       <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full caption-bottom text-sm">
-          <thead className="bg-surface-hover/50 border-b border-default">
+        <table className="w-full text-left border-collapse">
+          <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-default transition-colors hover:bg-surface-hover/50 data-[state=selected]:bg-primary/5">
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <th
-                      key={header.id}
-                      className="h-12 px-4 text-left align-middle font-medium text-muted [&:has([role=checkbox])]:pr-0 whitespace-nowrap"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  );
-                })}
+              <tr key={headerGroup.id} className="bg-elevated/50 border-b border-border-default text-text-muted text-[10px] uppercase tracking-wider font-bold font-mono">
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="py-3.5 px-5"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </th>
+                ))}
               </tr>
             ))}
           </thead>
-          <tbody className="[&_tr:last-child]:border-0">
+          <tbody className="divide-y divide-border-default/30 text-sm">
             {isLoading ? (
               Array.from({ length: pagination.pageSize }).map((_, i) => (
-                <tr key={i} className="border-b border-default">
+                <tr key={i} className="table-row-hover table-zebra">
                   {columns.map((_, j) => (
-                    <td key={j} className="p-4 align-middle">
+                    <td key={j} className="py-3 px-5">
                       <Skeleton className="h-5 w-full" />
                     </td>
                   ))}
@@ -100,11 +97,10 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="border-b border-default transition-colors hover:bg-surface-hover/80 data-[state=selected]:bg-primary/5"
+                  className="table-row-hover table-zebra"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
+                    <td key={cell.id} className="py-3 px-5 align-middle">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
@@ -112,13 +108,9 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="h-64 text-center">
-                  <EmptyState 
-                    title="No Data" 
-                    description={emptyMessage} 
-                    icon={<FileWarning className="h-8 w-8 text-muted" />} 
-                    className="border-none shadow-none"
-                  />
+                <td colSpan={columns.length} className="text-center py-16">
+                  <p className="text-text-secondary text-sm font-semibold">No records match your query.</p>
+                  <p className="text-xs text-text-muted mt-1 font-mono">Try adjusting search or filter criteria.</p>
                 </td>
               </tr>
             )}
@@ -126,51 +118,44 @@ export function DataTable<TData, TValue>({
         </table>
       </div>
       
-      {/* Footer / Pagination Controls */}
-      <div className="flex items-center justify-between px-4 py-3 bg-surface border-t border-default">
-        <div className="flex-1 text-sm text-muted">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+      {/* Pagination */}
+      <div className="flex items-center justify-between px-5 py-3 bg-surface border-t border-border-default">
+        <div className="flex items-center space-x-2 text-xs text-text-muted font-mono">
+          <span>
+            {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–
+            {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, data.length)} of {table.getFilteredRowModel().rows.length}
+          </span>
         </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium text-primary">Rows per page</p>
-            <select
-              className="h-8 w-[70px] rounded-md border border-default bg-surface px-2 py-1 text-sm text-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
-              }}
-            >
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
-              ))}
-            </select>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => table.setPageIndex(page - 1)}
+                className={`h-7 w-7 rounded-[4px] text-xs font-bold font-mono transition-all cursor-pointer ${
+                  table.getState().pagination.pageIndex === page - 1
+                    ? "bg-primary text-primary-foreground"
+                    : "text-text-secondary hover:text-text-primary hover:bg-elevated border border-transparent"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
           </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium text-primary">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              className="h-8 w-8 p-0 rounded-md border border-default bg-surface hover:bg-surface-hover disabled:opacity-50 transition-colors"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Go to previous page</span>
-              {"<"}
-            </button>
-            <button
-              className="h-8 w-8 p-0 rounded-md border border-default bg-surface hover:bg-surface-hover disabled:opacity-50 transition-colors"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Go to next page</span>
-              {">"}
-            </button>
-          </div>
+          <button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </div>

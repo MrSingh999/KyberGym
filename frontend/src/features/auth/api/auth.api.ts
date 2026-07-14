@@ -1,5 +1,10 @@
+import axios from "axios";
 import { apiClient } from "../../../lib/apiClient";
 import type { LoginFormData } from "../schemas/auth.schema";
+
+const SUPER_ADMIN_API = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace("/v1", "")
+  : "http://localhost:5000/api";
 
 export interface LoginResponse {
   user: {
@@ -27,8 +32,26 @@ export interface UserProfile {
 
 export const authApi = {
   login: async (data: LoginFormData) => {
-    const response = await apiClient.post("/auth/login", data);
-    return response.data.data as LoginResponse;
+    try {
+      const response = await apiClient.post("/auth/login", data);
+      return response.data.data as LoginResponse;
+    } catch {
+      const response = await axios.post(`${SUPER_ADMIN_API}/super-admin/login`, data, { withCredentials: true });
+      const sa = response.data.data;
+      return {
+        user: {
+          id: sa.superAdmin.id,
+          name: sa.superAdmin.fullName,
+          email: sa.superAdmin.email,
+          role: "superadmin",
+          gymId: "",
+        },
+        accessToken: sa.token,
+        enabledFeatures: {},
+        subscriptionStatus: "",
+        subscriptionExpiry: null,
+      } as LoginResponse;
+    }
   },
 
   logout: async () => {

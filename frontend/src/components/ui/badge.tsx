@@ -9,14 +9,17 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:opacity-90",
+          "border-transparent bg-primary text-primary-foreground",
         secondary:
-          "border-border-default bg-surface text-text-secondary hover:bg-surface-hover",
+          "border-border-default bg-surface text-text-secondary",
         destructive:
           "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20 dark:border-red-500/15 font-bold font-mono text-[10px] tracking-wide py-0.5 px-2.5",
-        outline: "text-text-secondary bg-surface border-border-default font-mono text-[10px] py-0.5 px-2.5",
-        success: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 dark:border-emerald-500/15 font-bold font-mono text-[10px] tracking-wide py-0.5 px-2.5",
-        warning: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20 dark:border-amber-500/15 font-bold font-mono text-[10px] tracking-wide py-0.5 px-2.5",
+        outline:
+          "border-border-default text-text-secondary font-mono text-[10px] py-0.5 px-2.5",
+        success:
+          "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 dark:border-emerald-500/15 font-bold font-mono text-[10px] tracking-wide py-0.5 px-2.5",
+        warning:
+          "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20 dark:border-amber-500/15 font-bold font-mono text-[10px] tracking-wide py-0.5 px-2.5",
       },
     },
     defaultVariants: {

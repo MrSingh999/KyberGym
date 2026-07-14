@@ -9,13 +9,13 @@ interface WidgetHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function WidgetHeader({ title, description, action, className, ...props }: WidgetHeaderProps) {
   return (
-    <div className={cn("flex flex-row items-center justify-between p-6 pb-2", className)} {...props}>
-      <div className="flex flex-col space-y-1">
-        <h3 className="font-heading font-semibold text-lg text-primary tracking-tight leading-none">
+    <div className={cn("flex flex-row items-center justify-between px-5 pt-5 pb-0", className)} {...props}>
+      <div className="flex flex-col">
+        <h3 className="font-bold text-base text-text-primary font-mono uppercase tracking-wide">
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-secondary">{description}</p>
+          <p className="text-xs text-text-secondary mt-0.5">{description}</p>
         )}
       </div>
       {action && (
