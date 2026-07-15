@@ -2,6 +2,7 @@ export const ROLES = {
   SUPER_ADMIN: 'super_admin', // SaaS owner
   GYM_ADMIN: 'gym_admin',     // Gym owner
   STAFF: 'staff',             // Gym employee
+  TRAINER: 'trainer',         // Gym trainer
   MEMBER: 'member',           // Gym client
 };
 

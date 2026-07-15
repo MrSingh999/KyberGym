@@ -30,6 +30,7 @@ import deliveryLogRoutes     from '../modules/deliveryLog/deliveryLog.routes.js'
 import gymRoutes             from '../modules/gyms/gym.routes.js';
 import memberQrRoutes        from '../modules/memberQr/memberQr.routes.js';
 import superAdminRoutes      from '../modules/super-admin/superAdmin.routes.js';
+import attendanceRoutes      from '../modules/attendance/attendance.routes.js';
 
 // ── Route Registration ─────────────────────────────────────────────────────
 router.use('/super-admin',         superAdminRoutes);
@@ -46,5 +47,6 @@ router.use('/notifications',      notificationRoutes);
 router.use('/delivery-logs',      deliveryLogRoutes);
 router.use('/gyms',               gymRoutes);
 router.use('/members/:id/qr',     memberQrRoutes);
+router.use('/attendance',         attendanceRoutes);
 
 export default router;

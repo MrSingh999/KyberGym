@@ -309,6 +309,8 @@ export function DashboardPage() {
             setIsAddMemberOpen(false);
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
             queryClient.invalidateQueries({ queryKey: ["members"] });
+            queryClient.invalidateQueries({ queryKey: ["payments"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
           }}
           onCancel={() => setIsAddMemberOpen(false)}
         />

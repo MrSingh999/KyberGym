@@ -12,6 +12,25 @@ const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
 export class AuthService {
 
+  static async changePassword(userId, currentPassword, newPassword) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw createError.Unauthorized('User not found');
+    }
+
+    const isMatch = await compareData(currentPassword, user.password);
+    if (!isMatch) {
+      throw createError.BadRequest('Current password is incorrect');
+    }
+
+    user.password = await hashData(newPassword);
+    user.tokenVersion += 1;
+    user.passwordChangedAt = new Date();
+    await user.save();
+
+    return true;
+  }
+
   static async registerOwner(data) {
     const { gym, user } = await GymService.createGymWithAdmin({
       name: data.gymName,

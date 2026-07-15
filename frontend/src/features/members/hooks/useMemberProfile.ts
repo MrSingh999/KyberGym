@@ -59,7 +59,6 @@ export function useMemberProfile(memberId: string) {
         membershipEndDate,
         membershipStatus: m.status === 'active' ? 'Active' : m.status === 'expired' ? 'Expired' : m.status === 'suspended' ? 'Suspended' : 'Inactive',
         planName,
-        assignedTrainerName: "Coach Alex",
         createdAt: m.createdAt,
         updatedAt: m.updatedAt,
         activeSubId,
@@ -151,27 +150,25 @@ export function useMemberPaymentSummary(memberId: string) {
         params: { memberId, limit: 50 }
       });
       const rawPayments = response.data.data;
-      
-      const paymentsWithPlans = await Promise.all(
-        rawPayments.map(async (p: any) => {
-          let planName = "Gym Membership";
-          if (p.planId) {
-            try {
-              const planRes = await apiClient.get(`/membership-plans/${p.planId}`);
-              planName = planRes.data.data?.name || "Gym Membership";
-            } catch {
-              // fallback
-            }
-          }
-          return {
-            id: p._id,
-            amount: p.finalAmount || p.amount,
-            date: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
-            status: p.status || "paid",
-            description: `${planName} – payment`,
-          };
-        })
-      );
+
+      const planIds = [...new Set(rawPayments.map((p: any) => p.planId).filter(Boolean))];
+      let planNames = new Map<string, string>();
+      if (planIds.length > 0) {
+        try {
+          const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
+          (plansRes.data.data || []).forEach((pl: any) => {
+            planNames.set(pl._id, pl.name);
+          });
+        } catch { /* fallback */ }
+      }
+
+      const paymentsWithPlans = rawPayments.map((p: any) => ({
+        id: p._id,
+        amount: p.finalAmount || p.amount,
+        date: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
+        status: p.status || "paid",
+        description: `${planNames.get(p.planId) || "Gym Membership"} – payment`,
+      }));
       return paymentsWithPlans;
     },
     enabled: !!selectedGymId && !!memberId,

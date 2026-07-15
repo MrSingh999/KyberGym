@@ -1,26 +1,28 @@
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "../../../lib/apiClient";
-import { useAuthStore } from "../../../store/auth.store";
+import { useMemo } from "react";
 import { useGymStore } from "../../../store/gym.store";
 
 export type FeatureFlag = "qr_module" | "broadcast_module" | "branding_module" | "custom_domain_module" | "staff_module" | "reports_module";
 
-export function useFeatures() {
-  const { isAuthenticated } = useAuthStore();
-  const { selectedGymId } = useGymStore();
+const ALL_FEATURES: FeatureFlag[] = [
+  "qr_module",
+  "broadcast_module",
+  "branding_module",
+  "custom_domain_module",
+  "staff_module",
+  "reports_module",
+];
 
-  return useQuery<FeatureFlag[]>({
-    queryKey: ["features", selectedGymId],
-    queryFn: async () => {
-      // Fetch active features for the current tenant subscription
-      const response = await apiClient.get(`/features`, {
-        params: { gymId: selectedGymId }
-      });
-      return response.data;
-    },
-    enabled: isAuthenticated && !!selectedGymId,
-    staleTime: 60 * 60 * 1000, // Cache for 1 hour as features rarely change
-  });
+export function useFeatures() {
+  const { gymFeatures } = useGymStore();
+
+  const enabledFeatures = useMemo(() => {
+    if (!gymFeatures?.enabledFeatures) return [] as FeatureFlag[];
+    return ALL_FEATURES.filter(
+      (f) => gymFeatures.enabledFeatures[f] === true
+    );
+  }, [gymFeatures]);
+
+  return { data: enabledFeatures, isLoading: false, isError: false, error: null };
 }
 
 export function useHasFeature(feature: FeatureFlag) {

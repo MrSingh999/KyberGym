@@ -38,11 +38,13 @@ import { SuperAdminGymDetailPage } from "../features/super-admin/pages/SuperAdmi
 import { EmptyState } from "../components/feedback/ErrorState";
 
 import { ProtectedRoute, PublicRoute } from "../features/auth/guards/ProtectedRoute";
+import { TenantGuard } from "../features/auth/guards/TenantGuard";
 import { Login } from "../features/auth/components/Login";
 import { ForgotPasswordForm } from "../features/auth/components/ForgotPasswordForm";
 import { ResetPasswordForm } from "../features/auth/components/ResetPasswordForm";
 import { VerifyEmailForm } from "../features/auth/components/VerifyEmailForm";
 import { ProfilePage } from "../features/auth/components/ProfilePage";
+import { SessionExpired } from "../features/auth/components/SessionExpired";
 import { RoleGuard } from "../features/auth/guards/RoleGuard";
 import { Unauthorized } from "../features/auth/components/Unauthorized";
 import { useAuthStore } from "../store/auth.store";
@@ -68,7 +70,7 @@ function RootRedirect() {
   if (user.role === "superadmin") {
     return <Navigate to="/super-admin/dashboard" replace />;
   }
-  if (user.role === "owner") {
+  if (user.role === "owner" || user.role === "staff") {
     return <Navigate to="/admin/dashboard" replace />;
   }
   return <Navigate to="/member/dashboard" replace />;
@@ -105,9 +107,11 @@ export const router = createBrowserRouter([
         path: "admin",
         element: (
           <ProtectedRoute>
-            <RoleGuard allowedRoles={["owner"]}>
-              <DashboardLayout role="owner" />
-            </RoleGuard>
+            <TenantGuard>
+              <RoleGuard allowedRoles={["owner", "staff"]}>
+                <DashboardLayout role="owner" />
+              </RoleGuard>
+            </TenantGuard>
           </ProtectedRoute>
         ),
         children: [
@@ -142,9 +146,11 @@ export const router = createBrowserRouter([
         path: "member",
         element: (
           <ProtectedRoute>
-            <RoleGuard allowedRoles={["member"]}>
-              <MemberLayout />
-            </RoleGuard>
+            <TenantGuard>
+              <RoleGuard allowedRoles={["member"]}>
+                <MemberLayout />
+              </RoleGuard>
+            </TenantGuard>
           </ProtectedRoute>
         ),
         children: [
@@ -180,5 +186,9 @@ export const router = createBrowserRouter([
   {
     path: "unauthorized",
     element: <Unauthorized />,
+  },
+  {
+    path: "session-expired",
+    element: <SessionExpired />,
   },
 ]);

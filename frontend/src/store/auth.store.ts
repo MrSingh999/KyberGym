@@ -2,12 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { useGymStore } from "./gym.store";
+import { queryClient } from "../lib/queryClient";
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: "superadmin" | "owner" | "member";
+  role: "superadmin" | "owner" | "staff" | "member";
   gymId?: string;
   avatarUrl?: string;
 }
@@ -22,9 +23,10 @@ interface AuthState {
   logout: () => void;
 }
 
-const normalizeRole = (role: string): "superadmin" | "owner" | "member" => {
+const normalizeRole = (role: string): "superadmin" | "owner" | "staff" | "member" => {
   if (role === "super_admin" || role === "superadmin") return "superadmin";
   if (role === "gym_admin" || role === "owner") return "owner";
+  if (role === "staff") return "staff";
   return "member";
 };
 
@@ -54,6 +56,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
         useGymStore.getState().clearGymFeatures();
+        queryClient.clear();
       },
     }),
     {

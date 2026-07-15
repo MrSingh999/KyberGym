@@ -1,7 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router";
-import { useHasFeature, FeatureFlag, useFeatures } from "../hooks/useFeatures";
-import { Skeleton } from "../../../components/feedback/Skeleton";
+import { useHasFeature, FeatureFlag } from "../hooks/useFeatures";
 
 interface FeatureGuardProps {
   children: React.ReactNode;
@@ -10,12 +9,7 @@ interface FeatureGuardProps {
 }
 
 export function FeatureGuard({ children, feature, fallback }: FeatureGuardProps) {
-  const { isLoading } = useFeatures();
   const hasFeature = useHasFeature(feature);
-
-  if (isLoading) {
-    return <Skeleton className="h-32 w-full rounded-2xl" />;
-  }
 
   if (!hasFeature) {
     if (fallback) return <>{fallback}</>;

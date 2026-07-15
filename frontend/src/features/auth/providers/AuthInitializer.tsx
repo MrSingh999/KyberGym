@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState, useRef } from "react";
 import { useAuthStore } from "../../../store/auth.store";
-import { useGymStore } from "../../../store/gym.store";
 import { authApi } from "../api/auth.api";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const { token, login, setToken, logout } = useAuthStore();
+  const { token, login, logout } = useAuthStore();
   const [isInitializing, setIsInitializing] = useState(true);
+  const isRestoring = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -19,29 +16,16 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      if (isRestoring.current) return;
+      isRestoring.current = true;
+
       try {
         const user = await authApi.getMe();
         if (active) login(user, token);
       } catch {
-        try {
-          const gymId = useGymStore.getState().selectedGymId;
-          const refreshRes = await axios.post(
-            `${API_URL}/auth/refresh-token`,
-            {},
-            {
-              withCredentials: true,
-              headers: gymId ? { "x-tenant-id": gymId } : undefined,
-            }
-          );
-          const newToken = refreshRes.data.data.accessToken;
-          setToken(newToken);
-
-          const user = await authApi.getMe();
-          if (active) login(user, newToken);
-        } catch {
-          if (active) logout();
-        }
+        if (active) logout();
       } finally {
+        isRestoring.current = false;
         if (active) setIsInitializing(false);
       }
     };
@@ -51,7 +35,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [token, login, logout]);
 
   if (isInitializing) {
     return (

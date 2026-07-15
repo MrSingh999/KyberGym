@@ -44,7 +44,6 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
             membershipEndDate: sub.endDate ? new Date(sub.endDate).toISOString().split('T')[0] : "",
             membershipStatus: "Active" as const,
             planName: sub.membershipPlanId?.name || "Pro Monthly",
-            assignedTrainerName: "Coach Alex",
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
           };
@@ -89,35 +88,36 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
       }
 
       // Default members fetch
-      const response = await apiClient.get('/members', {
-        params: {
-          page: pagination.pageIndex + 1,
-          limit: pagination.pageSize,
-          search: searchQuery || undefined,
-          status: filters.status?.[0] || undefined,
+      const [membersRes, subsRes] = await Promise.all([
+        apiClient.get('/members', {
+          params: {
+            page: pagination.pageIndex + 1,
+            limit: pagination.pageSize,
+            search: searchQuery || undefined,
+            status: filters.status?.[0] || undefined,
+          }
+        }),
+        apiClient.get('/member-subscriptions', {
+          params: { limit: 1000 }
+        }).catch(() => ({ data: { data: [] } }))
+      ]);
+
+      const responseData = membersRes.data.data;
+      const meta = membersRes.data.meta;
+
+      const subsByMember = new Map<string, any>();
+      (subsRes.data.data || []).forEach((sub: any) => {
+        const mid = typeof sub.memberId === 'string' ? sub.memberId : sub.memberId?._id;
+        if (mid && !subsByMember.has(mid)) {
+          subsByMember.set(mid, sub);
         }
       });
-      const responseData = response.data.data;
-      const meta = response.data.meta;
-      
-      const mappedMembers = await Promise.all(responseData.map(async (m: any) => {
-        let planName = "No plan";
-        let membershipStartDate = "";
-        let membershipEndDate = "";
-        
-        try {
-          const subsRes = await apiClient.get('/member-subscriptions', {
-            params: { memberId: m._id, limit: 1 }
-          });
-          const latestSub = subsRes.data.data?.[0];
-          if (latestSub) {
-            planName = latestSub.membershipPlanId?.name || "No plan";
-            membershipStartDate = latestSub.startDate ? new Date(latestSub.startDate).toISOString().split('T')[0] : "";
-            membershipEndDate = latestSub.endDate ? new Date(latestSub.endDate).toISOString().split('T')[0] : "";
-          }
-        } catch {
-          // Ignore fallback
-        }
+
+      const mappedMembers = responseData.map((m: any) => {
+        const latestSub = subsByMember.get(m._id);
+        const planName = latestSub?.membershipPlanId?.name || "No plan";
+        const membershipStartDate = latestSub?.startDate ? new Date(latestSub.startDate).toISOString().split('T')[0] : "";
+        const membershipEndDate = latestSub?.endDate ? new Date(latestSub.endDate).toISOString().split('T')[0] : "";
 
         return {
           id: m._id,
@@ -131,11 +131,10 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
           membershipEndDate,
           membershipStatus: m.status === 'active' ? 'Active' as const : m.status === 'expired' ? 'Expired' as const : m.status === 'suspended' ? 'Suspended' as const : 'Inactive' as const,
           planName,
-          assignedTrainerName: "Coach Alex",
           createdAt: m.createdAt,
           updatedAt: m.updatedAt,
         };
-      }));
+      });
 
       return {
         data: mappedMembers,

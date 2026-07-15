@@ -106,6 +106,15 @@ export class AuthController {
     return ApiSuccess.send(res, httpStatus.OK, 'Email verified successfully');
   }
 
+  static async changePassword(req, res) {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id;
+
+    await AuthService.changePassword(userId, currentPassword, newPassword);
+
+    return ApiSuccess.send(res, httpStatus.OK, 'Password changed successfully');
+  }
+
   static async getMe(req, res) {
     const userResponse = {
       id: req.user._id,

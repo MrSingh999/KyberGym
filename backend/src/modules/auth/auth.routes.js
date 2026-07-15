@@ -6,7 +6,8 @@ import {
   loginSchema, 
   forgotPasswordSchema, 
   resetPasswordSchema, 
-  verifyEmailSchema 
+  verifyEmailSchema,
+  changePasswordSchema 
 } from './auth.validators.js';
 import { asyncHandler } from '../../middleware/asyncHandler.js';
 import { resolveTenant } from '../../middleware/tenant.middleware.js';
@@ -55,5 +56,10 @@ router.post(
 router.use(authenticate);
 
 router.get('/me', asyncHandler(AuthController.getMe));
+router.post(
+  '/change-password',
+  validateRequest(changePasswordSchema),
+  asyncHandler(AuthController.changePassword)
+);
 
 export default router;

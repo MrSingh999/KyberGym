@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -14,12 +14,12 @@ import {
 import { Input } from "../../../components/ui/input";
 import { LoadingButton } from "../../../components/ui/button";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "../schemas/auth.schema";
-import { apiClient } from "../../../lib/apiClient";
+import { authApi } from "../api/auth.api";
 import { useNavigate } from "react-router";
 
 export function ForgotPasswordForm() {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<ForgotPasswordFormData>({
@@ -32,7 +32,7 @@ export function ForgotPasswordForm() {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
-      await apiClient.post("/auth/forgot-password", { email: data.email });
+      await authApi.forgotPassword(data.email);
       setIsSubmitted(true);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
@@ -53,7 +53,7 @@ export function ForgotPasswordForm() {
           <div>
             <h3 className="text-lg font-heading font-medium text-primary">Check your email</h3>
             <p className="mt-2 text-sm text-secondary">
-              We sent a password reset link to <span className="font-medium text-primary">{form.getValues().email}</span>
+              We sent a 6-digit OTP to <span className="font-medium text-primary">{form.getValues().email}</span>. It expires in 15 minutes.
             </p>
           </div>
           <button

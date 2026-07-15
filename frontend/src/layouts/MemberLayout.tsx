@@ -3,6 +3,8 @@ import { Sidebar } from "../components/layout/Sidebar";
 import { Navbar } from "../components/layout/Navbar";
 import { BottomNav } from "../components/layout/BottomNav";
 import { CommandPalette } from "../components/layout/CommandPalette";
+import { FeatureInitializer } from "../features/auth/providers/FeatureInitializer";
+import { TenantInitializer } from "../features/auth/providers/TenantInitializer";
 import { MEMBER_NAVIGATION } from "../constants/navigation";
 
 export function MemberLayout() {
@@ -14,7 +16,11 @@ export function MemberLayout() {
         <Navbar />
         
         <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-[80px] lg:pb-6">
-          <Outlet />
+          <FeatureInitializer>
+            <TenantInitializer>
+              <Outlet />
+            </TenantInitializer>
+          </FeatureInitializer>
         </main>
       </div>
       
