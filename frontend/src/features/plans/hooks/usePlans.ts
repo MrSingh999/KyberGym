@@ -186,6 +186,7 @@ export function useCreatePlan() {
         price: data.price,
         durationInDays,
         color: data.color || '#3B82F6',
+        displayOrder: data.displayOrder,
       });
       return response.data.data;
     },
@@ -225,12 +226,12 @@ export function useUpdatePlan(planId: string) {
   });
 }
 
-export function useArchivePlan(planId: string) {
+export function useArchivePlan() {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (planId: string) => {
       await apiClient.delete(`/membership-plans/${planId}`);
     },
     onSuccess: () => {

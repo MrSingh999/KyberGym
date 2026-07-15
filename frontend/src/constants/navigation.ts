@@ -11,7 +11,9 @@ import {
   Building2,
   Megaphone,
   LifeBuoy,
-  ClipboardCheck
+  ClipboardCheck,
+  Bell,
+  Mail,
 } from "lucide-react";
 
 export type NavItem = {
@@ -72,6 +74,14 @@ export const OWNER_NAVIGATION: NavGroup[] = [
       { name: "Branding", href: "/admin/branding", icon: Palette },
       { name: "Staff", href: "/admin/staff", icon: Users },
       { name: "Settings", href: "/admin/settings", icon: Settings },
+    ],
+  },
+  {
+    title: "Communication",
+    items: [
+      { name: "Broadcasts", href: "/admin/broadcasts", icon: Megaphone },
+      { name: "Message Templates", href: "/admin/message-templates", icon: Mail },
+      { name: "Notifications", href: "/admin/notifications", icon: Bell },
     ],
   },
 ];

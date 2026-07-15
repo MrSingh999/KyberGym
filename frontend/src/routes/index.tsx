@@ -22,6 +22,14 @@ import { WorkoutDetailPage } from "../features/workouts/pages/WorkoutDetailPage"
 import { CreateWorkoutPage } from "../features/workouts/pages/CreateWorkoutPage";
 import { EditWorkoutPage } from "../features/workouts/pages/EditWorkoutPage";
 
+import { BroadcastsPage } from "../features/broadcast/pages/BroadcastsPage";
+import { CreateBroadcastPage } from "../features/broadcast/pages/CreateBroadcastPage";
+import { BroadcastDetailPage } from "../features/broadcast/pages/BroadcastDetailPage";
+
+import { MessageTemplatesPage } from "../features/messageTemplates/pages/MessageTemplatesPage";
+import { CreateMessageTemplatePage } from "../features/messageTemplates/pages/CreateMessageTemplatePage";
+import { EditMessageTemplatePage } from "../features/messageTemplates/pages/EditMessageTemplatePage";
+
 import { NotificationsPage } from "../features/notifications/pages/NotificationsPage";
 import { QrEntryPage } from "../features/qr-entry/pages/QrEntryPage";
 import { BrandingPage } from "../features/branding/pages/BrandingPage";
@@ -131,6 +139,12 @@ export const router = createBrowserRouter([
           { path: "workouts/:workoutId", element: <WorkoutDetailPage /> },
           { path: "workouts/:workoutId/edit", element: <EditWorkoutPage /> },
           { path: "notifications", element: <NotificationsPage /> },
+          { path: "broadcasts", element: <BroadcastsPage /> },
+          { path: "broadcasts/new", element: <CreateBroadcastPage /> },
+          { path: "broadcasts/:broadcastId", element: <BroadcastDetailPage /> },
+          { path: "message-templates", element: <MessageTemplatesPage /> },
+          { path: "message-templates/new", element: <CreateMessageTemplatePage /> },
+          { path: "message-templates/:templateId/edit", element: <EditMessageTemplatePage /> },
           { path: "attendance", element: <AttendancePage /> },
           { path: "attendance/dashboard", element: <AttendanceDashboardPage /> },
           { path: "attendance/members/:memberId", element: <MemberAttendancePage /> },

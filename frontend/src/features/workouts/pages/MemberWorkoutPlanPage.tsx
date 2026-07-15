@@ -1,56 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useGymStore } from "@/store/gym.store";
-import { apiClient } from "@/lib/apiClient";
-import { WorkoutWithDays } from "../types";
+import { useMemberWorkouts } from "../hooks/useWorkouts";
 import { WorkoutDayCard } from "../components/WorkoutDayCard";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
 
 export function MemberWorkoutPlanPage() {
-  const { selectedGymId } = useGymStore();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
-  const { data: workouts, isLoading, isError } = useQuery({
-    queryKey: ["my-workouts", selectedGymId],
-    queryFn: async () => {
-      const response = await apiClient.get("/members/me/workouts");
-      const raw = response.data.data || response.data;
-      return (Array.isArray(raw) ? raw : []).map((w: any): WorkoutWithDays => ({
-        id: w._id,
-        gymId: w.gymId,
-        title: w.title,
-        description: w.description,
-        assignmentType: w.assignmentType,
-        assignedMembers: w.assignedMembers || [],
-        isActive: w.isActive ?? true,
-        createdBy: w.createdBy,
-        createdAt: w.createdAt,
-        updatedAt: w.updatedAt,
-        days: (w.days || []).map((d: any) => ({
-          id: d._id,
-          workoutId: d.workoutId || w._id,
-          dayNumber: d.dayNumber,
-          dayName: d.dayName,
-          title: d.title,
-          exercises: (d.exercises || []).map((e: any) => ({
-            name: e.name,
-            sets: e.sets,
-            reps: e.reps,
-            duration: e.duration,
-            notes: e.notes,
-            image: e.image,
-            videoUrl: e.videoUrl,
-          })),
-          createdAt: d.createdAt,
-          updatedAt: d.updatedAt,
-        })),
-      }));
-    },
-    enabled: !!selectedGymId,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: workouts, isLoading, isError } = useMemberWorkouts();
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {

@@ -32,7 +32,7 @@ export function PlansPage() {
   });
 
   const { mutate: duplicate } = useDuplicatePlan();
-  const { mutate: archive } = useArchivePlan('');
+  const { mutate: archive } = useArchivePlan();
   const { mutate: setStatus } = useSetPlanStatus();
 
   const plans = data?.data ?? [];
@@ -43,7 +43,7 @@ export function PlansPage() {
   };
   const handleArchive = (id: string) => {
     toast('Archive this plan?', {
-      action: { label: 'Archive', onClick: () => archive(undefined, { onSuccess: () => toast.success('Plan archived') }) },
+      action: { label: 'Archive', onClick: () => archive(id, { onSuccess: () => toast.success('Plan archived') }) },
     });
   };
 

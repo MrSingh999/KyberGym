@@ -3,11 +3,13 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { createPlanStep1Schema, CreatePlanStep1, createPlanStep2Schema, CreatePlanStep2, createPlanStep3Schema, CreatePlanStep3, createPlanStep4Schema, CreatePlanStep4, CreatePlanData } from '../schemas/plan.schema';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/forms/Form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { DEFAULT_PLAN_FEATURES, DURATION_TYPE_LABELS } from '../types';
+import { useCreatePlan } from '../hooks/usePlans';
 
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -32,10 +34,10 @@ interface CreatePlanWizardProps {
 
 export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps) {
   const [step, setStep] = useState<WizardStep>(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [step1Data, setStep1Data] = useState<Partial<CreatePlanStep1>>({});
   const [step2Data, setStep2Data] = useState<Partial<CreatePlanStep2>>({});
   const [step3Data, setStep3Data] = useState<Partial<CreatePlanStep3>>({});
+  const createPlan = useCreatePlan();
 
   const s1 = useForm<CreatePlanStep1>({ resolver: zodResolver(createPlanStep1Schema) });
   const s2 = useForm<CreatePlanStep2>({ resolver: zodResolver(createPlanStep2Schema), defaultValues: { price: 0, joiningFee: 0, isDefault: false, isPopular: false } });
@@ -67,14 +69,10 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
   }, [step1Data, step2Data, step3Data, step]);
 
   const handleFinalSubmit = async (s4d: CreatePlanStep4) => {
-    setIsSubmitting(true);
-    try {
-      const payload: CreatePlanData = { ...step1Data as CreatePlanStep1, ...step2Data as CreatePlanStep2, ...step3Data as CreatePlanStep3, ...s4d };
-      // await useCreatePlan().mutateAsync(payload);
-      await new Promise((r) => setTimeout(r, 1000));
-      localStorage.removeItem(DRAFT_KEY);
-      onSuccess();
-    } catch { } finally { setIsSubmitting(false); }
+    const payload: CreatePlanData = { ...step1Data as CreatePlanStep1, ...step2Data as CreatePlanStep2, ...step3Data as CreatePlanStep3, ...s4d };
+    localStorage.removeItem(DRAFT_KEY);
+    await createPlan.mutateAsync(payload);
+    onSuccess();
   };
 
   return (
@@ -248,10 +246,10 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
             Continue →
           </button>
         ) : (
-          <button type="submit" form="wizard-step-4" disabled={isSubmitting}
+          <button type="submit" form="wizard-step-4" disabled={createPlan.isPending}
             className="px-5 py-2.5 text-sm font-semibold bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center gap-2">
-            {isSubmitting && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
-            {isSubmitting ? 'Creating…' : 'Create Plan'}
+            {createPlan.isPending && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+            {createPlan.isPending ? 'Creating…' : 'Create Plan'}
           </button>
         )}
       </div>

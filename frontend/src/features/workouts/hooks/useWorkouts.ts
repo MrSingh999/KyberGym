@@ -193,6 +193,50 @@ export function useUpdateWorkoutDay(workoutId: string) {
   });
 }
 
+export function useMemberWorkouts() {
+  const { selectedGymId } = useGymStore();
+
+  return useQuery({
+    queryKey: workoutKeys.list(selectedGymId ?? "", { type: "member" }),
+    queryFn: async (): Promise<WorkoutWithDays[]> => {
+      const response = await apiClient.get("/members/me/workouts");
+      const raw = response.data.data || response.data;
+      return (Array.isArray(raw) ? raw : []).map((w: any): WorkoutWithDays => ({
+        id: w._id,
+        gymId: w.gymId,
+        title: w.title,
+        description: w.description,
+        assignmentType: w.assignmentType,
+        assignedMembers: w.assignedMembers || [],
+        isActive: w.isActive ?? true,
+        createdBy: w.createdBy,
+        createdAt: w.createdAt,
+        updatedAt: w.updatedAt,
+        days: (w.days || []).map((d: any) => ({
+          id: d._id,
+          workoutId: d.workoutId || w._id,
+          dayNumber: d.dayNumber,
+          dayName: d.dayName,
+          title: d.title,
+          exercises: (d.exercises || []).map((e: any) => ({
+            name: e.name,
+            sets: e.sets,
+            reps: e.reps,
+            duration: e.duration,
+            notes: e.notes,
+            image: e.image,
+            videoUrl: e.videoUrl,
+          })),
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt,
+        })),
+      }));
+    },
+    enabled: !!selectedGymId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useDeleteWorkoutDay(workoutId: string) {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();

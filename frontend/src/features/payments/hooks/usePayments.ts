@@ -52,28 +52,26 @@ export function usePayments(params: UsePaymentsParams = {}) {
       const rawPayments = response.data.data;
       const meta = response.data.meta;
 
-      let results: PaymentListItem[] = await Promise.all(rawPayments.map(async (p: any) => {
-        let planName = "Gym Membership";
-        if (p.subscriptionId?.membershipPlanId) {
-          try {
-            const planRes = await apiClient.get(`/membership-plans/${p.subscriptionId.membershipPlanId}`);
-            planName = planRes.data.data?.name || "Gym Membership";
-          } catch {
-            // fallback
-          }
-        }
-        return {
-          id: p._id,
-          memberId: p.memberId?._id || "",
-          memberName: p.memberId?.fullName || "Unknown Member",
-          memberCode: p.memberId?.memberCode || "N/A",
-          planName,
-          finalAmount: p.amount,
-          paymentMethod: p.paymentMethod === 'bankTransfer' ? 'bank_transfer' : p.paymentMethod,
-          paymentStatus: p.status === 'completed' ? 'paid' : p.status,
-          paymentDate: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
-          transactionReference: p.transactionId || "",
-        };
+      const planIds = [...new Set(rawPayments.map((p: any) => p.subscriptionId?.membershipPlanId).filter(Boolean))];
+      let planNames = new Map<string, string>();
+      if (planIds.length > 0) {
+        try {
+          const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
+          (plansRes.data.data || []).forEach((pl: any) => planNames.set(pl._id, pl.name));
+        } catch { /* fallback */ }
+      }
+
+      let results: PaymentListItem[] = rawPayments.map((p: any) => ({
+        id: p._id,
+        memberId: p.memberId?._id || "",
+        memberName: p.memberId?.fullName || "Unknown Member",
+        memberCode: p.memberId?.memberCode || "N/A",
+        planName: planNames.get(p.subscriptionId?.membershipPlanId) || "Gym Membership",
+        finalAmount: p.amount,
+        paymentMethod: p.paymentMethod === 'bankTransfer' ? 'bank_transfer' : p.paymentMethod,
+        paymentStatus: p.status === 'completed' ? 'paid' : p.status,
+        paymentDate: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
+        transactionReference: p.transactionId || "",
       }));
 
       if (search) {
@@ -105,6 +103,16 @@ export function usePayment(paymentId: string) {
     queryFn: async () => {
       const response = await apiClient.get(`/payments/${paymentId}`);
       const p = response.data.data;
+
+      let planName = "Gym Membership";
+      const planId = p.subscriptionId?.membershipPlanId || "";
+      if (planId) {
+        try {
+          const planRes = await apiClient.get(`/membership-plans/${planId}`);
+          planName = planRes.data.data?.name || "Gym Membership";
+        } catch { /* fallback */ }
+      }
+
       return {
         id: p._id,
         gymId: p.gymId,
@@ -112,8 +120,8 @@ export function usePayment(paymentId: string) {
         memberName: p.memberId?.fullName || "Unknown Member",
         memberCode: p.memberId?.memberCode || "N/A",
         memberPhone: "",
-        planId: p.subscriptionId?.membershipPlanId || "",
-        planName: "Gym Membership",
+        planId,
+        planName,
         amount: p.amount,
         discount: 0,
         finalAmount: p.amount,
@@ -144,13 +152,23 @@ export function useMemberPayments(memberId: string) {
         params: { memberId, limit: 100 }
       });
       const rawPayments = response.data.data;
+
+      const planIds = [...new Set(rawPayments.map((p: any) => p.subscriptionId?.membershipPlanId).filter(Boolean))];
+      let planNames = new Map<string, string>();
+      if (planIds.length > 0) {
+        try {
+          const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
+          (plansRes.data.data || []).forEach((pl: any) => planNames.set(pl._id, pl.name));
+        } catch { /* fallback */ }
+      }
+
       return rawPayments.map((p: any) => ({
         id: p._id,
         gymId: p.gymId,
         memberId: p.memberId?._id || "",
         memberName: p.memberId?.fullName || "",
         memberCode: p.memberId?.memberCode || "",
-        planName: "Gym Membership",
+        planName: planNames.get(p.subscriptionId?.membershipPlanId) || "Gym Membership",
         amount: p.amount,
         discount: 0,
         finalAmount: p.amount,
@@ -259,23 +277,16 @@ export function useCollectPayment() {
   });
 }
 
-export function useUpdatePaymentStatus() {
+export function useRefundPayment() {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ paymentId, status }: { paymentId: string; status: PaymentStatus }) => {
-      if (status === 'refunded') {
-        const response = await apiClient.post(`/payments/${paymentId}/refund`, {
-          notes: "Refunded via dashboard status update"
-        });
-        return response.data.data;
-      } else {
-        const response = await apiClient.patch(`/payments/${paymentId}`, {
-          status: status === 'paid' ? 'completed' : status,
-        });
-        return response.data.data;
-      }
+    mutationFn: async ({ paymentId, notes }: { paymentId: string; notes?: string }) => {
+      const response = await apiClient.post(`/payments/${paymentId}/refund`, {
+        notes: notes || "Refunded via dashboard"
+      });
+      return response.data.data;
     },
     onSuccess: (_data, { paymentId }) => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.all(selectedGymId ?? '') });

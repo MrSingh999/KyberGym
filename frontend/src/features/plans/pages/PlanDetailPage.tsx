@@ -11,7 +11,7 @@ export function PlanDetailPage() {
 
   const { data: plan, isLoading } = usePlan(planId);
   const { mutate: duplicate, isPending: duplicating } = useDuplicatePlan();
-  const { mutate: archive, isPending: archiving } = useArchivePlan(planId);
+  const { mutate: archive, isPending: archiving } = useArchivePlan();
   const { mutate: setStatus, isPending: togglingStatus } = useSetPlanStatus();
 
   if (isLoading) {
@@ -111,7 +111,7 @@ export function PlanDetailPage() {
 
             {plan.status !== 'archived' && (
               <button
-                onClick={() => archive(undefined, { onSuccess: () => { toast.success('Plan archived'); navigate('/admin/plans'); } })}
+                onClick={() => archive(planId, { onSuccess: () => { toast.success('Plan archived'); navigate('/admin/plans'); } })}
                 disabled={archiving}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-destructive border border-destructive/30 rounded-xl hover:bg-destructive/5 transition-colors"
               >
