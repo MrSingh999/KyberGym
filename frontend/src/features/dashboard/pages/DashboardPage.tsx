@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { MemberStatusBadge } from "../../members/components/MemberStatusBadge";
+import { Avatar, AvatarFallback } from "@/components/data-display/Avatar";
+import { Badge } from "@/components/ui/badge";
 
 export function DashboardPage() {
   const queryClient = useQueryClient();
@@ -99,204 +101,236 @@ export function DashboardPage() {
       <QuickActions />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Dues Tracker */}
-          <div className="glass-panel p-4 sm:p-5 md:p-6 rounded-[16px] space-y-5">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-border-default pb-4">
-              <div className="space-y-1.5 flex-1">
-                <h2 className="font-bold text-base text-text-primary font-mono uppercase tracking-wide">
-                  Membership Dues Tracker
-                </h2>
-                <p className="text-xs text-text-secondary">
-                  Active memberships expiring or overdue within the selected timeframe.
-                </p>
-                <div className="flex items-center space-x-2 pt-1.5 overflow-x-auto hide-scrollbar">
-                  <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono shrink-0">
-                    Timeframe:
-                  </span>
-                  <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px]">
+        {/* Dues Tracker Column */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2">
+          <WidgetContainer className="h-[520px]">
+            <WidgetHeader
+              title="Membership Dues"
+              description="Memberships expiring or overdue"
+              action={
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {overdueCount > 0 && (
+                    <Badge variant="destructive" className="text-[9px] px-1.5 py-0.2 font-bold font-sans">
+                      {overdueCount} Overdue
+                    </Badge>
+                  )}
+                  {dueCount > 0 && (
+                    <Badge variant="warning" className="text-[9px] px-1.5 py-0.2 font-bold font-sans">
+                      {dueCount} Expiring
+                    </Badge>
+                  )}
+                </div>
+              }
+            />
+            <WidgetBody isLoading={isDuesLoading} isEmpty={false} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              {/* Filters row inside body */}
+              <div className="flex flex-col gap-3 pb-3 border-b border-border-default shrink-0">
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[9px] text-text-muted font-bold uppercase tracking-wider font-mono shrink-0">
+                      Timeframe:
+                    </span>
+                    <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px]">
+                      {[
+                        { val: "today" as const, label: "Today" },
+                        { val: "3days" as const, label: "3 Days" },
+                        { val: "7days" as const, label: "7 Days" },
+                      ].map((tf) => (
+                        <button
+                          key={tf.val}
+                          type="button"
+                          onClick={() => setDueTimeframe(tf.val)}
+                          className={cn(
+                            "px-2 h-5 rounded-[4px] text-[9px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center",
+                            dueTimeframe === tf.val
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-text-secondary hover:text-text-primary",
+                          )}
+                        >
+                          {tf.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px] self-start sm:self-center">
                     {[
-                      { val: "today" as const, label: "Today" },
-                      { val: "3days" as const, label: "3 Days" },
-                      { val: "7days" as const, label: "7 Days" },
-                    ].map((tf) => (
+                      { key: "all" as const, label: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold" },
+                      { key: "overdue" as const, label: `Overdue (${overdueCount})`, activeClass: "bg-error/10 text-error border border-error/20 font-bold" },
+                      { key: "due" as const, label: `Due (${dueCount})`, activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold" },
+                    ].map((f) => (
                       <button
-                        key={tf.val}
-                        type="button"
-                        onClick={() => setDueTimeframe(tf.val)}
+                        key={f.key}
+                        onClick={() => setDueFilter(f.key)}
                         className={cn(
-                          "px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer",
-                          dueTimeframe === tf.val
-                            ? "bg-primary text-primary-foreground shadow-sm"
+                          "px-2.5 h-5 rounded-[4px] text-[9px] transition-all duration-150 cursor-pointer shrink-0 flex items-center justify-center border border-transparent",
+                          dueFilter === f.key
+                            ? f.activeClass
                             : "text-text-secondary hover:text-text-primary",
                         )}
                       >
-                        {tf.label}
+                        {f.label}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
-                {[
-                  { key: "all" as const, label: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold" },
-                  { key: "overdue" as const, label: `Overdue (${overdueCount})`, activeClass: "bg-error/10 text-error border border-error/20 font-bold" },
-                  { key: "due" as const, label: `Due (${dueCount})`, activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold" },
-                ].map((f) => (
-                  <button
-                    key={f.key}
-                    onClick={() => setDueFilter(f.key)}
-                    className={cn(
-                      "px-3 py-1 rounded-[4px] text-xs transition-all duration-150 cursor-pointer shrink-0",
-                      dueFilter === f.key
-                        ? f.activeClass
-                        : "text-text-secondary hover:text-text-primary border border-transparent",
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            {isDuesLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                ))}
-              </div>
-            ) : isDuesError ? (
-              <ErrorState
-                title="Failed to load dues"
-                message={duesError?.message || "Could not load membership dues data."}
-                onRetry={() => refetchDues()}
-              />
-            ) : filteredDues.length === 0 ? (
-              <div className="text-center py-14">
-                <div className="w-12 h-12 border border-border-default rounded-[8px] flex items-center justify-center mx-auto mb-4 text-text-secondary">
-                  <TrendingUp className="h-5 w-5" />
-                </div>
-                <h3 className="text-sm font-bold text-text-primary mb-1 font-mono">
-                  Diagnostics Clear
-                </h3>
-                <p className="text-text-secondary text-xs max-w-sm mx-auto mb-6">
-                  No billing records match the selected filter configuration.
-                </p>
-                <Button
-                  onClick={() => setIsAddMemberOpen(true)}
-                  variant="outline"
-                  className="text-xs flex items-center gap-2 mx-auto rounded-[6px] cursor-pointer"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  <span>Register Member</span>
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
-                {filteredDues.map((member, idx) => {
-                  const daysDiff = getDaysDiff(member.endDate);
-                  const isOverdue = daysDiff < 0;
-                  return (
-                    <div
-                      key={member._id || idx}
-                    className={cn(
-                      "p-4 rounded-[8px] border transition-all duration-200",
-                      isOverdue
-                        ? "bg-error/[0.01] border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
-                        : "bg-warning/[0.01] border-warning/20 hover:border-warning/35 border-l-[3px] border-l-warning",
-                    )}
+              {/* Scrollable list container */}
+              <div className="flex-1 overflow-y-auto mt-4 pr-1 custom-scrollbar">
+                {isDuesError ? (
+                  <ErrorState
+                    title="Failed to load dues"
+                    message={duesError?.message || "Could not load membership dues data."}
+                    onRetry={() => refetchDues()}
+                  />
+                ) : filteredDues.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-10 h-10 border border-border-default rounded-[8px] flex items-center justify-center mx-auto mb-3 text-text-secondary">
+                      <TrendingUp className="h-4 w-4" />
+                    </div>
+                    <h3 className="text-xs font-bold text-text-primary mb-1 font-mono">
+                      Diagnostics Clear
+                    </h3>
+                    <p className="text-text-secondary text-[11px] max-w-xs mx-auto mb-4">
+                      No billing records match the selected configuration.
+                    </p>
+                    <Button
+                      onClick={() => setIsAddMemberOpen(true)}
+                      variant="outline"
+                      className="text-[10px] h-8 flex items-center gap-1.5 mx-auto rounded-[6px] cursor-pointer"
                     >
-                      <div className="flex flex-col justify-between h-full gap-3">
-                        <div className="space-y-2">
-                          <h4 className="font-bold text-sm text-text-primary truncate">
-                            {member.memberId?.fullName || "Gym Member"}
-                          </h4>
-                          <div className="flex items-center gap-2">
-                            <MemberStatusBadge status={isOverdue ? "Expired" : "Expiring Soon"} />
-                            <span className="text-[10px] text-text-muted font-mono">
-                              {member.memberId?.memberCode}
-                            </span>
-                          </div>
-                          <div className="text-xs text-text-secondary font-mono">
-                            Due:{" "}
-                            <strong className="text-text-primary">
-                              {formatDate(member.endDate)}
-                            </strong>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between border-t border-border-default pt-3">
-                          <div>
-                            <p className="text-[9px] text-text-muted uppercase font-semibold font-mono">
-                              Amount
-                            </p>
-                            <p className="text-sm font-bold text-text-primary font-mono">
-                              ₹{(member.amount || 0).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            {isOverdue ? (
-                              <span className="text-[10px] text-error font-semibold font-mono block mb-1">
-                                {Math.abs(daysDiff)}d overdue
+                      <UserPlus className="h-3 w-3" />
+                      <span>Register Member</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {filteredDues.map((member, idx) => {
+                      const daysDiff = getDaysDiff(member.endDate);
+                      const isOverdue = daysDiff < 0;
+                      return (
+                        <div
+                          key={member._id || idx}
+                          className={cn(
+                            "p-3 rounded-xl border transition-all duration-300 bg-surface/30 hover:bg-surface/50 hover:shadow-sm hover:border-border-hover hover:translate-y-[-1px] group",
+                            isOverdue
+                              ? "border-error/15 border-l-[3px] border-l-error"
+                              : "border-warning/15 border-l-[3px] border-l-warning",
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8 shrink-0">
+                              <AvatarFallback className={cn(
+                                "text-[10px] font-bold transition-all duration-300 group-hover:scale-105",
+                                isOverdue 
+                                  ? "bg-error/10 text-error border border-error/20" 
+                                  : "bg-warning/10 text-warning border border-warning/20"
+                              )}>
+                                {member.memberId?.fullName?.substring(0, 2).toUpperCase() || "ME"}
+                              </AvatarFallback>
+                            </Avatar>
+
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-bold text-xs text-text-primary truncate group-hover:text-primary transition-colors duration-200">
+                                {member.memberId?.fullName || "Gym Member"}
+                              </h4>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className={cn(
+                                  "text-[9px] font-bold px-1.5 py-0.2 rounded-full",
+                                  isOverdue ? "bg-error/10 text-error" : "bg-warning/10 text-warning"
+                                )}>
+                                  {isOverdue ? "Expired" : "Expiring"}
+                                </span>
+                                <span className="text-[9px] text-text-muted font-mono">
+                                  {member.memberId?.memberCode}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className="text-[9px] text-text-muted font-mono block">
+                                Due: {formatDate(member.endDate)}
                               </span>
-                            ) : (
-                              <span className="text-[10px] text-warning font-semibold font-mono block mb-1">
-                                {daysDiff}d left
-                              </span>
-                            )}
+                              {isOverdue ? (
+                                <span className="text-[9px] text-error font-bold font-mono block mt-0.5">
+                                  {Math.abs(daysDiff)}d overdue
+                                </span>
+                              ) : (
+                                <span className="text-[9px] text-warning font-bold font-mono block mt-0.5">
+                                  {daysDiff}d left
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between border-t border-border-default/50 pt-2 mt-2">
+                            <div>
+                              <p className="text-[8px] text-text-muted uppercase font-bold font-mono leading-none">
+                                Amount
+                              </p>
+                              <p className="text-xs font-bold text-text-primary font-mono mt-0.5">
+                                ₹{(member.amount || 0).toLocaleString()}
+                              </p>
+                            </div>
                             <Button
                               size="xs"
                               onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?._id}`)}
-                              className="text-[10px] font-bold h-7 cursor-pointer rounded-[4px]"
+                              className="text-[9px] font-bold h-6 cursor-pointer rounded-[4px] px-2 active:scale-95 transition-transform"
                             >
                               Collect Payment
                             </Button>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          {/* Recent Members */}
-          <RecentMembers />
+            </WidgetBody>
+          </WidgetContainer>
         </div>
 
-        {/* Right Column */}
-        <div className="lg:col-span-1 space-y-6">
-          <ActivityFeed />
+        {/* Recent Members Column */}
+        <div className="col-span-1">
+          <RecentMembers className="h-[520px]" />
+        </div>
+
+        {/* Activity Feed Column */}
+        <div className="col-span-1">
+          <ActivityFeed className="h-[520px]" />
+        </div>
+
+        {/* Revenue Trend Card */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-4">
+          <WidgetContainer className="h-[520px]">
+            <WidgetHeader title="Revenue Trend" description="Past 7 days collection" />
+            <WidgetBody isLoading={false} isEmpty={false} className="flex flex-col flex-1 justify-center min-h-0">
+              {isRevenueLoading ? (
+                <Skeleton className="h-[260px] w-full rounded-xl" />
+              ) : isRevenueError ? (
+                <ErrorState
+                  title="Failed to load revenue"
+                  message={revenueError?.message || "Could not load revenue data"}
+                  onRetry={() => refetchRevenue()}
+                />
+              ) : !revenueData || revenueData.length === 0 || revenueData.every(d => d.revenue === 0) ? (
+                <div className="flex flex-col items-center justify-center h-[260px]">
+                  <TrendingUp className="h-8 w-8 text-text-muted mb-3" />
+                  <p className="text-sm text-text-secondary text-center">No revenue data for the past 7 days.</p>
+                  <p className="text-xs text-text-muted mt-1 text-center">Revenue will appear once payments are recorded.</p>
+                </div>
+              ) : (
+                <div className="h-[300px] w-full mt-2">
+                  <RevenueChart data={revenueData} />
+                </div>
+              )}
+            </WidgetBody>
+          </WidgetContainer>
         </div>
       </div>
-
-      {/* Revenue Chart */}
-      <WidgetContainer className="min-h-[350px]">
-        <WidgetHeader title="Revenue Trend" description="Past 7 days collection" />
-        <WidgetBody isLoading={false} isEmpty={false}>
-          {isRevenueLoading ? (
-            <Skeleton className="h-[220px] w-full rounded-xl" />
-          ) : isRevenueError ? (
-            <ErrorState
-              title="Failed to load revenue"
-              message={revenueError?.message || "Could not load revenue data"}
-              onRetry={() => refetchRevenue()}
-            />
-          ) : !revenueData || revenueData.length === 0 || revenueData.every(d => d.revenue === 0) ? (
-            <div className="flex flex-col items-center justify-center h-[220px]">
-              <TrendingUp className="h-10 w-10 text-text-muted mb-3" />
-              <p className="text-sm text-text-secondary">No revenue data for the past 7 days.</p>
-              <p className="text-xs text-text-muted mt-1">Revenue will appear once payments are recorded.</p>
-            </div>
-          ) : (
-            <RevenueChart data={revenueData} />
-          )}
-        </WidgetBody>
-      </WidgetContainer>
 
       {/* Register Member Modal */}
       <ResponsiveModal

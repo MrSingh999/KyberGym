@@ -30,17 +30,17 @@ export function QuickActions() {
         Quick Actions
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
         {actions.map((action) => (
           <button
             key={action.label}
             onClick={() => navigate(action.href)}
-            className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border-default hover:border-border-hover hover:bg-surface-hover/30 hover:shadow-sm transition-all text-left cursor-pointer group active:scale-[0.98] lg:min-w-[160px] flex-1"
+            className="flex items-center gap-2.5 p-2 rounded-lg bg-surface/50 border border-border-default/50 hover:border-border-hover hover:bg-surface-hover/50 hover:shadow-xs transition-all duration-300 text-left cursor-pointer group active:scale-[0.98] w-full min-h-[48px]"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] bg-elevated border border-border-default text-text-muted group-hover:text-text-primary transition-colors">
-              <action.icon className="h-3.5 w-3.5" />
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] bg-elevated border border-border-default text-text-muted group-hover:text-primary group-hover:border-primary/20 transition-all duration-300 shadow-xs">
+              <action.icon className="h-3.5 w-3.5 transition-transform duration-300 group-hover:scale-105" />
             </div>
-            <span className="text-xs font-mono uppercase tracking-wider font-semibold text-text-primary leading-tight">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-text-primary group-hover:text-primary transition-colors duration-300 leading-tight">
               {action.label}
             </span>
           </button>

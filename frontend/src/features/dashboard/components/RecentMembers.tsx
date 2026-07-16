@@ -17,12 +17,12 @@ const statusVariant: Record<string, "success" | "warning" | "destructive" | "sec
   expired: "destructive",
 };
 
-export function RecentMembers() {
+export function RecentMembers({ className }: { className?: string }) {
   const navigate = useNavigate();
   const { data: members, isLoading, isError, error, refetch } = useRecentMembers();
 
   return (
-    <WidgetContainer>
+    <WidgetContainer className={className}>
       <WidgetHeader
         title="Recent Members"
         description="Latest member registrations"
@@ -38,7 +38,7 @@ export function RecentMembers() {
           </Button>
         }
       />
-      <WidgetBody isLoading={isLoading} isEmpty={false}>
+      <WidgetBody isLoading={isLoading} isEmpty={false} scrollable className="flex-1 overflow-y-auto custom-scrollbar">
         {isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -70,12 +70,12 @@ export function RecentMembers() {
             {members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border-default hover:border-border-hover hover:bg-surface-hover/30 transition-all cursor-pointer group"
+                className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border-default/50 hover:border-border-hover hover:bg-surface-hover/40 transition-all duration-300 hover:shadow-sm hover:translate-y-[-1px] cursor-pointer group"
                 onClick={() => navigate(`/admin/members/${member.id}`)}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold font-sans transition-all duration-300 group-hover:scale-105">
                       {member.fullName.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
