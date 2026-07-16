@@ -28,6 +28,7 @@ import broadcastRoutes       from '../modules/broadcast/broadcast.routes.js';
 import notificationRoutes    from '../modules/notification/notification.routes.js';
 import deliveryLogRoutes     from '../modules/deliveryLog/deliveryLog.routes.js';
 import gymRoutes             from '../modules/gyms/gym.routes.js';
+import userRoutes            from '../modules/users/users.routes.js';
 import memberQrRoutes        from '../modules/memberQr/memberQr.routes.js';
 import superAdminRoutes      from '../modules/super-admin/superAdmin.routes.js';
 import attendanceRoutes      from '../modules/attendance/attendance.routes.js';
@@ -46,6 +47,7 @@ router.use('/broadcasts',         broadcastRoutes);
 router.use('/notifications',      notificationRoutes);
 router.use('/delivery-logs',      deliveryLogRoutes);
 router.use('/gyms',               gymRoutes);
+router.use('/users',              userRoutes);
 router.use('/members/:id/qr',     memberQrRoutes);
 router.use('/attendance',         attendanceRoutes);
 

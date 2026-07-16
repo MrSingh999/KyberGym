@@ -14,6 +14,13 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 function Calendar({
   className,
@@ -52,17 +59,17 @@ function Calendar({
         ),
         month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
         nav: cn(
-          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
+          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1 pointer-events-none",
           defaultClassNames.nav
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
+          "size-(--cell-size) p-0 select-none aria-disabled:opacity-50 pointer-events-auto",
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          "size-(--cell-size) p-0 select-none aria-disabled:opacity-50",
+          "size-(--cell-size) p-0 select-none aria-disabled:opacity-50 pointer-events-auto",
           defaultClassNames.button_next
         ),
         month_caption: cn(
@@ -163,6 +170,32 @@ function Calendar({
           )
         },
         DayButton: CalendarDayButton,
+        Dropdown: ({ value, onChange, options, ...props }) => {
+          const selectedValue = value?.toString();
+          return (
+            <Select
+              value={selectedValue}
+              onValueChange={(nextVal) => {
+                if (onChange) {
+                  onChange({
+                    target: { value: nextVal },
+                  } as unknown as React.ChangeEvent<HTMLSelectElement>);
+                }
+              }}
+            >
+              <SelectTrigger className="h-7 text-xs border border-border-default bg-transparent font-medium px-2 py-0 min-w-[70px] cursor-pointer">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper" className="bg-background border border-border-default shadow-md rounded-md max-h-48 overflow-y-auto">
+                {options?.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs cursor-pointer">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        },
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>

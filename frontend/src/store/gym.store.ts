@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { secureStorage } from "../lib/secureStorage";
 
 export interface GymFeatures {
   enabledFeatures: Record<string, boolean>;
@@ -26,6 +27,7 @@ export const useGymStore = create<GymState>()(
     }),
     {
       name: "kybergym-selected-gym",
+      storage: createJSONStorage(() => secureStorage),
       partialize: (state) => ({
         selectedGymId: state.selectedGymId,
       }),

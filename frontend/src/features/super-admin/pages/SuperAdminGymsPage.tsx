@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ColumnDef, PaginationState, SortingState, RowSelectionState } from "@tanstack/react-table";
-import { Plus, Search, CheckCircle2, Copy, ExternalLink } from "lucide-react";
+import { Plus, Search, CheckCircle2, Copy, ExternalLink, Building2 } from "lucide-react";
 import { useSAGyms, useSASuspendGym, useSAActivateGym, useSADeleteGym } from "../hooks/useSuperAdmin";
 import { GymTenantListItem, SUBSCRIPTION_STATUS_LABELS } from "../types";
 import { DataTable } from "@/components/data-display/DataTable";
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Badge } from "@/components/ui/badge";
 import { ErrorState } from "@/components/feedback/ErrorState";
+import { Skeleton } from "@/components/feedback/Skeleton";
 import { CreateGymForm } from "../components/CreateGymForm";
 
 const statusVariant: Record<string, "success" | "warning" | "destructive" | "secondary"> = {
@@ -168,7 +169,7 @@ export function SuperAdminGymsPage() {
   );
 
   return (
-    <div className="flex-1 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
+    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-slide-up">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

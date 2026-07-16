@@ -64,7 +64,7 @@ export const authApi = {
     return response.data.data as { accessToken: string };
   },
 
-  getMe: async (): Promise<UserProfile> => {
+  getMe: async (options?: { signal?: AbortSignal }): Promise<UserProfile> => {
     // Super admin uses a separate JWT secret and has no gym context,
     // so apiClient (which hits tenant-scoped /auth/me) would 401 and log them out.
     const storedUser = useAuthStore.getState().user;
@@ -73,6 +73,7 @@ export const authApi = {
       const response = await axios.get(`${SUPER_ADMIN_API}/super-admin/me`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
+        signal: options?.signal,
       });
       const sa = response.data.data.superAdmin;
       return {
@@ -84,7 +85,7 @@ export const authApi = {
         isEmailVerified: true,
       };
     }
-    const response = await apiClient.get("/auth/me");
+    const response = await apiClient.get("/auth/me", { signal: options?.signal });
     return response.data.data.user as UserProfile;
   },
 

@@ -17,6 +17,7 @@ router.use(requireFeature('members'));
 
 // Member self-service routes (must be before /:id to avoid conflicts)
 router.get('/me/workouts', requireRoles(ROLES.MEMBER), asyncHandler(MemberController.getMyWorkouts));
+router.get('/me/qr', requireRoles(ROLES.MEMBER), asyncHandler(MemberController.getMyQr));
 
 // Read access: Owner, Staff, Trainer
 router.get('/', requireRoles(ROLES.GYM_ADMIN, ROLES.STAFF, ROLES.TRAINER), asyncHandler(MemberController.getMembers));

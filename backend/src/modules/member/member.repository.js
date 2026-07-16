@@ -36,4 +36,8 @@ export class MemberRepository {
   static async checkExists(gymId, email) {
     return Member.exists({ gymId, email, isDeleted: false });
   }
+
+  static async findByUserId(gymId, userId) {
+    return Member.findOne({ gymId, userId, isDeleted: false });
+  }
 }

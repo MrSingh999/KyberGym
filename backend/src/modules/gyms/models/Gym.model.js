@@ -40,9 +40,19 @@ const gymSchema = new mongoose.Schema(
         enum: ['active', 'trial', 'expired', 'suspended'],
         default: 'trial',
       },
+      startDate: { type: Date },
       expiresAt: { type: Date },
       trialEndsAt: { type: Date },
     },
+
+    subscriptionHistory: [{
+      startDate: { type: Date, required: true },
+      expiresAt: { type: Date, required: true },
+      amountPaid: { type: Number, required: true },
+      paymentDate: { type: Date, default: Date.now },
+      duration: { type: Number },
+      renewedAt: { type: Date, default: Date.now },
+    }],
 
     timezone: { type: String, default: 'Asia/Kolkata' },
     currency: { type: String, default: 'INR' },

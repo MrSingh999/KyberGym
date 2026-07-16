@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { ArrowLeft, Building2, Shield, CreditCard, Calendar, Globe, Clock, Users, Activity } from "lucide-react";
 import { useSAGym, useSAUpdateFeatures, useSAUpdateSubscription, useSARenewSubscription, useSAActivateGym, useSASuspendGym } from "../hooks/useSuperAdmin";
 import { FEATURE_FLAGS } from "../types";
-import { LoadingButton } from "@/components/ui/button";
+import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const subscriptionBadge: Record<string, "success" | "warning" | "destructive" | "secondary"> = {
   active: "success",
@@ -31,7 +33,36 @@ export function SuperAdminGymDetailPage() {
   const { mutate: activateGym, isPending: isActivating } = useSAActivateGym();
   const { mutate: suspendGym, isPending: isSuspending } = useSASuspendGym();
 
+  const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
   const [renewDuration, setRenewDuration] = useState("30");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [customExpiryDate, setCustomExpiryDate] = useState<Date | undefined>(undefined);
+  const [amountPaid, setAmountPaid] = useState("0");
+
+  const defaultStartDate = useMemo(() => {
+    if (!gym?.subscription?.expiresAt) return new Date();
+    const expiresDate = new Date(gym.subscription.expiresAt);
+    if (expiresDate > new Date()) {
+      return expiresDate;
+    }
+    return new Date();
+  }, [gym]);
+
+  const openRenewModal = () => {
+    setStartDate(defaultStartDate);
+    setIsRenewModalOpen(true);
+  };
+
+  const calculatedExpiryDate = useMemo(() => {
+    if (renewDuration === "custom") {
+      return customExpiryDate;
+    }
+    const start = startDate || new Date();
+    const days = parseInt(renewDuration, 10) || 30;
+    const end = new Date(start);
+    end.setDate(end.getDate() + days);
+    return end;
+  }, [startDate, renewDuration, customExpiryDate]);
 
   const handleToggleFeature = (key: string, value: boolean) => {
     updateFeatures({ [key]: value }, {
@@ -41,9 +72,38 @@ export function SuperAdminGymDetailPage() {
   };
 
   const handleRenew = () => {
-    renewSubscription({ duration: parseInt(renewDuration) }, {
-      onSuccess: () => toast.success(`Subscription renewed for ${renewDuration} days`),
-      onError: () => toast.error("Failed to renew subscription"),
+    if (!startDate) {
+      toast.error("Please select a valid Start Date");
+      return;
+    }
+    if (!calculatedExpiryDate) {
+      toast.error("Please specify a valid Expiry Date");
+      return;
+    }
+    const amountVal = parseFloat(amountPaid);
+    if (isNaN(amountVal) || amountVal < 0) {
+      toast.error("Amount paid must be a valid number of at least 0");
+      return;
+    }
+
+    const payload = {
+      startDate: startDate.toISOString(),
+      expiresAt: calculatedExpiryDate.toISOString(),
+      amountPaid: amountVal,
+      duration: renewDuration === "custom" ? undefined : parseInt(renewDuration, 10),
+    };
+
+    renewSubscription(payload, {
+      onSuccess: () => {
+        toast.success("Subscription successfully renewed!");
+        setIsRenewModalOpen(false);
+        setAmountPaid("0");
+        setCustomExpiryDate(undefined);
+      },
+      onError: (err: any) => {
+        const errorMsg = err?.response?.data?.message || "Failed to renew subscription";
+        toast.error(errorMsg);
+      },
     });
   };
 
@@ -54,19 +114,17 @@ export function SuperAdminGymDetailPage() {
     });
   };
 
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = e.target.value;
+  const handleExpiryChange = (date?: Date) => {
     if (!date) return;
-    updateSubscription({ expiresAt: new Date(date).toISOString() }, {
+    updateSubscription({ expiresAt: date.toISOString() }, {
       onSuccess: () => toast.success("Expiry date updated"),
       onError: () => toast.error("Failed to update expiry"),
     });
   };
 
-  const handleTrialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = e.target.value;
+  const handleTrialChange = (date?: Date) => {
     if (!date) return;
-    updateSubscription({ trialEndsAt: new Date(date).toISOString() }, {
+    updateSubscription({ trialEndsAt: date.toISOString() }, {
       onSuccess: () => toast.success("Trial end date updated"),
       onError: () => toast.error("Failed to update trial"),
     });
@@ -120,7 +178,7 @@ export function SuperAdminGymDetailPage() {
   }
 
   return (
-    <div className="flex-1 w-full max-w-5xl mx-auto animate-fade-slide-up">
+    <div className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-slide-up">
 
       {/* Back Button */}
       <button
@@ -178,7 +236,11 @@ export function SuperAdminGymDetailPage() {
           </h3>
           <div className="divide-y divide-border-default/40">
             <InfoRow label="Name" value={gym.name} />
+            <InfoRow label="Gym ID" value={gym.id} />
             <InfoRow label="Subdomain" value={gym.subdomain || "-"} />
+            <InfoRow label="Owner Name" value={gym.owner?.name || "-"} />
+            <InfoRow label="Owner Email" value={gym.owner?.email || "-"} />
+            <InfoRow label="Owner Phone" value={gym.owner?.phone || "-"} />
             <InfoRow label="Timezone" value={gym.timezone} icon={<Globe className="h-3 w-3" />} />
             <InfoRow label="Currency" value={gym.currency} />
             <InfoRow label="Language" value={gym.language} />
@@ -217,24 +279,13 @@ export function SuperAdminGymDetailPage() {
             {/* Renew */}
             <div>
               <Label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">Renew Subscription</Label>
-              <div className="flex gap-2 mt-1.5">
-                <div className="flex-1">
-                  <Select value={renewDuration} onValueChange={setRenewDuration}>
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 days</SelectItem>
-                      <SelectItem value="90">90 days</SelectItem>
-                      <SelectItem value="180">180 days</SelectItem>
-                      <SelectItem value="365">365 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <LoadingButton size="sm" onClick={handleRenew} isLoading={isRenewing} className="text-xs cursor-pointer">
-                  Renew
-                </LoadingButton>
-              </div>
+              <Button
+                onClick={openRenewModal}
+                size="sm"
+                className="w-full mt-1.5 text-xs font-semibold cursor-pointer"
+              >
+                Open Renewal Panel
+              </Button>
             </div>
 
             {/* Change Status */}
@@ -258,26 +309,105 @@ export function SuperAdminGymDetailPage() {
             </div>
 
             {/* Set Expiry */}
-            <div>
+            <div className="flex flex-col gap-1.5">
               <Label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">Set Expiry Date</Label>
-              <Input
-                type="date"
-                onChange={handleExpiryChange}
-                className="text-xs mt-1.5 h-9"
+              <DatePicker
+                date={gym.subscription?.expiresAt ? parseISO(gym.subscription.expiresAt) : undefined}
+                setDate={handleExpiryChange}
+                placeholder="Pick expiry date"
               />
             </div>
 
             {/* Set Trial End */}
-            <div>
+            <div className="flex flex-col gap-1.5">
               <Label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">Set Trial End Date</Label>
-              <Input
-                type="date"
-                onChange={handleTrialChange}
-                className="text-xs mt-1.5 h-9"
+              <DatePicker
+                date={gym.subscription?.trialEndsAt ? parseISO(gym.subscription.trialEndsAt) : undefined}
+                setDate={handleTrialChange}
+                placeholder="Pick trial end date"
               />
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Subscription Renewal History */}
+      <div className="glass-panel rounded-[16px] p-5 mb-8 space-y-4 card-hover">
+        <h3 className="font-bold text-sm text-text-primary font-mono uppercase tracking-wide flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-text-muted" />
+          Subscription Renewal & Payment History
+        </h3>
+        {gym.subscriptionHistory && gym.subscriptionHistory.length > 0 ? (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto font-sans">
+              <table className="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-border-default/60 text-[10px] uppercase font-mono text-text-muted font-bold">
+                    <th className="py-2.5 px-3">Renewed Date</th>
+                    <th className="py-2.5 px-3">Start Date</th>
+                    <th className="py-2.5 px-3">Expiry Date</th>
+                    <th className="py-2.5 px-3">Duration (Days)</th>
+                    <th className="py-2.5 px-3 text-right">Amount Paid</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-default/30 text-xs text-text-primary">
+                  {gym.subscriptionHistory.map((history, idx) => (
+                    <tr key={idx} className="hover:bg-surface-hover/30 transition-colors">
+                      <td className="py-2.5 px-3 font-mono">
+                        {format(parseISO(history.renewedAt), "MMM d, yyyy h:mm a")}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono">
+                        {format(parseISO(history.startDate), "MMM d, yyyy")}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono">
+                        {format(parseISO(history.expiresAt), "MMM d, yyyy")}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono">
+                        {history.duration ? `${history.duration} Days` : "Custom"}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-right font-semibold text-primary">
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: gym.currency || "INR",
+                        }).format(history.amountPaid)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="block sm:hidden space-y-3 font-sans">
+              {gym.subscriptionHistory.map((history, idx) => (
+                <div key={idx} className="p-4 rounded-xl border border-border-default bg-surface/30 space-y-2">
+                  <div className="flex justify-between items-center text-xs text-text-muted font-mono">
+                    <span>{format(parseISO(history.renewedAt), "MMM d, yyyy h:mm a")}</span>
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
+                      {history.duration ? `${history.duration} Days` : "Custom"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-semibold text-text-primary">
+                      {format(parseISO(history.startDate), "MMM d, yyyy")} - {format(parseISO(history.expiresAt), "MMM d, yyyy")}
+                    </span>
+                    <span className="font-bold text-primary">
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: gym.currency || "INR",
+                      }).format(history.amountPaid)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="py-6 text-center text-xs text-text-muted font-mono bg-surface-hover/10 rounded-lg border border-dashed border-border-default">
+            No subscription renewal logs found.
+          </div>
+        )}
       </div>
 
       {/* Statistics */}
@@ -325,6 +455,99 @@ export function SuperAdminGymDetailPage() {
           ))}
         </div>
       </div>
+
+      {/* Renewal Modal */}
+      <ResponsiveModal
+        open={isRenewModalOpen}
+        onOpenChange={setIsRenewModalOpen}
+        title="Renew Gym Subscription"
+        description="Configure start date, renewal terms, and record payment amount."
+      >
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5 flex flex-col">
+              <Label className="text-xs font-semibold text-text-primary">Start Date</Label>
+              <DatePicker
+                date={startDate}
+                setDate={setStartDate}
+                placeholder="Select start date"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-text-primary">Select Terms (Duration)</Label>
+              <Select value={renewDuration} onValueChange={setRenewDuration}>
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                  <SelectItem value="180">180 days</SelectItem>
+                  <SelectItem value="365">365 days</SelectItem>
+                  <SelectItem value="custom">Custom Date</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {renewDuration === "custom" ? (
+              <div className="space-y-1.5 flex flex-col">
+                <Label className="text-xs font-semibold text-text-primary">Custom Expiry Date</Label>
+                <DatePicker
+                  date={customExpiryDate}
+                  setDate={setCustomExpiryDate}
+                  placeholder="Select expiry date"
+                />
+              </div>
+            ) : (
+              <div className="space-y-1.5 flex flex-col">
+                <Label className="text-xs font-semibold text-text-primary">Calculated Expiry Date</Label>
+                <DatePicker
+                  date={calculatedExpiryDate}
+                  setDate={() => {}}
+                  disabled
+                  placeholder="Select expiry date"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-text-primary">
+                Amount Paid ({gym.currency || "INR"})
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                step="any"
+                value={amountPaid}
+                onChange={(e) => setAmountPaid(e.target.value)}
+                placeholder="e.g. 5000"
+                className="h-9 text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border-default/40 justify-end w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsRenewModalOpen(false)}
+              className="w-full sm:w-auto text-xs h-9 cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <LoadingButton
+              type="button"
+              onClick={handleRenew}
+              isLoading={isRenewing}
+              className="w-full sm:w-auto text-xs h-9 cursor-pointer"
+            >
+              Confirm Renewal
+            </LoadingButton>
+          </div>
+        </div>
+      </ResponsiveModal>
     </div>
   );
 }

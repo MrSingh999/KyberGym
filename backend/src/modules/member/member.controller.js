@@ -1,5 +1,6 @@
 import { MemberService } from './member.service.js';
 import { WorkoutService } from '../workouts/workout.service.js';
+import { MemberQrService } from '../memberQr/memberQr.service.js';
 import { ApiSuccess } from '../../shared/ApiSuccess.js';
 import httpStatus from 'http-status';
 
@@ -51,5 +52,21 @@ export class MemberController {
     const memberId = req.user.memberId ?? req.user._id;
     const workouts = await WorkoutService.getWorkoutsForMember(gymId, memberId);
     return ApiSuccess.send(res, httpStatus.OK, 'Member workouts retrieved', workouts);
+  }
+
+  /**
+   * GET /members/me/qr
+   * Returns the QR code for the currently authenticated member.
+   */
+  static async getMyQr(req, res) {
+    const gymId = req.gym._id;
+    const member = await MemberService.getMemberByUserId(gymId, req.user._id);
+    let qr;
+    try {
+      qr = await MemberQrService.getQr(gymId, member._id);
+    } catch {
+      qr = await MemberQrService.generateQr(gymId, member._id);
+    }
+    return ApiSuccess.send(res, httpStatus.OK, 'QR code retrieved', qr);
   }
 }

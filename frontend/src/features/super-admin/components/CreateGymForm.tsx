@@ -26,6 +26,12 @@ const createGymSchema = z.object({
     ),
   ownerName: z.string().min(2, "Owner name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
+  password: z
+    .string()
+    .optional()
+    .refine((val) => !val || val.length >= 8, {
+      message: "Password must be at least 8 characters",
+    }),
   phone: z.string().optional(),
 });
 
@@ -46,6 +52,7 @@ export function CreateGymForm({ onSuccess, onCancel }: CreateGymFormProps) {
       subdomain: "",
       ownerName: "",
       email: "",
+      password: "",
       phone: "",
     },
   });
@@ -117,6 +124,24 @@ export function CreateGymForm({ onSuccess, onCancel }: CreateGymFormProps) {
                 <Input
                   type="email"
                   placeholder="john@example.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Admin Password (optional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Defaults to Admin@123"
                   {...field}
                 />
               </FormControl>

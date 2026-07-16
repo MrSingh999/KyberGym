@@ -1,5 +1,5 @@
-import createError from 'http-errors';
-import { Gym } from '../modules/gyms/models/Gym.model.js';
+import createError from "http-errors";
+import { Gym } from "../modules/gyms/models/Gym.model.js";
 
 /**
  * Middleware to resolve the current Tenant (Gym) from the request.
@@ -32,7 +32,9 @@ export const resolveTenant = async (req, res, next) => {
     }
 
     if (!gym.isActive) {
-      return next(createError.Forbidden('This gym account is currently inactive'));
+      return next(
+        createError.Forbidden("This gym account is currently inactive"),
+      );
     }
 
     // Attach to request lifecycle for use in controllers and other middlewares

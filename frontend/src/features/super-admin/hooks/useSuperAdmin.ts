@@ -51,12 +51,14 @@ export function useSAGyms(params: UseSAGymsParams = {}) {
       const gyms = response.data.data;
       const meta = response.data.meta;
       return {
-        data: (gyms || []).map((g: Record<string, unknown>): GymTenantListItem => ({
+        data: (gyms || []).map((g: any): GymTenantListItem => ({
           id: g._id,
           name: g.name,
           subdomain: g.subdomain,
           subscriptionStatus: g.subscription?.status || "unknown",
           isActive: g.isActive,
+          isDeleted: g.isDeleted,
+          deletedAt: g.deletedAt,
           createdAt: g.createdAt,
         })),
         meta: meta || { page: 1, limit: 10, total: 0, totalPages: 0 },
@@ -77,10 +79,22 @@ export function useSAGym(id: string) {
         name: g.name,
         slug: g.slug,
         subdomain: g.subdomain,
-        ownerId: g.ownerId,
+        owner: g.ownerId && typeof g.ownerId === "object" ? {
+          id: g.ownerId._id,
+          name: g.ownerId.name,
+          email: g.ownerId.email,
+          phone: g.ownerId.phone,
+        } : undefined,
         features: g.features || {},
         branding: g.branding || {},
-        subscription: g.subscription || { status: "trial", plan: "" },
+        subscription: g.subscription ? {
+          plan: g.subscription.plan,
+          status: g.subscription.status,
+          startDate: g.subscription.startDate,
+          expiresAt: g.subscription.expiresAt,
+          trialEndsAt: g.subscription.trialEndsAt,
+        } : { status: "trial", plan: "" },
+        subscriptionHistory: g.subscriptionHistory || [],
         timezone: g.timezone || "Asia/Kolkata",
         currency: g.currency || "INR",
         language: g.language || "en",
@@ -99,7 +113,7 @@ export function useSACreateGym() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { gymName: string; subdomain: string; ownerName: string; email: string; phone?: string }) => {
+    mutationFn: async (data: { gymName: string; subdomain: string; ownerName: string; email: string; password?: string; phone?: string }) => {
       const response = await apiClient.post(`${SA_PREFIX}/gyms`, data);
       return response.data.data;
     },
@@ -133,6 +147,37 @@ export function useSADeleteGym() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sa-gyms"] });
+      queryClient.invalidateQueries({ queryKey: ["sa-dashboard"] });
+    },
+  });
+}
+
+export function useSARestoreGym() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.patch(`${SA_PREFIX}/gyms/${id}/restore`);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sa-gyms"] });
+      queryClient.invalidateQueries({ queryKey: ["sa-dashboard"] });
+    },
+  });
+}
+
+export function useSAPermanentDeleteGym() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.delete(`${SA_PREFIX}/gyms/${id}/permanent`);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sa-gyms"] });
+      queryClient.invalidateQueries({ queryKey: ["sa-dashboard"] });
     },
   });
 }
@@ -209,7 +254,7 @@ export function useSARenewSubscription(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { duration?: number; customDate?: string }) => {
+    mutationFn: async (data: { startDate: string; expiresAt: string; amountPaid: number; duration?: number }) => {
       const response = await apiClient.patch(`${SA_PREFIX}/gyms/${id}/renew`, data);
       return response.data.data;
     },

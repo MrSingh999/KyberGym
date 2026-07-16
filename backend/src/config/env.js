@@ -2,6 +2,11 @@ import { z } from 'zod';
 import dotenv from 'dotenv';
 import { logger } from './logger.js';
 
+// Determine environment mode
+const nodeEnv = process.env.NODE_ENV || 'development';
+
+// Load environment-specific file first, fallback to standard .env
+dotenv.config({ path: `.env.${nodeEnv}` });
 dotenv.config();
 
 const envSchema = z.object({

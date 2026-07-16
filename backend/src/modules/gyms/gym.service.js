@@ -7,6 +7,29 @@ import { hashData } from '../auth/auth.utils.js';
 
 export class GymService {
 
+  static async getMyGym(gymId) {
+    const gym = await Gym.findById(gymId).lean();
+    if (!gym || gym.isDeleted) throw createError.NotFound('Gym not found');
+    return gym;
+  }
+
+  static async updateMyGym(gymId, data) {
+    const allowedFields = ['name', 'timezone', 'currency', 'language'];
+    const update = {};
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) {
+        update[key] = data[key];
+      }
+    }
+    const gym = await Gym.findByIdAndUpdate(
+      gymId,
+      { $set: update },
+      { new: true, runValidators: true }
+    );
+    if (!gym || gym.isDeleted) throw createError.NotFound('Gym not found');
+    return gym;
+  }
+
   static async getBranding(gymId) {
     const gym = await Gym.findById(gymId).select('branding');
     if (!gym) throw createError.NotFound('Gym not found');

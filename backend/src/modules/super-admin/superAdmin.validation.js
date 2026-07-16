@@ -13,6 +13,7 @@ export const createGymSchema = {
     subdomain: z.string().min(3).max(30).regex(/^[a-z0-9-]+$/, 'Subdomain can only contain lowercase letters, numbers, and hyphens'),
     ownerName: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters').optional(),
     phone: z.string().optional(),
   }),
 };
@@ -68,10 +69,10 @@ export const updateSubscriptionSchema = {
 
 export const renewSubscriptionSchema = {
   body: z.object({
-    duration: z.enum(['30', '90', '180', '365']).optional(),
-    customDate: z.string().datetime().optional(),
-  }).refine(data => data.duration || data.customDate, {
-    message: 'Either duration or customDate is required',
+    startDate: z.string().datetime(),
+    expiresAt: z.string().datetime(),
+    amountPaid: z.number().min(0, 'Amount paid must be at least 0'),
+    duration: z.number().optional(),
   }),
   params: z.object({
     id: z.string(),

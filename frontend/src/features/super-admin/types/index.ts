@@ -13,7 +13,12 @@ export interface GymTenant {
   name: string;
   slug: string;
   subdomain?: string;
-  ownerId?: string;
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
   features: Record<string, boolean>;
   branding: {
     appName?: string;
@@ -26,9 +31,18 @@ export interface GymTenant {
   subscription: {
     plan?: string;
     status: "active" | "trial" | "expired" | "suspended";
+    startDate?: string;
     expiresAt?: string;
     trialEndsAt?: string;
   };
+  subscriptionHistory?: Array<{
+    startDate: string;
+    expiresAt: string;
+    amountPaid: number;
+    paymentDate: string;
+    duration?: number;
+    renewedAt: string;
+  }>;
   timezone: string;
   currency: string;
   language: string;
@@ -44,6 +58,8 @@ export interface GymTenantListItem {
   subdomain?: string;
   subscriptionStatus: string;
   isActive: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string;
   createdAt: string;
 }
 

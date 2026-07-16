@@ -6,6 +6,7 @@ import { SuperAdmin } from './superAdmin.model.js';
 import { compareData, hashData } from '../auth/auth.utils.js';
 import { Gym } from '../gyms/models/Gym.model.js';
 import { GymService } from '../gyms/gym.service.js';
+import { User } from '../users/models/User.model.js';
 import { Member } from '../member/models/Member.model.js';
 import { MemberSubscription } from '../memberSubscription/models/MemberSubscription.model.js';
 import { logger } from '../../config/logger.js';
@@ -73,14 +74,18 @@ export class SuperAdminService {
     const { page = 1, limit = 10, search, status, isActive } = query;
     const skip = (page - 1) * limit;
 
-    const filter = { isDeleted: false };
+    const filter = {};
+    if (status === 'deleted') {
+      filter.isDeleted = true;
+    } else {
+      filter.isDeleted = false;
+      if (status) {
+        filter['subscription.status'] = status;
+      }
+    }
 
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
-    }
-
-    if (status) {
-      filter['subscription.status'] = status;
     }
 
     if (isActive !== undefined) {
@@ -108,7 +113,7 @@ export class SuperAdminService {
   }
 
   static async getGymById(id) {
-    const gym = await Gym.findById(id).lean();
+    const gym = await Gym.findById(id).populate('ownerId', 'name email phone').lean();
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
     }
@@ -116,14 +121,14 @@ export class SuperAdminService {
   }
 
   static async createGym(data) {
-    const tempPassword = crypto.randomBytes(6).toString('hex') + 'A1!';
+    const password = data.password || 'Admin@123';
 
     const { gym, user } = await GymService.createGymWithAdmin({
       name: data.gymName,
       subdomain: data.subdomain,
       ownerName: data.ownerName,
       email: data.email,
-      password: tempPassword,
+      password: password,
       phone: data.phone,
     });
 
@@ -136,7 +141,7 @@ export class SuperAdminService {
         name: user.name,
         email: user.email,
       },
-      temporaryPassword: tempPassword,
+      temporaryPassword: password,
     };
   }
 
@@ -160,9 +165,73 @@ export class SuperAdminService {
       throw createError.NotFound('Gym not found');
     }
 
+    const timestamp = Date.now();
     gym.isDeleted = true;
-    gym.deletedAt = new Date();
+    gym.deletedAt = new Date(timestamp);
+    
+    // Release subdomain and slug so they can be reused
+    if (gym.subdomain) {
+      gym.subdomain = `${gym.subdomain}-deleted-${timestamp}`;
+    }
+    if (gym.slug) {
+      gym.slug = `${gym.slug}-deleted-${timestamp}`;
+    }
+
     await gym.save();
+
+    return gym;
+  }
+
+  static async restoreGym(id) {
+    const gym = await Gym.findById(id);
+    if (!gym) {
+      throw createError.NotFound('Gym not found');
+    }
+    if (!gym.isDeleted) {
+      throw createError.BadRequest('Gym is not deleted');
+    }
+
+    // Strip the deleted suffix to find the original subdomain
+    let originalSubdomain = gym.subdomain || '';
+    if (originalSubdomain.includes('-deleted-')) {
+      originalSubdomain = originalSubdomain.split('-deleted-')[0];
+    }
+
+    // Check if another active gym is using this subdomain
+    const conflictingGym = await Gym.findOne({
+      subdomain: originalSubdomain,
+      isDeleted: false,
+    });
+    if (conflictingGym) {
+      throw createError.Conflict('Original subdomain is already taken by another active gym');
+    }
+
+    // Restore the gym
+    gym.isDeleted = false;
+    gym.deletedAt = null;
+    gym.subdomain = originalSubdomain;
+    gym.slug = originalSubdomain;
+
+    await gym.save();
+
+    return gym;
+  }
+
+  static async permanentDeleteGym(id) {
+    const gym = await Gym.findById(id);
+    if (!gym) {
+      throw createError.NotFound('Gym not found');
+    }
+
+    // Cascading delete
+    await Promise.all([
+      Gym.findByIdAndDelete(id),
+      User.deleteMany({ gymId: id }),
+      Member.deleteMany({ gymId: id }),
+      MemberSubscription.deleteMany({ gymId: id }),
+    ]);
+
+    logger.info(`Super Admin permanently deleted Gym: ${gym._id} (${gym.name})`);
 
     return gym;
   }
@@ -247,18 +316,28 @@ export class SuperAdminService {
       throw createError.NotFound('Gym not found');
     }
 
-    let expiresAt;
+    const startDate = new Date(data.startDate);
+    const expiresAt = new Date(data.expiresAt);
+    const amountPaid = Number(data.amountPaid) || 0;
+    const duration = Number(data.duration) || 0;
 
-    if (data.customDate) {
-      expiresAt = new Date(data.customDate);
-    } else {
-      const days = parseInt(data.duration, 10) || 30;
-      expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + days);
-    }
-
+    gym.subscription.startDate = startDate;
     gym.subscription.expiresAt = expiresAt;
     gym.subscription.status = 'active';
+
+    if (!gym.subscriptionHistory) {
+      gym.subscriptionHistory = [];
+    }
+
+    gym.subscriptionHistory.push({
+      startDate,
+      expiresAt,
+      amountPaid,
+      duration,
+      paymentDate: new Date(),
+      renewedAt: new Date(),
+    });
+
     await gym.save();
 
     return gym;
@@ -294,5 +373,88 @@ export class SuperAdminService {
 
     await gym.save();
     return gym;
+  }
+
+  // ── User Management per Gym ──────────────────────────────────────────────
+
+  static async getGymUsers(gymId, query) {
+    await SuperAdminService._ensureGymExists(gymId);
+
+    const { page = 1, limit = 20, search, role, status } = query;
+    const skip = (page - 1) * limit;
+
+    const filter = { gymId, isDeleted: false };
+    if (role) filter.role = role;
+    if (status) filter.status = status;
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      User.find(filter)
+        .select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments(filter),
+    ]);
+
+    return {
+      users,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  static async getGymUserById(gymId, userId) {
+    await SuperAdminService._ensureGymExists(gymId);
+
+    const user = await User.findOne({ _id: userId, gymId, isDeleted: false })
+      .select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion')
+      .lean();
+    if (!user) throw createError.NotFound('User not found');
+    return user;
+  }
+
+  static async updateGymUser(gymId, userId, data) {
+    await SuperAdminService._ensureGymExists(gymId);
+
+    const allowedFields = ['name', 'email', 'phone', 'role', 'status', 'avatar'];
+    const update = {};
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) {
+        update[key] = data[key];
+      }
+    }
+
+    const user = await User.findOneAndUpdate(
+      { _id: userId, gymId, isDeleted: false },
+      { $set: update },
+      { new: true, runValidators: true }
+    ).select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion');
+
+    if (!user) throw createError.NotFound('User not found');
+    return user;
+  }
+
+  static async deleteGymUser(gymId, userId) {
+    await SuperAdminService._ensureGymExists(gymId);
+
+    const user = await User.findOne({ _id: userId, gymId, isDeleted: false });
+    if (!user) throw createError.NotFound('User not found');
+
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    await user.save();
+    return user;
+  }
+
+  static async _ensureGymExists(gymId) {
+    const gym = await Gym.findById(gymId).lean();
+    if (!gym || gym.isDeleted) throw createError.NotFound('Gym not found');
   }
 }

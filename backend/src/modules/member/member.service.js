@@ -91,4 +91,12 @@ export class MemberService {
     }
     return member;
   }
+
+  static async getMemberByUserId(gymId, userId) {
+    const member = await MemberRepository.findByUserId(gymId, userId);
+    if (!member) {
+      throw createError.NotFound('Member profile not found');
+    }
+    return member;
+  }
 }

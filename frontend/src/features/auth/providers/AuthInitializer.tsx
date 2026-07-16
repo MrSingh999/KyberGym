@@ -1,14 +1,15 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { useAuthStore } from "../../../store/auth.store";
 import { authApi } from "../api/auth.api";
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const { token, login, logout } = useAuthStore();
-  const [isInitializing, setIsInitializing] = useState(true);
-  const isRestoring = useRef(false);
+  const [isInitializing, setIsInitializing] = useState(() => !!token);
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
 
     const restoreSession = async () => {
       if (!token) {
@@ -16,16 +17,14 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      if (isRestoring.current) return;
-      isRestoring.current = true;
-
       try {
-        const user = await authApi.getMe();
+        const user = await authApi.getMe({ signal: controller.signal });
         if (active) login(user, token);
-      } catch {
-        if (active) logout();
+      } catch (err) {
+        if (active && !axios.isCancel(err)) {
+          logout();
+        }
       } finally {
-        isRestoring.current = false;
         if (active) setIsInitializing(false);
       }
     };
@@ -34,6 +33,7 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
 
     return () => {
       active = false;
+      controller.abort();
     };
   }, [token, login, logout]);
 

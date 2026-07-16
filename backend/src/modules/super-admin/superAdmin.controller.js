@@ -58,6 +58,11 @@ export class SuperAdminController {
     return ApiSuccess.send(res, httpStatus.OK, 'Gym deleted successfully', gym);
   }
 
+  static async permanentDeleteGym(req, res) {
+    const gym = await SuperAdminService.permanentDeleteGym(req.params.id);
+    return ApiSuccess.send(res, httpStatus.OK, 'Gym permanently deleted successfully', gym);
+  }
+
   static async suspendGym(req, res) {
     const gym = await SuperAdminService.suspendGym(req.params.id);
     return ApiSuccess.send(res, httpStatus.OK, 'Gym suspended successfully', gym);
@@ -66,6 +71,11 @@ export class SuperAdminController {
   static async activateGym(req, res) {
     const gym = await SuperAdminService.activateGym(req.params.id);
     return ApiSuccess.send(res, httpStatus.OK, 'Gym activated successfully', gym);
+  }
+
+  static async restoreGym(req, res) {
+    const gym = await SuperAdminService.restoreGym(req.params.id);
+    return ApiSuccess.send(res, httpStatus.OK, 'Gym restored successfully', gym);
   }
 
   static async updateFeatures(req, res) {
@@ -96,5 +106,26 @@ export class SuperAdminController {
   static async manageTrial(req, res) {
     const gym = await SuperAdminService.manageTrial(req.params.id, req.body);
     return ApiSuccess.send(res, httpStatus.OK, 'Trial updated successfully', gym);
+  }
+
+  // ── User Management per Gym ──────────────────────────────────────────────
+  static async getGymUsers(req, res) {
+    const result = await SuperAdminService.getGymUsers(req.params.id, req.query);
+    return ApiSuccess.send(res, httpStatus.OK, 'Users retrieved', result.users, result.meta);
+  }
+
+  static async getGymUserById(req, res) {
+    const user = await SuperAdminService.getGymUserById(req.params.id, req.params.userId);
+    return ApiSuccess.send(res, httpStatus.OK, 'User retrieved', user);
+  }
+
+  static async updateGymUser(req, res) {
+    const user = await SuperAdminService.updateGymUser(req.params.id, req.params.userId, req.body);
+    return ApiSuccess.send(res, httpStatus.OK, 'User updated', user);
+  }
+
+  static async deleteGymUser(req, res) {
+    const user = await SuperAdminService.deleteGymUser(req.params.id, req.params.userId);
+    return ApiSuccess.send(res, httpStatus.OK, 'User deleted', user);
   }
 }

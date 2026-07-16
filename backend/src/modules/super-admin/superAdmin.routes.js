@@ -67,6 +67,12 @@ router.delete(
   asyncHandler(SuperAdminController.deleteGym)
 );
 
+router.delete(
+  '/gyms/:id/permanent',
+  validateRequest(gymIdParamSchema),
+  asyncHandler(SuperAdminController.permanentDeleteGym)
+);
+
 router.patch(
   '/gyms/:id/suspend',
   validateRequest(gymIdParamSchema),
@@ -113,6 +119,34 @@ router.patch(
   '/gyms/:id/trial',
   validateRequest(manageTrialSchema),
   asyncHandler(SuperAdminController.manageTrial)
+);
+
+router.patch(
+  '/gyms/:id/restore',
+  validateRequest(gymIdParamSchema),
+  asyncHandler(SuperAdminController.restoreGym)
+);
+
+// ── User Management per Gym ──────────────────────────────────────────────
+
+router.get(
+  '/gyms/:id/users',
+  asyncHandler(SuperAdminController.getGymUsers)
+);
+
+router.get(
+  '/gyms/:id/users/:userId',
+  asyncHandler(SuperAdminController.getGymUserById)
+);
+
+router.patch(
+  '/gyms/:id/users/:userId',
+  asyncHandler(SuperAdminController.updateGymUser)
+);
+
+router.delete(
+  '/gyms/:id/users/:userId',
+  asyncHandler(SuperAdminController.deleteGymUser)
 );
 
 export default router;

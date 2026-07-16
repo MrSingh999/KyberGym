@@ -32,7 +32,10 @@ import { EditMessageTemplatePage } from "../features/messageTemplates/pages/Edit
 
 import { NotificationsPage } from "../features/notifications/pages/NotificationsPage";
 import { QrEntryPage } from "../features/qr-entry/pages/QrEntryPage";
+import { MemberQrPage } from "../features/qr-entry/pages/MemberQrPage";
 import { BrandingPage } from "../features/branding/pages/BrandingPage";
+import { SettingsPage } from "../features/settings/pages/SettingsPage";
+import { StaffPage } from "../features/staff/pages/StaffPage";
 import { AttendancePage } from "../features/attendance/pages/AttendancePage";
 import { AttendanceDashboardPage } from "../features/attendance/pages/AttendanceDashboardPage";
 import { MemberAttendancePage } from "../features/attendance/pages/MemberAttendancePage";
@@ -42,6 +45,7 @@ import { MemberWorkoutPlanPage } from "../features/workouts/pages/MemberWorkoutP
 import { SuperAdminDashboardPage } from "../features/super-admin/pages/SuperAdminDashboardPage";
 import { SuperAdminGymsPage } from "../features/super-admin/pages/SuperAdminGymsPage";
 import { SuperAdminGymDetailPage } from "../features/super-admin/pages/SuperAdminGymDetailPage";
+import { SuperAdminSettingsPage } from "../features/super-admin/pages/SuperAdminSettingsPage";
 
 import { EmptyState } from "../components/feedback/ErrorState";
 
@@ -105,7 +109,7 @@ export const router = createBrowserRouter([
           { path: "gyms/:gymId", element: <SuperAdminGymDetailPage /> },
           { path: "subscriptions", element: <DummyComponent title="Subscriptions" /> },
           { path: "plans", element: <DummyComponent title="Subscription Plans" /> },
-          { path: "settings", element: <DummyComponent title="Settings" /> },
+          { path: "settings", element: <SuperAdminSettingsPage /> },
           { path: "revenue", element: <DummyComponent title="Revenue" /> },
           { path: "broadcast", element: <DummyComponent title="Broadcast" /> },
           { path: "support", element: <DummyComponent title="Support" /> },
@@ -152,8 +156,8 @@ export const router = createBrowserRouter([
           { path: "qr", element: <QrEntryPage /> },
           { path: "reports", element: <DummyComponent title="Reports" /> },
           { path: "branding", element: <BrandingPage /> },
-          { path: "staff", element: <DummyComponent title="Staff" /> },
-          { path: "settings", element: <DummyComponent title="Settings" /> },
+          { path: "staff", element: <StaffPage /> },
+          { path: "settings", element: <SettingsPage /> },
         ],
       },
       {
@@ -174,7 +178,7 @@ export const router = createBrowserRouter([
           { path: "membership", element: <DummyComponent title="My Membership" /> },
           { path: "workout-plan", element: <MemberWorkoutPlanPage /> },
           { path: "workouts", element: <MemberWorkoutPlanPage /> },
-          { path: "qr", element: <DummyComponent title="QR Pass" /> },
+          { path: "qr", element: <MemberQrPage /> },
           { path: "payments", element: <DummyComponent title="Payment History" /> },
           { path: "attendance", element: <MyAttendancePage /> },
           { path: "notifications", element: <NotificationsPage /> },
