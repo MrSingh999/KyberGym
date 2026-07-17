@@ -119,7 +119,7 @@ export function EditMemberForm({ member, onSubmit, isSubmitting }: EditMemberFor
             <FormItem>
               <FormLabel>Gender *</FormLabel>
               <FormControl>
-                <select {...field} className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
+                <select {...field} className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary">
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>

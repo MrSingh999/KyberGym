@@ -15,22 +15,22 @@ const statusConfig: Record<MembershipStatus, {
   "Active": {
     label: "Active",
     dotClass: "status-dot-active",
-    badgeClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 dark:border-emerald-500/15",
+    badgeClass: "text-success bg-success/10 border-success/20",
   },
   "Expiring Soon": {
     label: "Due Soon",
     dotClass: "status-dot-due",
-    badgeClass: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20 dark:border-amber-500/15",
+    badgeClass: "text-warning bg-warning/10 border-warning/20",
   },
   "Expired": {
     label: "Overdue",
     dotClass: "status-dot-overdue",
-    badgeClass: "text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20 dark:border-red-500/15",
+    badgeClass: "text-error bg-error/10 border-error/20",
   },
   "Suspended": {
     label: "Inactive",
     dotClass: "",
-    badgeClass: "text-text-muted bg-white/[0.03] border-border-default dark:border-border-default/40",
+    badgeClass: "text-text-muted bg-surface border-border-default",
   },
 };
 

@@ -76,8 +76,10 @@ export function PlansPage() {
       <div className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-7xl mx-auto">
         {/* Page heading */}
         <div className="mb-6">
-          <h1 className="text-h2 font-heading font-bold text-primary">Membership Plans</h1>
-          <p className="text-sm text-muted mt-1">Create and manage membership tiers for your gym.</p>
+          <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
+            Membership <span className="text-text-secondary font-normal ml-0.5">Plans</span>
+          </h1>
+          <p className="text-text-secondary mt-1 text-xs font-mono">Create and manage membership tiers for your gym.</p>
         </div>
 
         {/* Toolbar */}

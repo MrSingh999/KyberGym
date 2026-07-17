@@ -41,7 +41,7 @@ export function PlansTable({
           type="checkbox"
           checked={table.getIsAllPageRowsSelected()}
           onChange={table.getToggleAllPageRowsSelectedHandler()}
-          className="rounded border-default w-4 h-4 accent-primary cursor-pointer"
+          className="rounded border-border-default w-4 h-4 accent-primary cursor-pointer"
         />
       ),
       cell: ({ row }) => (
@@ -50,7 +50,7 @@ export function PlansTable({
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
           onClick={(e) => e.stopPropagation()}
-          className="rounded border-default w-4 h-4 accent-primary cursor-pointer"
+          className="rounded border-border-default w-4 h-4 accent-primary cursor-pointer"
         />
       ),
       size: 40,
@@ -69,9 +69,9 @@ export function PlansTable({
                 style={{ backgroundColor: row.original.color }}
               />
             )}
-            <span className="font-medium text-primary">{row.original.name}</span>
+            <span className="font-medium text-text-primary">{row.original.name}</span>
             {row.original.isPopular && (
-              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">⭐</span>
+              <span className="text-[10px] font-bold text-warning">⭐</span>
             )}
           </div>
           {row.original.description && (
@@ -86,7 +86,7 @@ export function PlansTable({
       accessorKey: 'price',
       header: ({ column }) => <SortHeader label="Price" column={column} />,
       cell: ({ getValue }) => (
-        <span className="font-semibold text-primary tabular-nums">${getValue<number>()}</span>
+          <span className="font-semibold text-text-primary tabular-nums">₹{getValue<number>()}</span>
       ),
       size: 90,
     },
@@ -94,7 +94,7 @@ export function PlansTable({
       id: 'duration',
       header: 'Duration',
       cell: ({ row }) => (
-        <span className="text-secondary">
+        <span className="text-text-secondary">
           {row.original.duration} {DURATION_TYPE_LABELS[row.original.durationType]}
         </span>
       ),
@@ -110,8 +110,8 @@ export function PlansTable({
       id: 'features',
       header: 'Features',
       cell: ({ row }) => (
-        <span className="text-xs text-muted tabular-nums">
-          {row.original.featureCount} included
+          <span className="text-xs text-text-muted tabular-nums">
+            {row.original.featureCount} included
         </span>
       ),
       size: 100,
@@ -120,7 +120,7 @@ export function PlansTable({
       id: 'members',
       header: 'Members',
       cell: ({ row }) => (
-        <span className="text-xs text-muted tabular-nums">{row.original.memberCount ?? 0}</span>
+          <span className="text-xs text-text-muted tabular-nums">{row.original.memberCount ?? 0}</span>
       ),
       size: 90,
     },
@@ -130,26 +130,26 @@ export function PlansTable({
       cell: ({ row }) => (
         <div onClick={(e) => e.stopPropagation()}>
           <details className="relative group">
-            <summary className="list-none p-1.5 rounded-lg hover:bg-surface-hover text-muted hover:text-primary cursor-pointer">
+            <summary className="list-none p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary cursor-pointer">
               <MoreVertical className="w-4 h-4" />
             </summary>
-            <div className="absolute right-0 bottom-full mb-1 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-36 text-sm">
+            <div className="absolute right-0 bottom-full mb-1 z-20 bg-surface border border-border-default rounded-xl shadow-lg py-1.5 w-36 text-sm">
               <button
                 onClick={() => navigate(`/admin/plans/${row.original.id}/edit`)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-text-primary transition-colors cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" /> Edit
               </button>
               <button
                 onClick={() => onDuplicate(row.original.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-text-primary transition-colors cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" /> Duplicate
               </button>
               {row.original.status !== 'archived' && (
                 <button
                   onClick={() => onArchive(row.original.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-destructive transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-error transition-colors cursor-pointer"
                 >
                   <Archive className="w-3.5 h-3.5" /> Archive
                 </button>
@@ -174,17 +174,17 @@ export function PlansTable({
   });
 
   return (
-    <div className="rounded-xl border border-default overflow-hidden bg-surface shadow-sm">
+    <div className="rounded-xl border border-border-default overflow-hidden bg-surface shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-default bg-surface-hover">
+              <tr key={hg.id} className="border-b border-border-default bg-surface-hover">
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     style={{ width: header.getSize() }}
-                    className="text-left px-4 py-3 text-xs font-semibold text-muted uppercase tracking-wide"
+                    className="text-left px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wide"
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
@@ -198,7 +198,7 @@ export function PlansTable({
                 key={row.id}
                 onClick={() => navigate(`/admin/plans/${row.original.id}`)}
                 className={cn(
-                  'border-b border-subtle hover:bg-surface-hover transition-colors cursor-pointer',
+                  'border-b border-border-default hover:bg-surface-hover transition-colors cursor-pointer',
                   row.getIsSelected() && 'bg-primary/5',
                 )}
               >

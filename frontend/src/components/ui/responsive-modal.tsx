@@ -62,7 +62,7 @@ export function ResponsiveModal({
       {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-slide-up" style={{ animationDuration: '200ms' }} />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-surface border border-border-default p-6 shadow-elevated sm:rounded-2xl focus:outline-none animate-fade-slide-up" style={{ animationDuration: '250ms' }}>
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] bg-surface border border-border-default p-6 shadow-elevated sm:rounded-2xl focus:outline-none animate-fade-slide-up max-h-[85vh] flex flex-col overflow-hidden" style={{ animationDuration: '250ms' }}>
           {title && (
             <Dialog.Title className="font-bold text-lg text-text-primary mb-1">
               {title}

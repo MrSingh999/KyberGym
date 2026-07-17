@@ -34,7 +34,7 @@ export function PaymentsSummaryCard({ payments, isLoading }: PaymentsSummaryCard
           <WidgetEmptyState
             title="No Payments"
             description="Payment history will appear here."
-            icon={<CreditCard className="h-6 w-6 text-muted" />}
+            icon={<CreditCard className="h-6 w-6 text-text-muted" />}
           />
         }
       >
@@ -45,15 +45,15 @@ export function PaymentsSummaryCard({ payments, isLoading }: PaymentsSummaryCard
             return (
               <div key={payment.id} className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className={cn("h-8 w-8 shrink-0 rounded-full flex items-center justify-center", config.bg, config.color)}>
+                  <div className={cn("h-8 w-8 shrink-0 rounded-lg flex items-center justify-center", config.bg, config.color)}>
                     <StatusIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-primary truncate">{payment.description}</p>
-                    <p className="text-xs text-secondary">{format(parseISO(payment.date), "MMM d, yyyy")}</p>
+                    <p className="text-sm font-medium text-text-primary truncate">{payment.description}</p>
+                    <p className="text-xs text-text-secondary">{format(parseISO(payment.date), "MMM d, yyyy")}</p>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-primary shrink-0">${payment.amount}</span>
+                <span className="text-sm font-semibold text-text-primary shrink-0">${payment.amount}</span>
               </div>
             );
           })}

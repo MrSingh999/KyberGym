@@ -37,7 +37,7 @@ export function NotesSection({ notes, isLoading, onAddNote }: NotesSectionProps)
           <WidgetEmptyState
             title="No Notes Yet"
             description="Add notes about this member's preferences, injuries, or goals."
-            icon={<StickyNote className="h-6 w-6 text-muted" />}
+            icon={<StickyNote className="h-6 w-6 text-text-muted" />}
           />
         }
       >
@@ -46,21 +46,21 @@ export function NotesSection({ notes, isLoading, onAddNote }: NotesSectionProps)
             <div
               key={note.id}
               className={cn(
-                "relative rounded-xl p-4 border transition-colors group",
+                "relative rounded-xl p-3 sm:p-4 border transition-colors group",
                 note.isPinned
                   ? "bg-warning/5 border-warning/20"
-                  : "bg-surface-hover border-default"
+                  : "bg-surface-hover border-border-default"
               )}
             >
               {note.isPinned && (
                 <Pin className="absolute top-3 right-3 h-3.5 w-3.5 text-warning rotate-45" />
               )}
-              <p className="text-sm text-primary leading-relaxed pr-4">{note.content}</p>
+              <p className="text-sm text-text-primary leading-relaxed pr-4">{note.content}</p>
               <div className="flex items-center justify-between mt-3">
-                <span className="text-xs text-muted">
+                <span className="text-xs text-text-muted">
                   {note.authorName} · {format(parseISO(note.createdAt), "MMM d, yyyy")}
                 </span>
-                <button className="opacity-0 group-hover:opacity-100 text-muted hover:text-error transition-all touch-target">
+                <button className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-error transition-all touch-target">
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>

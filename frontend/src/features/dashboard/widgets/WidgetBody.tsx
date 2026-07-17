@@ -39,8 +39,8 @@ export function WidgetBody({
   return (
     <div 
       className={cn(
-        "p-5 pt-4 flex-1", 
-        scrollable && "overflow-y-auto max-h-[400px] custom-scrollbar",
+        "p-4 pt-3 sm:p-5 sm:pt-4 flex-1", 
+        scrollable && "overflow-y-auto max-h-[300px] sm:max-h-[350px] lg:max-h-[400px] custom-scrollbar",
         className
       )} 
       {...props}

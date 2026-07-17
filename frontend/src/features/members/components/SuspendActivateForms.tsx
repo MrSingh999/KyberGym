@@ -40,8 +40,8 @@ export function SuspendMemberForm({ memberId, memberName, onSuccess, onCancel }:
       <div className="flex items-start gap-3 p-4 rounded-xl bg-error/5 border border-error/20">
         <AlertTriangle className="h-5 w-5 text-error shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-medium text-primary">Suspend {memberName}?</p>
-          <p className="text-sm text-secondary mt-1">This will immediately restrict the member's access to the gym. This can be reversed.</p>
+          <p className="text-sm font-medium text-text-primary">Suspend {memberName}?</p>
+          <p className="text-sm text-text-secondary mt-1">This will immediately restrict the member's access to the gym. This can be reversed.</p>
         </div>
       </div>
 
@@ -95,12 +95,12 @@ export function ActivateMemberForm({ memberId, memberName, onSuccess, onCancel }
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-secondary">
-        Reactivate <span className="font-medium text-primary">{memberName}</span>'s membership and restore their gym access.
+      <p className="text-sm text-text-secondary">
+        Reactivate <span className="font-medium text-text-primary">{memberName}</span>'s membership and restore their gym access.
       </p>
       <div className="flex gap-3">
         <Button variant="outline" className="flex-1 min-h-[44px]" onClick={onCancel}>Cancel</Button>
-        <LoadingButton className="flex-1 min-h-[44px] bg-success hover:bg-success/90" isLoading={isPending} loadingText="Activating..." onClick={handleActivate}>
+        <LoadingButton className="flex-1 min-h-[44px] bg-success text-success-foreground hover:bg-success/90" isLoading={isPending} loadingText="Activating..." onClick={handleActivate}>
           Activate Member
         </LoadingButton>
       </div>

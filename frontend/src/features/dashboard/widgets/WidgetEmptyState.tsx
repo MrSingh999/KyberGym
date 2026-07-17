@@ -24,18 +24,18 @@ export function WidgetEmptyState({
   return (
     <div 
       className={cn(
-        "flex flex-col items-center justify-center p-6 text-center h-full max-w-xs mx-auto my-auto animate-in fade-in zoom-in-95 duration-200",
+        "flex flex-col items-center justify-center p-4 text-center h-full max-w-xs mx-auto my-auto animate-in fade-in zoom-in-95 duration-200",
         className
       )}
       {...props}
     >
       {icon && (
-        <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-elevated text-text-muted shadow-xs ring-1 ring-border-default/50">
+        <div className="mb-2 flex size-8 items-center justify-center rounded-lg bg-elevated text-text-muted shadow-xs ring-1 ring-border-default/50">
           {icon}
         </div>
       )}
-      <h4 className="mb-1 text-sm font-bold text-text-primary font-sans leading-none">{title}</h4>
-      <p className="mb-4 text-xs text-text-secondary leading-normal">
+      <h4 className="mb-0.5 text-xs font-bold text-text-primary font-sans leading-tight">{title}</h4>
+      <p className="mb-3 text-[10px] text-text-secondary leading-normal">
         {description}
       </p>
       {actionLabel && onAction && (

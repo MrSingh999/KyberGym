@@ -26,7 +26,7 @@ export function QuickActions() {
 
   return (
     <div>
-      <h2 className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-3 font-mono">
+      <h2 className="text-[11px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider mb-3 font-mono">
         Quick Actions
       </h2>
 
@@ -35,12 +35,12 @@ export function QuickActions() {
           <button
             key={action.label}
             onClick={() => navigate(action.href)}
-            className="flex items-center gap-2.5 p-2 rounded-lg bg-surface/50 border border-border-default/50 hover:border-border-hover hover:bg-surface-hover/50 hover:shadow-xs transition-all duration-300 text-left cursor-pointer group active:scale-[0.98] w-full min-h-[48px]"
+            className="flex items-center gap-2.5 p-2.5 sm:p-2 rounded-lg bg-surface/50 border border-border-default/50 hover:border-border-hover hover:bg-surface-hover/50 hover:shadow-xs transition-all duration-300 text-left cursor-pointer group active:scale-[0.98] w-full min-h-[48px]"
           >
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] bg-elevated border border-border-default text-text-muted group-hover:text-primary group-hover:border-primary/20 transition-all duration-300 shadow-xs">
-              <action.icon className="h-3.5 w-3.5 transition-transform duration-300 group-hover:scale-105" />
+            <div className="flex h-8 w-8 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-[6px] bg-elevated border border-border-default text-text-muted group-hover:text-primary group-hover:border-primary/20 transition-all duration-300 shadow-xs">
+              <action.icon className="h-4 w-4 sm:h-3.5 sm:w-3.5 transition-transform duration-300 group-hover:scale-105" />
             </div>
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-text-primary group-hover:text-primary transition-colors duration-300 leading-tight">
+            <span className="text-[11px] sm:text-[10px] font-sans font-bold uppercase tracking-wider text-text-primary group-hover:text-primary transition-colors duration-300 leading-tight">
               {action.label}
             </span>
           </button>

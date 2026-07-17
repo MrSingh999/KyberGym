@@ -30,10 +30,10 @@ function FilterChip<T extends string>({
     <button
       onClick={onClick}
       className={cn(
-        'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
+        'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer',
         active
           ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-surface border-default text-secondary hover:border-hover hover:text-primary',
+          : 'bg-surface border-border-default text-text-secondary hover:border-border-hover hover:text-text-primary',
       )}
     >
       {label}
@@ -44,7 +44,7 @@ function FilterChip<T extends string>({
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2.5">
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">{title}</h4>
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted">{title}</h4>
       <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );

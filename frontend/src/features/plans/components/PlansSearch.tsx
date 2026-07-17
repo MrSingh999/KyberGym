@@ -25,18 +25,18 @@ export function PlansSearch({ value, onChange, placeholder = 'Search plans…', 
 
   return (
     <div className={cn('relative flex-1 max-w-sm', className)}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
       <input
         type="search"
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-9 pr-9 py-2.5 text-sm bg-surface border border-default rounded-xl text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors"
+        className="w-full pl-9 pr-9 py-2.5 text-sm bg-surface border border-border-default rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors"
       />
       {local && (
         <button
           onClick={() => { setLocal(''); onChange(''); }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
         </button>

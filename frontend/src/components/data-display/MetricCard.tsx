@@ -25,15 +25,12 @@ export function MetricCard({
       )}
       {...props}
     >
-      <span className="text-xs font-medium text-muted uppercase tracking-wider">{label}</span>
-      <div className={cn(
-        "text-xl font-heading font-semibold",
-        highlighted ? "text-primary" : "text-primary"
-      )}>
+      <span className="text-xs font-medium text-text-muted uppercase tracking-wider">{label}</span>
+      <div className="text-xl font-heading font-semibold text-text-primary">
         {value}
       </div>
       {description && (
-        <span className="text-xs text-secondary mt-1">{description}</span>
+        <span className="text-xs text-text-secondary mt-1">{description}</span>
       )}
     </div>
   )

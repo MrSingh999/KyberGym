@@ -42,11 +42,11 @@ export function RecentMembers({ className }: { className?: string }) {
         {isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 p-3">
-                <Skeleton className="h-9 w-9 rounded-full" />
+              <div key={i} className="flex items-center gap-3 p-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-28" />
                 </div>
               </div>
             ))}
@@ -70,41 +70,41 @@ export function RecentMembers({ className }: { className?: string }) {
             {members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border-default/50 hover:border-border-hover hover:bg-surface-hover/40 transition-all duration-300 hover:shadow-sm hover:translate-y-[-1px] cursor-pointer group"
+                className="flex items-start gap-3 p-4 rounded-xl border border-border-default/50 hover:border-border-hover hover:bg-surface-hover/40 transition-all duration-300 hover:shadow-sm hover:translate-y-[-1px] cursor-pointer group"
                 onClick={() => navigate(`/admin/members/${member.id}`)}
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold font-sans transition-all duration-300 group-hover:scale-105">
-                      {member.fullName.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-semibold text-text-primary truncate group-hover:text-primary transition-colors">
+                <Avatar className="h-10 w-10 shrink-0 mt-0.5">
+                  <AvatarFallback className="bg-primary/10 text-primary border border-primary/20 text-xs font-bold font-sans transition-all duration-300 group-hover:scale-105">
+                    {member.fullName.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col min-w-0 flex-1 gap-1.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-semibold text-text-primary truncate group-hover:text-primary transition-colors min-w-0">
                       {member.fullName}
                     </span>
-                    <div className="flex items-center gap-2 text-[10px] text-text-muted font-mono">
+                    <Badge variant={statusVariant[member.status] || "secondary"} className="text-[10px] px-2.5 py-0.5 shrink-0 mt-0.5">
+                      {member.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs text-text-muted font-mono min-w-0">
                       <span>{member.memberCode}</span>
                       {member.phone && (
                         <>
-                          <span className="text-border-default">|</span>
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-2.5 w-2.5" />
-                            {member.phone}
+                          <span className="text-border-default shrink-0">|</span>
+                          <span className="flex items-center gap-1 min-w-0 overflow-hidden">
+                            <Phone className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{member.phone}</span>
                           </span>
                         </>
                       )}
                     </div>
+                    <span className="flex items-center gap-1.5 text-[10px] text-text-muted font-mono shrink-0">
+                      <Calendar className="h-3 w-3" />
+                      {format(parseISO(member.joinDate), "MMM d")}
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={statusVariant[member.status] || "secondary"} className="text-[9px] px-2 py-0.5">
-                    {member.status}
-                  </Badge>
-                  <span className="flex items-center gap-1 text-[9px] text-text-muted font-mono">
-                    <Calendar className="h-2.5 w-2.5" />
-                    {format(parseISO(member.joinDate), "MMM d")}
-                  </span>
                 </div>
               </div>
             ))}

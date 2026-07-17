@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check } from "lucide-react";
+import { Check, UserPlus } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/forms/Form";
 import { Input } from "@/components/ui/input";
 import { Button, LoadingButton } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { addDays, format } from "date-fns";
 import { usePlans } from "@/features/plans/hooks/usePlans";
 import { AvatarUpload } from "./AvatarUpload";
+import { Card, CardContent } from "@/components/ui/Card";
 import {
   createMemberStep1Schema, CreateMemberStep1Data,
   createMemberStep2Schema, CreateMemberStep2Data,
@@ -123,20 +124,31 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
         profilePhotoBase64 = await convertToBase64(profilePhotoFile);
       }
 
-      // 1. Create the Member
-      const memberRes = await apiClient.post('/members', {
+      const body: Record<string, any> = {
         fullName: step1Data.name,
         email: step1Data.email || undefined,
         phone: step1Data.phone || undefined,
         gender: step1Data.gender || 'male',
-        dateOfBirth: step1Data.dateOfBirth || undefined,
         address: step1Data.address || undefined,
-        profilePhoto: profilePhotoBase64 || undefined,
-        emergencyContact: {
+      };
+
+      if (step1Data.dateOfBirth) {
+        body.dateOfBirth = new Date(step1Data.dateOfBirth).toISOString();
+      }
+
+      if (step1Data.email) {
+        body.email = step1Data.email;
+      }
+
+      if (step3Data.emergencyContactName || step3Data.emergencyContactPhone) {
+        body.emergencyContact = {
           name: step3Data.emergencyContactName || undefined,
           phone: step3Data.emergencyContactPhone || undefined,
-        }
-      });
+        };
+      }
+
+      // 1. Create the Member
+      const memberRes = await apiClient.post('/members', body);
       const createdMember = memberRes.data.data;
       const memberId = createdMember._id;
 
@@ -169,33 +181,38 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Step Indicator */}
-      <div className="flex items-center justify-between mb-8 px-1">
+      <div className="flex items-center justify-between mb-6 px-1 shrink-0">
         {STEPS.map((step, i) => (
           <React.Fragment key={step.id}>
-            <div className="flex flex-col items-center gap-1.5">
+            <div className="flex flex-col items-center gap-2">
               <div className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold border-2 transition-all",
-                currentStep > step.id ? "bg-primary border-primary text-primary-foreground" :
-                currentStep === step.id ? "bg-primary/10 border-primary text-primary" :
-                "bg-surface-hover border-default text-muted"
+                "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold border-2 transition-all duration-200",
+                currentStep > step.id 
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+                  : currentStep === step.id 
+                  ? "bg-primary text-primary-foreground border-primary shadow-md scale-105"
+                  : "bg-surface text-text-secondary border-border-default"
               )}>
-                {currentStep > step.id ? <Check className="h-4 w-4" /> : step.id}
+                {currentStep > step.id ? <Check className="h-5 w-5" /> : step.id}
               </div>
-              <span className={cn("text-[10px] font-medium hidden sm:block", currentStep === step.id ? "text-primary" : "text-muted")}>
+              <span className={cn(
+                "text-[10px] font-semibold uppercase tracking-wide hidden sm:block transition-colors duration-200",
+                currentStep === step.id ? "text-primary" : "text-text-muted"
+              )}>
                 {step.label}
               </span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={cn("flex-1 h-px mx-2", currentStep > step.id ? "bg-primary" : "bg-subtle")} />
+              <div className={cn("flex-1 h-0.5 mx-2 transition-all duration-200", currentStep > step.id ? "bg-primary" : "bg-border-default")} />
             )}
           </React.Fragment>
         ))}
       </div>
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {currentStep === 1 && (
           <Form {...step1Form}>
             <form id="step1" onSubmit={step1Form.handleSubmit(handleStep1Submit)} className="space-y-5 animate-fade-slide-up">
@@ -206,26 +223,75 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
                 />
               </div>
               <FormField control={step1Form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input placeholder="Alex Johnson" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Full Name <span className="text-error">*</span></FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Enter full name" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={step1Form.control} name="phone" render={({ field }) => (
-                <FormItem><FormLabel>Phone *</FormLabel><FormControl><Input placeholder="+1 555 000 0000" type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Phone <span className="text-error">*</span></FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="+1 555 000 0000" 
+                      type="tel" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={step1Form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="alex@example.com" type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Email</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="alex@example.com" 
+                      type="email" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={step1Form.control} name="gender" render={({ field }) => (
-                  <FormItem><FormLabel>Gender *</FormLabel><FormControl>
-                    <select {...field} className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary">
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-text-primary">Gender <span className="text-error">*</span></FormLabel>
+                    <FormControl>
+                      <select 
+                        {...field} 
+                        className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all cursor-pointer"
+                      >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )} />
                 <FormField control={step1Form.control} name="dateOfBirth" render={({ field }) => (
-                  <FormItem><FormLabel>Date of Birth</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-text-primary">Date of Birth</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="date" 
+                        className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )} />
               </div>
             </form>
@@ -237,16 +303,16 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
             <form id="step2" onSubmit={step2Form.handleSubmit(handleStep2Submit)} className="space-y-5 animate-fade-slide-up">
               <FormField control={step2Form.control} name="planId" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Membership Plan *</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Membership Plan <span className="text-error">*</span></FormLabel>
                   <FormControl>
                     <select
                       {...field}
-                      className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary focus-visible:outline-none"
+                      className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all cursor-pointer"
                     >
                       <option value="">Select a plan...</option>
                       {activePlans.map(plan => (
                         <option key={plan.id} value={plan.id}>
-                          {plan.name} (${plan.price})
+                          {plan.name} (₹{plan.price})
                         </option>
                       ))}
                     </select>
@@ -255,10 +321,31 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
                 </FormItem>
               )} />
               <FormField control={step2Form.control} name="membershipStartDate" render={({ field }) => (
-                <FormItem><FormLabel>Start Date *</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Start Date <span className="text-error">*</span></FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="date" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={step2Form.control} name="membershipEndDate" render={({ field }) => (
-                <FormItem><FormLabel>End Date *</FormLabel><FormControl><Input type="date" readOnly {...field} className="bg-surface-hover cursor-not-allowed text-muted" /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">End Date <span className="text-error">*</span></FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="date" 
+                      readOnly 
+                      {...field} 
+                      className="h-11 border-border-default cursor-not-allowed text-text-muted opacity-60" 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
             </form>
           </Form>
@@ -267,58 +354,113 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
         {currentStep === 3 && (
           <Form {...step3Form}>
             <form id="step3" onSubmit={step3Form.handleSubmit(handleStep3Submit)} className="space-y-5 animate-fade-slide-up">
-              <p className="text-sm text-secondary -mt-2">Emergency contact details (optional but recommended).</p>
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-surface border border-border-default mb-2">
+                <span className="text-xs text-text-muted leading-relaxed">
+                  Emergency contact details <span className="font-semibold text-text-secondary">(optional but recommended)</span>
+                </span>
+              </div>
               <FormField control={step3Form.control} name="emergencyContactName" render={({ field }) => (
-                <FormItem><FormLabel>Contact Name</FormLabel><FormControl><Input placeholder="Jane Johnson" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Contact Name</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Jane Johnson" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={step3Form.control} name="emergencyContactPhone" render={({ field }) => (
-                <FormItem><FormLabel>Contact Phone</FormLabel><FormControl><Input placeholder="+1 555 000 0000" type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Contact Phone</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="+1 555 000 0000" 
+                      type="tel" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <FormField control={step3Form.control} name="emergencyContactRelation" render={({ field }) => (
-                <FormItem><FormLabel>Relation</FormLabel><FormControl><Input placeholder="Spouse, Parent..." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Relation</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Spouse, Parent..." 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
             </form>
           </Form>
         )}
 
         {currentStep === 4 && (
-          <div className="space-y-4 animate-fade-slide-up">
-            <p className="text-sm text-secondary">Review member details before creating the profile.</p>
-            <div className="rounded-xl border border-default bg-surface-hover p-4 space-y-3">
-              {[
-                { label: "Name", value: step1Data.name },
-                { label: "Phone", value: step1Data.phone },
-                { label: "Email", value: step1Data.email || "—" },
-                { label: "Plan", value: activePlans.find(p => p.id === step2Data.planId)?.name || "—" },
-                { label: "Start", value: step2Data.membershipStartDate },
-                { label: "End", value: step2Data.membershipEndDate },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between text-sm">
-                  <span className="text-muted">{label}</span>
-                  <span className="font-medium text-primary">{value}</span>
-                </div>
-              ))}
+          <div className="space-y-5 animate-fade-slide-up">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-surface border border-border-default">
+              <span className="text-xs text-text-muted leading-relaxed">
+                Review member details before creating the profile.
+              </span>
             </div>
+            <Card className="border-border-default bg-surface/50 shadow-sm">
+              <CardContent className="p-0 divide-y divide-border-default">
+                {[
+                  { label: "Full Name", value: step1Data.name },
+                  { label: "Phone", value: step1Data.phone },
+                  { label: "Email", value: step1Data.email || "—" },
+                  { label: "Gender", value: step1Data.gender ? step1Data.gender.charAt(0).toUpperCase() + step1Data.gender.slice(1) : "—" },
+                  { label: "Date of Birth", value: step1Data.dateOfBirth || "—" },
+                  { label: "Membership Plan", value: activePlans.find(p => p.id === step2Data.planId)?.name || "—" },
+                  { label: "Start Date", value: step2Data.membershipStartDate || "—" },
+                  { label: "End Date", value: step2Data.membershipEndDate || "—" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-center justify-between px-4 py-3">
+                    <span className="text-xs font-medium text-text-muted uppercase tracking-wide">{label}</span>
+                    <span className="text-sm font-semibold text-text-primary text-right">{value}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
 
-      {/* Navigation Footer - sticky on mobile */}
-      <div className="flex items-center justify-between pt-6 mt-6 border-t border-subtle sticky bottom-0 bg-surface">
+      {/* Navigation Footer */}
+      <div className="flex items-center gap-3 pt-5 mt-5 border-t border-border-default shrink-0">
         <Button
           variant="outline"
-          className="min-h-[44px]"
+          size="lg"
+          className="flex-1 min-h-[44px] border-border-default text-text-secondary hover:text-text-primary"
           onClick={currentStep === 1 ? onCancel : () => setCurrentStep((prev) => (prev - 1) as WizardStep)}
         >
           {currentStep === 1 ? "Cancel" : "Back"}
         </Button>
 
         {currentStep < 4 ? (
-          <Button type="submit" className="min-h-[44px]" form={`step${currentStep}`}>
+          <Button 
+            type="submit" 
+            size="lg" 
+            className="flex-1 min-h-[44px] bg-primary text-primary-foreground hover:opacity-90 font-semibold"
+            form={`step${currentStep}`}
+          >
             Continue
           </Button>
         ) : (
-          <LoadingButton className="min-h-[44px]" onClick={handleFinalSubmit} isLoading={isSubmitting} loadingText="Creating...">
+          <LoadingButton 
+            size="lg" 
+            className="flex-1 min-h-[44px] bg-primary text-primary-foreground hover:opacity-90 font-semibold"
+            onClick={handleFinalSubmit} 
+            isLoading={isSubmitting} 
+            loadingText="Creating..."
+          >
             Create Member
           </LoadingButton>
         )}

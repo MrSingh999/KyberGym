@@ -54,13 +54,13 @@ export function ActivityFeed({ className }: { className?: string }) {
               const Icon = config.icon;
 
               return (
-                <div key={activity.id} className="relative flex gap-3 group p-1.5 rounded-lg transition-all duration-300 hover:bg-surface-hover/20">
+                <div key={activity.id} className="relative flex gap-3 group p-2 sm:p-1.5 rounded-lg transition-all duration-300 hover:bg-surface-hover/20">
                   {index !== activities.length - 1 && (
                     <div className="absolute left-[21px] top-[36px] bottom-[-22px] w-px bg-border-default/60 group-hover:bg-border-hover/60 transition-colors" />
                   )}
 
                   <div className={cn(
-                    "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg mt-0.5 border transition-all duration-300 shadow-sm",
+                    "relative z-10 flex h-9 w-9 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg mt-0.5 border transition-all duration-300 shadow-sm",
                     config.bg,
                     config.color,
                     activity.type === 'member_joined' && "border-primary/20 group-hover:shadow-[0_0_10px_rgba(var(--primary-rgb),0.2)]",
@@ -72,13 +72,13 @@ export function ActivityFeed({ className }: { className?: string }) {
                   </div>
 
                   <div className="flex flex-col flex-1 min-w-0">
-                    <p className="text-xs font-bold text-text-primary font-sans group-hover:text-primary transition-colors duration-200 truncate">
+                    <p className="text-sm sm:text-xs font-bold text-text-primary font-sans group-hover:text-primary transition-colors duration-200 truncate">
                       {activity.title}
                     </p>
-                    <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
+                    <p className="text-sm sm:text-xs text-text-secondary mt-0.5 leading-relaxed">
                       {activity.description}
                     </p>
-                    <span className="text-[9px] text-text-muted mt-1 font-mono">
+                    <span className="text-[10px] sm:text-[9px] text-text-muted mt-1 font-mono">
                       {format(parseISO(activity.timestamp), "MMM d, h:mm a")}
                     </span>
                   </div>

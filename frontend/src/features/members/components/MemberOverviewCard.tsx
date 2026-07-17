@@ -14,15 +14,14 @@ interface MemberOverviewCardProps {
 interface DetailRowProps { icon: React.ReactNode; label: string; value?: string }
 
 function DetailRow({ icon, label, value }: DetailRowProps) {
-  if (!value) return null;
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-subtle last:border-b-0">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-muted">
+    <div className="flex items-center gap-2.5 sm:gap-3 py-2.5 sm:py-3 border-b border-border-default last:border-b-0">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-text-muted">
         {icon}
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-[10px] uppercase tracking-wider text-muted font-medium">{label}</span>
-        <span className="text-sm text-primary font-medium truncate">{value}</span>
+        <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">{label}</span>
+        <span className="text-sm text-text-primary font-medium truncate">{value || "—"}</span>
       </div>
     </div>
   );
@@ -34,7 +33,7 @@ export function MemberOverviewCard({ member, isLoading }: MemberOverviewCardProp
       <WidgetHeader title="Personal Info" />
       <WidgetBody isLoading={isLoading}>
         {member && (
-          <div className="divide-y divide-subtle -mt-2">
+          <div className="divide-y divide-border-default">
             <DetailRow icon={<Mail className="h-4 w-4" />} label="Email" value={member.email} />
             <DetailRow icon={<Phone className="h-4 w-4" />} label="Phone" value={member.phone} />
             <DetailRow icon={<Calendar className="h-4 w-4" />} label="Date of Birth" value={member.dateOfBirth ? format(parseISO(member.dateOfBirth), "MMM d, yyyy") : undefined} />

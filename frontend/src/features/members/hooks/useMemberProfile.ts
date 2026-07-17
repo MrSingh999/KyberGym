@@ -47,8 +47,8 @@ export function useMemberProfile(memberId: string) {
         id: m._id,
         memberCode: m.memberCode,
         name: m.fullName,
-        phone: m.phone || "No phone",
-        email: m.email || "No email",
+        phone: m.phone || undefined,
+        email: m.email || undefined,
         profilePhoto: m.profilePhoto,
         bloodGroup: m.bloodGroup,
         address: m.address,
@@ -76,13 +76,20 @@ export function useMemberActivities(memberId: string) {
   return useQuery<MemberActivity[]>({
     queryKey: ["member-activities", selectedGymId, memberId],
     queryFn: async () => {
-      const [subsRes, paymentsRes] = await Promise.all([
-        apiClient.get('/member-subscriptions', { params: { memberId, limit: 50 } }),
-        apiClient.get('/payments', { params: { memberId, limit: 50 } }),
+      const [subs, payments] = await Promise.all([
+        (async () => {
+          try {
+            const res = await apiClient.get('/member-subscriptions', { params: { memberId, limit: 50 } });
+            return res.data.data ?? [];
+          } catch { return []; }
+        })(),
+        (async () => {
+          try {
+            const res = await apiClient.get('/payments', { params: { memberId, limit: 50 } });
+            return res.data.data ?? [];
+          } catch { return []; }
+        })(),
       ]);
-
-      const subs = subsRes.data.data || [];
-      const payments = paymentsRes.data.data || [];
 
       const activities: MemberActivity[] = [];
 
@@ -146,10 +153,15 @@ export function useMemberPaymentSummary(memberId: string) {
   return useQuery<PaymentSummaryItem[]>({
     queryKey: ["member-summary", selectedGymId, memberId, "payments"],
     queryFn: async () => {
-      const response = await apiClient.get('/payments', {
-        params: { memberId, limit: 50 }
-      });
-      const rawPayments = response.data.data;
+      let rawPayments: any[] = [];
+      try {
+        const response = await apiClient.get('/payments', {
+          params: { memberId, limit: 50 }
+        });
+        rawPayments = response.data.data ?? [];
+      } catch {
+        return [];
+      }
 
       const planIds = [...new Set(rawPayments.map((p: any) => p.planId).filter(Boolean))];
       let planNames = new Map<string, string>();

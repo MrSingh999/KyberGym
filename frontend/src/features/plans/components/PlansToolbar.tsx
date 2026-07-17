@@ -49,16 +49,16 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
         <button
           onClick={() => setFilterSheetOpen(true)}
           className={cn(
-            'flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border transition-colors',
+            'flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border transition-colors cursor-pointer',
             activeFiltersCount > 0
-              ? 'border-primary text-primary bg-primary/5'
-              : 'border-default text-muted hover:text-primary hover:border-hover bg-surface',
+              ? 'border-primary text-primary-foreground bg-primary'
+              : 'border-border-default text-text-muted hover:text-text-primary hover:border-border-hover bg-surface',
           )}
         >
           <Filter className="w-4 h-4" />
           <span className="hidden sm:inline">Filters</span>
           {activeFiltersCount > 0 && (
-            <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+            <span className="bg-primary-foreground text-primary text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
               {activeFiltersCount}
             </span>
           )}
@@ -66,21 +66,21 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
 
         {/* Sort dropdown */}
         <details className="relative">
-          <summary className="list-none flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border border-default bg-surface text-muted hover:text-primary hover:border-hover transition-colors cursor-pointer select-none">
+          <summary className="list-none flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border border-border-default bg-surface text-text-muted hover:text-text-primary hover:border-border-hover transition-colors cursor-pointer select-none">
             <SlidersHorizontal className="w-4 h-4" />
             <span className="hidden sm:inline">{currentSortLabel}</span>
             <ChevronDown className="w-3.5 h-3.5" />
           </summary>
-          <div className="absolute right-0 top-11 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-44 text-sm">
+          <div className="absolute right-0 top-11 z-20 bg-surface border border-border-default rounded-xl shadow-lg py-1.5 w-44 text-sm">
             {SORT_OPTIONS.map((opt) => (
               <button
                 key={`${opt.field}-${opt.dir}`}
                 onClick={() => setSort(opt.field, opt.dir)}
                 className={cn(
-                  'w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors',
+                  'w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors cursor-pointer',
                   opt.field === sortField && opt.dir === sortDir
-                    ? 'text-primary font-semibold'
-                    : 'text-secondary',
+                    ? 'text-text-primary font-semibold'
+                    : 'text-text-secondary',
                 )}
               >
                 {opt.label}
@@ -90,12 +90,12 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
         </details>
 
         {/* View mode toggle */}
-        <div className="hidden sm:flex items-center gap-1 p-1 bg-surface-hover rounded-xl border border-default">
+        <div className="hidden sm:flex items-center gap-1 p-1 bg-surface-hover rounded-xl border border-border-default">
           <button
             onClick={() => setViewMode('card')}
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              viewMode === 'card' ? 'bg-surface text-primary shadow-sm' : 'text-muted hover:text-primary',
+              'p-1.5 rounded-lg transition-colors cursor-pointer',
+              viewMode === 'card' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary',
             )}
             title="Card view"
           >
@@ -104,8 +104,8 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
           <button
             onClick={() => setViewMode('table')}
             className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              viewMode === 'table' ? 'bg-surface text-primary shadow-sm' : 'text-muted hover:text-primary',
+              'p-1.5 rounded-lg transition-colors cursor-pointer',
+              viewMode === 'table' ? 'bg-surface text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary',
             )}
             title="Table view"
           >
@@ -116,7 +116,7 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
         {/* New Plan CTA */}
         <button
           onClick={() => navigate('/admin/plans/new')}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap cursor-pointer min-h-[44px] sm:min-h-0"
         >
           <Plus className="w-4 h-4" />
           <span>New Plan</span>
@@ -125,7 +125,7 @@ export function PlansToolbar({ totalCount }: PlansToolbarProps) {
 
       {/* Row 2: result count */}
       {totalCount > 0 && (
-        <p className="text-xs text-muted">
+        <p className="text-xs text-text-muted">
           {totalCount} plan{totalCount !== 1 ? 's' : ''}
           {searchQuery && ` matching "${searchQuery}"`}
         </p>

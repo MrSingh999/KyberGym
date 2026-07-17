@@ -23,34 +23,34 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all duration-300 hover:shadow-xs hover:border-border-hover bg-surface/40 p-3 card-hover group flex  items-center gap-3 min-h-[64px]",
+        "overflow-hidden transition-all duration-300 hover:shadow-xs hover:border-border-hover bg-surface/40 p-4 card-hover group flex flex-col gap-2.5 min-h-[96px]",
         className,
       )}
       {...props}
     >
-      {icon && (
-        <div
-          className={cn(
-            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-xs",
-            iconClassName || "bg-primary/10 text-primary",
-          )}
-        >
-          {icon}
-        </div>
-      )}
-      <div className="min-w-0 flex-1 flex flex-col items-center justify-center">
-        <span className="block text-[9px] font-bold text-text-muted uppercase tracking-wider font-sans leading-none text-center">
+      <div className="flex items-center gap-3">
+        {icon && (
+          <div
+            className={cn(
+              "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-xs",
+              iconClassName || "bg-primary/10 text-primary",
+            )}
+          >
+            {icon}
+          </div>
+        )}
+        <span className="block text-[10px] font-bold text-text-muted uppercase tracking-wider font-sans leading-tight">
           {title}
         </span>
-        <div className="mt-1 flex items-center justify-center leading-none">
-          {loading ? (
-            <Skeleton className="h-5 w-14 rounded mt-0.5" />
-          ) : (
-            <h3 className="text-base sm:text-lg font-bold text-text-primary font-mono tracking-tight leading-none text-center">
-              {value}
-            </h3>
-          )}
-        </div>
+      </div>
+      <div className="flex items-center leading-none">
+        {loading ? (
+          <Skeleton className="h-6 w-20 rounded" />
+        ) : (
+          <h3 className="text-xl sm:text-2xl font-bold text-text-primary font-mono tracking-tight leading-none">
+            {value}
+          </h3>
+        )}
       </div>
     </Card>
   );

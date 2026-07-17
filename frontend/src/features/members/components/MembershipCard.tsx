@@ -1,15 +1,41 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
+import { Calendar, Hourglass, LogIn } from "lucide-react";
 import { WidgetContainer } from "../../dashboard/widgets/WidgetContainer";
 import { WidgetHeader } from "../../dashboard/widgets/WidgetHeader";
 import { WidgetBody } from "../../dashboard/widgets/WidgetBody";
 import { MemberStatusBadge } from "./MemberStatusBadge";
 import { MemberProfile } from "../types/profile";
-import { MetricCard } from "@/components/data-display/MetricCard";
+import { cn } from "@/lib/utils";
 
 interface MembershipCardProps {
   member?: MemberProfile;
   isLoading: boolean;
+}
+
+interface StatRowProps { icon: React.ReactNode; label: string; value: string; highlighted?: boolean }
+
+function StatRow({ icon, label, value, highlighted }: StatRowProps) {
+  return (
+    <div className={cn(
+      "flex items-center gap-2.5 sm:gap-3 py-2.5 sm:py-3 border-b border-border-default last:border-b-0",
+      highlighted && "bg-warning/5 -mx-4 sm:-mx-5 px-4 sm:px-5"
+    )}>
+      <div className={cn(
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+        highlighted ? "bg-warning/10 text-warning" : "bg-surface-hover text-text-muted"
+      )}>
+        {icon}
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">{label}</span>
+        <span className={cn(
+          "text-sm font-medium truncate",
+          highlighted ? "text-warning" : "text-text-primary"
+        )}>{value}</span>
+      </div>
+    </div>
+  );
 }
 
 function getDaysRemaining(endDate?: string): number | null {
@@ -20,37 +46,39 @@ function getDaysRemaining(endDate?: string): number | null {
 
 export function MembershipCard({ member, isLoading }: MembershipCardProps) {
   const daysRemaining = getDaysRemaining(member?.membershipEndDate);
+  const isExpiring = daysRemaining !== null && daysRemaining <= 7;
 
   return (
     <WidgetContainer>
       <WidgetHeader title="Membership" />
       <WidgetBody isLoading={isLoading}>
         {member && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-primary">{member.planName || "No Plan"}</span>
+          <div className="divide-y divide-border-default">
+            <div className="flex items-center justify-between py-2.5 sm:py-3">
+              <span className="text-sm font-medium text-text-primary">{member.planName || "No Plan"}</span>
               <MemberStatusBadge status={member.membershipStatus} />
             </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <MetricCard
-                label="Start Date"
-                value={member.membershipStartDate ? format(parseISO(member.membershipStartDate), "MMM d, yyyy") : "—"}
-              />
-              <MetricCard
-                label="End Date"
-                value={member.membershipEndDate ? format(parseISO(member.membershipEndDate), "MMM d, yyyy") : "—"}
-              />
-              <MetricCard
-                label="Days Remaining"
-                value={daysRemaining !== null ? (daysRemaining > 0 ? `${daysRemaining}` : "Expired") : "—"}
-                highlighted={daysRemaining !== null && daysRemaining <= 7}
-              />
-              <MetricCard
-                label="Joined"
-                value={format(parseISO(member.joiningDate), "MMM d, yyyy")}
-              />
-            </div>
+            <StatRow
+              icon={<Calendar className="h-4 w-4" />}
+              label="Start Date"
+              value={member.membershipStartDate ? format(parseISO(member.membershipStartDate), "MMM d, yyyy") : "—"}
+            />
+            <StatRow
+              icon={<Calendar className="h-4 w-4" />}
+              label="End Date"
+              value={member.membershipEndDate ? format(parseISO(member.membershipEndDate), "MMM d, yyyy") : "—"}
+            />
+            <StatRow
+              icon={<Hourglass className="h-4 w-4" />}
+              label="Days Remaining"
+              value={daysRemaining !== null ? (daysRemaining > 0 ? `${daysRemaining} days` : "Expired") : "—"}
+              highlighted={isExpiring}
+            />
+            <StatRow
+              icon={<LogIn className="h-4 w-4" />}
+              label="Joined"
+              value={member.joiningDate ? format(parseISO(member.joiningDate), "MMM d, yyyy") : "—"}
+            />
           </div>
         )}
       </WidgetBody>

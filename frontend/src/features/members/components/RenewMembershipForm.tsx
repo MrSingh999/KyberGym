@@ -87,7 +87,7 @@ export function RenewMembershipForm({ memberId, memberName, onSuccess }: RenewMe
               <FormControl>
                 <select
                   {...field}
-                  className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                  className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 >
                   <option value="">Select a plan...</option>
                   {activePlans.map(plan => (
@@ -122,7 +122,7 @@ export function RenewMembershipForm({ memberId, memberName, onSuccess }: RenewMe
               <FormItem>
                 <FormLabel>End Date</FormLabel>
                 <FormControl>
-                  <Input type="date" readOnly {...field} className="bg-surface-hover cursor-not-allowed text-muted" />
+                  <Input type="date" readOnly {...field} className="bg-surface-hover cursor-not-allowed text-text-muted" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

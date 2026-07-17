@@ -35,13 +35,13 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
   const isSuspended = member.membershipStatus === "Suspended";
 
   return (
-    <div className="bg-surface border-b border-default sticky top-0 z-20">
+    <div className="bg-surface border-b border-border-default sticky top-0 z-20">
       <div className="px-4 sm:px-6 pt-4 pb-0">
 
         {/* Back nav */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-sm text-muted hover:text-primary mb-4 min-h-[44px] touch-target cursor-pointer"
+          className="flex items-center text-sm text-text-muted hover:text-text-primary mb-4 min-h-[44px] touch-target cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Members
@@ -49,7 +49,7 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
 
         {/* Core profile row */}
         <div className="flex items-start gap-4 pb-5">
-          <Avatar className="h-16 w-16 border-2 border-default ring-4 ring-surface shrink-0">
+          <Avatar className="h-16 w-16 border-2 border-border-default ring-4 ring-surface shrink-0">
             <AvatarImage src={member.profilePhoto} />
             <AvatarFallback className="text-xl font-bold">
               {member.name.substring(0, 2).toUpperCase()}
@@ -59,16 +59,16 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h1 className="text-xl font-heading font-bold text-primary truncate">{member.name}</h1>
+                <h1 className="text-xl font-heading font-bold text-text-primary truncate">{member.name}</h1>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                  <span className="text-xs font-mono text-secondary">{member.memberCode}</span>
+                  <span className="text-xs font-mono text-text-secondary">{member.memberCode}</span>
                   <MemberStatusBadge status={member.membershipStatus} />
                   {member.subscriptionStatus && (
                     <span className={cn(
                       "text-[10px] px-2 py-0.5 rounded-[4px] font-semibold border",
                       member.subscriptionStatus === 'active' ? "bg-success/10 border-success/20 text-success" :
                       member.subscriptionStatus === 'paused' ? "bg-warning/10 border-warning/20 text-warning" :
-                      "bg-muted border-default text-muted-foreground"
+                      "bg-surface text-text-muted border-border-default"
                     )}>
                       Sub: {member.subscriptionStatus}
                     </span>
@@ -77,15 +77,15 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-11 w-11 rounded-full flex items-center justify-center text-muted hover:bg-surface-hover transition-colors touch-target shrink-0 cursor-pointer focus:outline-none">
+                  <button className="h-11 w-11 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-hover transition-colors touch-target shrink-0 cursor-pointer focus:outline-none">
                     <MoreVertical className="h-5 w-5" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-surface border border-default shadow-xl rounded-lg py-1 z-50">
-                  <DropdownMenuItem onClick={onEdit} className="px-4 py-2 text-sm text-primary hover:bg-surface-hover cursor-pointer transition-colors focus:bg-surface-hover focus:outline-none">
+                <DropdownMenuContent align="end" className="bg-surface border border-border-default shadow-xl rounded-lg py-1 z-50">
+                  <DropdownMenuItem onClick={onEdit} className="px-4 py-2 text-sm text-text-primary hover:bg-surface-hover cursor-pointer transition-colors focus:bg-surface-hover focus:outline-none">
                     Edit Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onDelete} className="px-4 py-2 text-sm text-destructive hover:bg-red-500/10 cursor-pointer transition-colors focus:bg-red-500/10 focus:outline-none">
+                  <DropdownMenuItem onClick={onDelete} className="px-4 py-2 text-sm text-error hover:bg-error/10 cursor-pointer transition-colors focus:bg-error/10 focus:outline-none">
                     Delete Member
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -95,7 +95,7 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
             {/* Plan & Expiry */}
             {member.planName && (
               <div className="flex items-center gap-2 mt-3 flex-wrap">
-                <span className="text-sm font-medium text-primary bg-surface-hover px-2.5 py-1 rounded-lg border border-default">
+                <span className="text-sm font-medium text-text-primary bg-surface-hover px-2.5 py-1 rounded-lg border border-border-default">
                   {member.planName}
                 </span>
                 {daysRemaining !== null && (
@@ -103,7 +103,7 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
                     "text-xs font-medium px-2 py-1 rounded-lg",
                     daysRemaining <= 7 ? "bg-error/10 text-error" :
                     daysRemaining <= 30 ? "bg-warning/10 text-warning" :
-                    "text-secondary"
+                    "text-text-secondary"
                   )}>
                     {daysRemaining > 0 ? `${daysRemaining} days left` : "Expired"}
                   </span>
@@ -115,7 +115,7 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
 
         {/* Action strip */}
         <div className="flex items-center gap-2 pb-4 overflow-x-auto hide-scrollbar">
-          <a href={`tel:${member.phone}`} className="flex items-center gap-1.5 text-xs font-semibold shrink-0 touch-target min-h-[44px] bg-surface-hover border border-default rounded-lg px-4 py-3 hover:border-hover transition-colors">
+          <a href={`tel:${member.phone}`} className="flex items-center gap-1.5 text-xs font-semibold shrink-0 touch-target min-h-[44px] bg-surface-hover border border-border-default rounded-lg px-4 py-3 hover:border-border-hover transition-colors">
             <Phone className="h-4 w-4" /> Call
           </a>
           <button onClick={onRenew} className="flex items-center gap-1.5 text-xs font-semibold shrink-0 touch-target min-h-[44px] bg-primary text-primary-foreground rounded-lg px-4 py-3 hover:opacity-90 transition-opacity cursor-pointer">

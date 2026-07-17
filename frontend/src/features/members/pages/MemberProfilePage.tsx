@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { WidgetContainer, WidgetHeader, WidgetBody } from "../../dashboard/widgets/WidgetContainer";
 
 function convertToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -63,9 +64,9 @@ export function MemberProfilePage() {
   const [freezeReason, setFreezeReason] = useState("");
 
   const { data: member, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useMemberProfile(memberId);
-  const { data: activities, isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useMemberActivities(memberId);
+  const { data: activities, isLoading: activitiesLoading } = useMemberActivities(memberId);
   const { data: notes, isLoading: notesLoading, isError: notesError, refetch: refetchNotes } = useMemberNotes(memberId);
-  const { data: payments, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useMemberPaymentSummary(memberId);
+  const { data: payments, isLoading: paymentsLoading } = useMemberPaymentSummary(memberId);
 
   const { mutateAsync: updateMember, isPending: isUpdating } = useUpdateMember(memberId);
   const { mutateAsync: deleteMember, isPending: isDeleting } = useDeleteMember();
@@ -148,12 +149,10 @@ export function MemberProfilePage() {
 
   const triggerRetry = () => {
     refetchProfile();
-    refetchActivities();
     refetchNotes();
-    refetchPayments();
   };
 
-  if (profileError || activitiesError || notesError || paymentsError) {
+  if (profileError) {
     return (
       <ErrorState
         title="Failed to load member profile"
@@ -168,7 +167,7 @@ export function MemberProfilePage() {
     <div className="flex flex-col min-h-screen bg-canvas">
       {/* Sticky Profile Header */}
       {profileLoading ? (
-        <div className="px-4 sm:px-6 pt-4 pb-0 border-b border-default bg-surface animate-pulse">
+        <div className="px-4 sm:px-6 pt-4 pb-0 border-b border-border-default bg-surface animate-pulse">
           <Skeleton className="h-4 w-16 mb-4" />
           <div className="flex items-start gap-4 pb-5">
             <Skeleton className="h-16 w-16 rounded-full shrink-0" />
@@ -198,19 +197,32 @@ export function MemberProfilePage() {
       ) : null}
 
       {/* Page Content – responsive grid */}
-      <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-5xl mx-auto animate-fade-slide-up">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto animate-fade-slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
 
-          {/* Left column: Personal + Membership */}
-          <div className="lg:col-span-1 space-y-6">
-            <MemberOverviewCard member={member} isLoading={profileLoading} />
-            <MembershipCard member={member} isLoading={profileLoading} />
-            <PaymentsSummaryCard payments={payments} isLoading={paymentsLoading} />
+          {/* Personal Info */}
+          <MemberOverviewCard member={member} isLoading={profileLoading} />
+
+          {/* Membership */}
+          <MembershipCard member={member} isLoading={profileLoading} />
+
+          {/* Recent Payments */}
+          <PaymentsSummaryCard payments={payments} isLoading={paymentsLoading} />
+
+          {/* Membership History */}
+          <div className="md:col-span-2 xl:col-span-2">
+            <MembershipHistory memberId={memberId} />
           </div>
 
-          {/* Right column: History + Timeline + Notes */}
-          <div className="lg:col-span-2 space-y-6">
-            <MembershipHistory memberId={memberId} />
+          {/* Notes */}
+          {notesError ? (
+            <WidgetContainer>
+              <WidgetHeader title="Notes" />
+              <WidgetBody isEmpty={false} isLoading={false}>
+                <p className="text-xs text-text-secondary text-center py-4">Failed to load notes.</p>
+              </WidgetBody>
+            </WidgetContainer>
+          ) : (
             <NotesSection 
               notes={notes} 
               isLoading={notesLoading} 
@@ -219,6 +231,10 @@ export function MemberProfilePage() {
                 setIsEditingNote(true);
               }}
             />
+          )}
+
+          {/* Activity Timeline */}
+          <div className="md:col-span-2 xl:col-span-3">
             <ActivityTimeline activities={activities} isLoading={activitiesLoading} />
           </div>
 
@@ -356,7 +372,7 @@ export function MemberProfilePage() {
           description="Update notes about this member's preferences, injuries, or goals."
         >
           <textarea
-            className="w-full h-32 bg-surface-hover border border-default rounded-xl p-3 text-sm text-primary focus:outline-none resize-none"
+            className="w-full h-32 bg-surface-hover border border-border-default rounded-xl p-3 text-sm text-text-primary focus:outline-none resize-none"
             placeholder="Has a knee injury – avoid lower body exercises..."
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}

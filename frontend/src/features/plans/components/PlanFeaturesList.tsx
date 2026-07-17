@@ -18,8 +18,8 @@ export function PlanFeaturesList({ features, compact = false, className }: PlanF
               'flex-shrink-0 flex items-center justify-center rounded-full',
               compact ? 'w-4 h-4' : 'w-5 h-5',
               feature.included
-                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                : 'bg-surface-hover text-muted',
+                ? 'bg-success/15 text-success'
+                : 'bg-surface-hover text-text-muted',
             )}
           >
             {feature.included ? (
@@ -28,7 +28,7 @@ export function PlanFeaturesList({ features, compact = false, className }: PlanF
               <X className={compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} strokeWidth={2.5} />
             )}
           </span>
-          <span className={feature.included ? 'text-primary' : 'text-muted line-through'}>
+          <span className={feature.included ? 'text-text-primary' : 'text-text-muted line-through'}>
             {feature.label}
           </span>
         </li>
