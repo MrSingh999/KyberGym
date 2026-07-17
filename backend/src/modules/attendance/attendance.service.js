@@ -8,6 +8,8 @@ export class AttendanceService {
     const member = await MemberRepository.findById(data.memberId, gymId);
     if (!member) throw createError.NotFound('Member not found');
 
+    const resolvedMemberId = member._id;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -15,7 +17,7 @@ export class AttendanceService {
 
     const existing = await AttendanceRepository.findPaginated(
       gymId,
-      { memberId: data.memberId, date: { $gte: today, $lt: tomorrow } },
+      { memberId: resolvedMemberId, date: { $gte: today, $lt: tomorrow } },
       1, 1
     );
 
@@ -25,7 +27,7 @@ export class AttendanceService {
 
     return AttendanceRepository.create({
       gymId,
-      memberId: data.memberId,
+      memberId: resolvedMemberId,
       date: new Date(),
       status: data.status,
       notes: data.notes,
@@ -100,7 +102,7 @@ export class AttendanceService {
     const { page = 1, limit = 10 } = query;
     const member = await MemberRepository.findById(memberId, gymId);
     if (!member) throw createError.NotFound('Member not found');
-    return AttendanceRepository.findByMemberId(gymId, memberId, Number(page), Number(limit));
+    return AttendanceRepository.findByMemberId(gymId, member._id, Number(page), Number(limit));
   }
 
   static async updateAttendance(id, gymId, data) {

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { MessageTemplate } from './models/MessageTemplate.model.js';
 
 export class MessageTemplateRepository {
@@ -6,7 +7,13 @@ export class MessageTemplateRepository {
   }
 
   static async findById(id, gymId) {
-    return MessageTemplate.findOne({ _id: id, gymId });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MessageTemplate.findOne(query);
   }
 
   static async findPaginated(gymId, filter = {}, page = 1, limit = 10) {
@@ -30,10 +37,22 @@ export class MessageTemplateRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return MessageTemplate.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MessageTemplate.findOneAndUpdate(query, updateData, { new: true });
   }
 
   static async delete(id, gymId) {
-    return MessageTemplate.findOneAndDelete({ _id: id, gymId });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MessageTemplate.findOneAndDelete(query);
   }
 }

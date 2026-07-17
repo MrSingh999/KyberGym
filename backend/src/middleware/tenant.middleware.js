@@ -1,4 +1,5 @@
 import createError from "http-errors";
+import mongoose from "mongoose";
 import { Gym } from "../modules/gyms/models/Gym.model.js";
 
 /**
@@ -15,7 +16,13 @@ export const resolveTenant = async (req, res, next) => {
 
     if (tenantIdHeader) {
       // 1. Resolve by explicit header (useful for API testing / cross-tenant portals)
-      gym = await Gym.findById(tenantIdHeader);
+      const query = {};
+      if (mongoose.Types.ObjectId.isValid(tenantIdHeader)) {
+        query._id = tenantIdHeader;
+      } else {
+        query.publicId = tenantIdHeader;
+      }
+      gym = await Gym.findOne(query);
     } else if (host) {
       // 2. Resolve by domain/subdomain
       const hostname = host.split(':')[0]; // Remove port if present

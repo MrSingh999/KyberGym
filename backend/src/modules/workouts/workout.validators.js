@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
+const objectId = z.string().regex(/^([A-Z]{2,5}-[A-Z2-9]{8}|[0-9a-fA-F]{24})$/, 'Invalid ID');
 
 const exerciseSchema = z.object({
   name:     z.string().trim().min(1).max(100),

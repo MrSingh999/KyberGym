@@ -150,7 +150,7 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
       // 1. Create the Member
       const memberRes = await apiClient.post('/members', body);
       const createdMember = memberRes.data.data;
-      const memberId = createdMember._id;
+      const memberId = createdMember.id || createdMember._id;
 
       // 2. Create subscription if a plan was selected
       if (step2Data.planId) {

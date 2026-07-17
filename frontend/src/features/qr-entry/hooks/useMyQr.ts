@@ -17,7 +17,7 @@ export function useMyQr() {
       const qr = response.data.data;
       if (!qr) return null;
       return {
-        id: qr._id,
+        id: qr.id || qr._id,
         gymId: qr.gymId,
         memberId: qr.memberId,
         qrCodeData: qr.qrCodeData,

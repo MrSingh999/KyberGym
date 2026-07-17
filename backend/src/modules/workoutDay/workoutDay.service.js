@@ -1,4 +1,5 @@
 import createError from 'http-errors';
+import mongoose from 'mongoose';
 import { WorkoutDayRepository } from './workoutDay.repository.js';
 import { WorkoutRepository } from '../workouts/workout.repository.js';
 
@@ -12,7 +13,7 @@ export class WorkoutDayService {
     if (!workout) throw createError.NotFound('Workout not found');
 
     try {
-      return await WorkoutDayRepository.create({ workoutId, ...data });
+      return await WorkoutDayRepository.create({ workoutId: workout._id, ...data });
     } catch (error) {
       if (error.code === 11000) {
         throw createError.Conflict(`Day ${data.dayNumber} already exists for this workout`);
@@ -25,14 +26,14 @@ export class WorkoutDayService {
     // Validate workout belongs to gym
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
-    return WorkoutDayRepository.findByWorkoutId(workoutId);
+    return WorkoutDayRepository.findByWorkoutId(workout._id);
   }
 
   static async getDayById(id, workoutId, gymId) {
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
 
-    const day = await WorkoutDayRepository.findById(id, workoutId);
+    const day = await WorkoutDayRepository.findById(id, workout._id);
     if (!day) throw createError.NotFound('Workout day not found');
     return day;
   }
@@ -42,7 +43,7 @@ export class WorkoutDayService {
     if (!workout) throw createError.NotFound('Workout not found');
 
     try {
-      const day = await WorkoutDayRepository.update(id, workoutId, data);
+      const day = await WorkoutDayRepository.update(id, workout._id, data);
       if (!day) throw createError.NotFound('Workout day not found');
       return day;
     } catch (error) {
@@ -57,7 +58,7 @@ export class WorkoutDayService {
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
 
-    const day = await WorkoutDayRepository.delete(id, workoutId);
+    const day = await WorkoutDayRepository.delete(id, workout._id);
     if (!day) throw createError.NotFound('Workout day not found');
     return day;
   }

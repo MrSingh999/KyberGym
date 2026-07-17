@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { MembershipPlan } from './models/MembershipPlan.model.js';
 
 export class MembershipPlanRepository {
@@ -6,7 +7,13 @@ export class MembershipPlanRepository {
   }
 
   static async findById(id, gymId) {
-    return MembershipPlan.findOne({ _id: id, gymId });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MembershipPlan.findOne(query);
   }
 
   static async findAll(gymId, filter = {}) {
@@ -16,6 +23,16 @@ export class MembershipPlanRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return MembershipPlan.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MembershipPlan.findOneAndUpdate(query, updateData, { new: true });
+  }
+
+  static async clearDefault(gymId) {
+    return MembershipPlan.updateMany({ gymId }, { isDefault: false });
   }
 }

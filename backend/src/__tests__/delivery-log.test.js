@@ -27,10 +27,10 @@ describe('DeliveryLog Routes', () => {
   it('GET /api/v1/delivery-logs/:id - get log by id', async () => {
     const log = await DeliveryLog.create({ gymId: gym._id, broadcastId: '507f1f77bcf86cd799439001', memberId: '507f1f77bcf86cd799439002', channel: 'inApp', status: 'sent', sentAt: new Date() });
     const res = await request(app)
-      .get(`/api/v1/delivery-logs/${log._id}`)
+      .get(`/api/v1/delivery-logs/${log.publicId}`)
       .set('Authorization', `Bearer ${token}`)
-      .set('x-tenant-id', gym._id.toString());
+      .set('x-tenant-id', gym.publicId);
     expect(res.status).toBe(200);
-    expect(res.body.data._id).toBe(log._id.toString());
+    expect(res.body.data.id).toBe(log.publicId);
   });
 });

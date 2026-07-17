@@ -69,7 +69,7 @@ export async function fetchRecentActivities(limit: number = 10): Promise<Activit
   const notifications: NotificationRecord[] = response.data.data || [];
 
   return notifications.map((n) => ({
-    id: n._id,
+    id: n.id || n._id,
     type: mapNotificationType(n.type),
     title: n.title,
     description: n.message,
@@ -95,7 +95,8 @@ function mapNotificationType(type: string): Activity["type"] {
 }
 
 interface MemberRecord {
-  _id: string;
+  id: string;
+  _id?: string;
   memberCode: string;
   fullName: string;
   email: string;
@@ -125,7 +126,7 @@ export async function fetchRecentMembers(limit: number = 5): Promise<RecentMembe
   const members: MemberRecord[] = response.data.data || [];
 
   return members.map((m) => ({
-    id: m._id,
+    id: m.id || m._id,
     memberCode: m.memberCode,
     fullName: m.fullName,
     email: m.email,

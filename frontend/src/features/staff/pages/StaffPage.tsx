@@ -93,7 +93,7 @@ export function StaffPage() {
     }
 
     try {
-      await updateUser({ userId: editTarget._id, data: changed });
+      await updateUser({ userId: editTarget.id, data: changed });
       toast.success("User updated");
       setEditTarget(null);
     } catch (e: any) {
@@ -199,7 +199,7 @@ export function StaffPage() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user._id} className="border-b border-border-default last:border-0 hover:bg-surface-hover/30 transition-colors">
+                  <tr key={user.id} className="border-b border-border-default last:border-0 hover:bg-surface-hover/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary shrink-0">
@@ -234,7 +234,7 @@ export function StaffPage() {
                         </button>
                         {user.role !== "gym_admin" && (
                           <button
-                            onClick={() => setDeleteTarget({ id: user._id, name: user.name })}
+                            onClick={() => setDeleteTarget({ id: user.id, name: user.name })}
                             className="p-2 rounded-lg text-text-muted hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                             title="Delete user"
                           >

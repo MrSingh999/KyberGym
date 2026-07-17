@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Broadcast } from './models/Broadcast.model.js';
 
 export class BroadcastRepository {
@@ -6,7 +7,13 @@ export class BroadcastRepository {
   }
 
   static async findById(id, gymId) {
-    return Broadcast.findOne({ _id: id, gymId })
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Broadcast.findOne(query)
       .populate('messageTemplateId', 'name type content');
   }
 
@@ -35,11 +42,23 @@ export class BroadcastRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return Broadcast.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Broadcast.findOneAndUpdate(query, updateData, { new: true });
   }
 
   static async delete(id, gymId) {
-    return Broadcast.findOneAndDelete({ _id: id, gymId });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Broadcast.findOneAndDelete(query);
   }
 
   // Used by the Cron job to find pending broadcasts

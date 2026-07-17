@@ -3,6 +3,7 @@ import { Phone, History, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
+import { DueBadge } from "./DueBadge";
 import { useNavigate } from "react-router";
 
 interface DirectoryMemberCardProps {
@@ -51,8 +52,9 @@ export function DirectoryMemberCard({ member, isSelected, onSelect, onDeleteMemb
             </div>
           </div>
         </div>
-        <div className="shrink-0">
+        <div className="flex flex-col items-end gap-1 shrink-0">
           <MemberStatusBadge status={member.membershipStatus} />
+          {member.dueStatus && <DueBadge status={member.dueStatus} />}
         </div>
       </div>
 

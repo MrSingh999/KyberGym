@@ -26,6 +26,7 @@ import { ErrorState } from "@/components/feedback/ErrorState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { apiClient } from "@/lib/apiClient";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -89,15 +90,41 @@ export function MemberProfilePage() {
         profilePhotoBase64 = "";
       }
 
-      await updateMember({
+      // Update member fields
+      const memberPayload: any = {
         fullName: data.name,
         email: data.email || undefined,
         phone: data.phone,
         gender: data.gender,
-        dateOfBirth: data.dateOfBirth || undefined,
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : undefined,
         address: data.address || undefined,
         profilePhoto: profilePhotoBase64,
-      });
+        notes: data.notes || undefined,
+      };
+
+      if (data.emergencyContactName || data.emergencyContactPhone) {
+        memberPayload.emergencyContact = {
+          name: data.emergencyContactName || undefined,
+          phone: data.emergencyContactPhone || undefined,
+        };
+      }
+
+      await updateMember(memberPayload);
+
+      // Update subscription timeline if dates changed
+      if (member?.activeSubId) {
+        const subPayload: any = {};
+        if (data.membershipStartDate && data.membershipStartDate !== member.membershipStartDate) {
+          subPayload.startDate = new Date(data.membershipStartDate).toISOString();
+        }
+        if (data.membershipEndDate && data.membershipEndDate !== member.membershipEndDate) {
+          subPayload.endDate = new Date(data.membershipEndDate).toISOString();
+        }
+        if (Object.keys(subPayload).length > 0) {
+          await apiClient.patch(`/member-subscriptions/${member.activeSubId}`, subPayload);
+        }
+      }
+
       handleSuccess("Member profile updated successfully.");
     } catch (e: any) {
       const errMsg = e.response?.data?.message || "Failed to update profile.";
@@ -295,10 +322,12 @@ export function MemberProfilePage() {
           onOpenChange={(o) => !o && closeSheet()}
           title="Edit Member Profile"
           description={`Update personal details for ${member.name}.`}
+          className="sm:max-w-xl lg:max-w-2xl"
         >
           <EditMemberForm
             member={member}
             onSubmit={handleEditSubmit}
+            onCancel={closeSheet}
             isSubmitting={isUpdating}
           />
         </ResponsiveModal>

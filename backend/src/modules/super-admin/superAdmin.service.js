@@ -1,6 +1,7 @@
 import createError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import { authConfig } from '../../config/env.js';
 import { SuperAdmin } from './superAdmin.model.js';
 import { compareData, hashData } from '../auth/auth.utils.js';
@@ -10,6 +11,20 @@ import { User } from '../users/models/User.model.js';
 import { Member } from '../member/models/Member.model.js';
 import { MemberSubscription } from '../memberSubscription/models/MemberSubscription.model.js';
 import { logger } from '../../config/logger.js';
+
+const resolveGymId = async (id) => {
+  if (!id) return id;
+  if (mongoose.Types.ObjectId.isValid(id)) return id;
+  const gym = await Gym.findOne({ publicId: id }).select('_id').lean();
+  return gym ? gym._id : id;
+};
+
+const resolveUserId = async (id) => {
+  if (!id) return id;
+  if (mongoose.Types.ObjectId.isValid(id)) return id;
+  const user = await User.findOne({ publicId: id }).select('_id').lean();
+  return user ? user._id : id;
+};
 
 export class SuperAdminService {
 
@@ -113,6 +128,7 @@ export class SuperAdminService {
   }
 
   static async getGymById(id) {
+    id = await resolveGymId(id);
     const gym = await Gym.findById(id).populate('ownerId', 'name email phone').lean();
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
@@ -146,6 +162,7 @@ export class SuperAdminService {
   }
 
   static async updateGym(id, data) {
+    id = await resolveGymId(id);
     const gym = await Gym.findByIdAndUpdate(
       id,
       { $set: data },
@@ -160,6 +177,7 @@ export class SuperAdminService {
   }
 
   static async deleteGym(id) {
+    id = await resolveGymId(id);
     const gym = await Gym.findById(id);
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
@@ -183,6 +201,19 @@ export class SuperAdminService {
   }
 
   static async restoreGym(id) {
+    id = await resolveGymId(id);
+    const gym = await Gym.findById(id);
+    if (!gym) {
+      throw createError.NotFound('Gym not found');
+    }
+    if (gym.isDeleted) { // wait, wait! original had: if (!gym.isDeleted)
+      // wait, let's keep original condition intact
+    }
+    // Let's just resolve the id at start
+    return SuperAdminService._restoreGymInner(id);
+  }
+
+  static async _restoreGymInner(id) {
     const gym = await Gym.findById(id);
     if (!gym) {
       throw createError.NotFound('Gym not found');
@@ -218,6 +249,7 @@ export class SuperAdminService {
   }
 
   static async permanentDeleteGym(id) {
+    id = await resolveGymId(id);
     const gym = await Gym.findById(id);
     if (!gym) {
       throw createError.NotFound('Gym not found');
@@ -237,6 +269,7 @@ export class SuperAdminService {
   }
 
   static async suspendGym(id) {
+    id = await resolveGymId(id);
     const gym = await Gym.findByIdAndUpdate(
       id,
       { $set: { isActive: false } },
@@ -251,6 +284,7 @@ export class SuperAdminService {
   }
 
   static async activateGym(id) {
+    id = await resolveGymId(id);
     const gym = await Gym.findByIdAndUpdate(
       id,
       { $set: { isActive: true } },
@@ -265,6 +299,7 @@ export class SuperAdminService {
   }
 
   static async updateFeatures(id, features) {
+    id = await resolveGymId(id);
     const update = {};
     for (const [key, value] of Object.entries(features)) {
       update[`features.${key}`] = value;
@@ -284,6 +319,7 @@ export class SuperAdminService {
   }
 
   static async getSubscription(id) {
+    id = await resolveGymId(id);
     const gym = await Gym.findById(id).select('subscription').lean();
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
@@ -292,6 +328,7 @@ export class SuperAdminService {
   }
 
   static async updateSubscription(id, data) {
+    id = await resolveGymId(id);
     const update = {};
     if (data.status !== undefined) update['subscription.status'] = data.status;
     if (data.expiresAt !== undefined) update['subscription.expiresAt'] = data.expiresAt ? new Date(data.expiresAt) : null;
@@ -311,6 +348,7 @@ export class SuperAdminService {
   }
 
   static async renewSubscription(id, data) {
+    id = await resolveGymId(id);
     const gym = await Gym.findById(id);
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
@@ -344,6 +382,7 @@ export class SuperAdminService {
   }
 
   static async updateSubscriptionStatus(id, status) {
+    id = await resolveGymId(id);
     const gym = await Gym.findByIdAndUpdate(
       id,
       { $set: { 'subscription.status': status } },
@@ -358,6 +397,7 @@ export class SuperAdminService {
   }
 
   static async manageTrial(id, data) {
+    id = await resolveGymId(id);
     const gym = await Gym.findById(id);
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
@@ -378,6 +418,7 @@ export class SuperAdminService {
   // ── User Management per Gym ──────────────────────────────────────────────
 
   static async getGymUsers(gymId, query) {
+    gymId = await resolveGymId(gymId);
     await SuperAdminService._ensureGymExists(gymId);
 
     const { page = 1, limit = 20, search, role, status } = query;
@@ -411,6 +452,8 @@ export class SuperAdminService {
   }
 
   static async getGymUserById(gymId, userId) {
+    gymId = await resolveGymId(gymId);
+    userId = await resolveUserId(userId);
     await SuperAdminService._ensureGymExists(gymId);
 
     const user = await User.findOne({ _id: userId, gymId, isDeleted: false })
@@ -421,6 +464,8 @@ export class SuperAdminService {
   }
 
   static async updateGymUser(gymId, userId, data) {
+    gymId = await resolveGymId(gymId);
+    userId = await resolveUserId(userId);
     await SuperAdminService._ensureGymExists(gymId);
 
     const allowedFields = ['name', 'email', 'phone', 'role', 'status', 'avatar'];
@@ -442,6 +487,8 @@ export class SuperAdminService {
   }
 
   static async deleteGymUser(gymId, userId) {
+    gymId = await resolveGymId(gymId);
+    userId = await resolveUserId(userId);
     await SuperAdminService._ensureGymExists(gymId);
 
     const user = await User.findOne({ _id: userId, gymId, isDeleted: false });
@@ -454,6 +501,7 @@ export class SuperAdminService {
   }
 
   static async _ensureGymExists(gymId) {
+    gymId = await resolveGymId(gymId);
     const gym = await Gym.findById(gymId).lean();
     if (!gym || gym.isDeleted) throw createError.NotFound('Gym not found');
   }

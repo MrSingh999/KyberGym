@@ -1,4 +1,5 @@
 import createError from 'http-errors';
+import mongoose from 'mongoose';
 import { User } from './models/User.model.js';
 import { ROLES } from '../../shared/constants.js';
 
@@ -41,7 +42,13 @@ export class UserService {
   }
 
   static async getUserById(gymId, userId) {
-    const user = await User.findOne({ _id: userId, gymId, isDeleted: false })
+    const query = { gymId, isDeleted: false };
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      query._id = userId;
+    } else {
+      query.publicId = userId;
+    }
+    const user = await User.findOne(query)
       .select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion')
       .lean();
     if (!user) throw createError.NotFound('User not found');
@@ -57,8 +64,14 @@ export class UserService {
       }
     }
 
+    const query = { gymId, isDeleted: false };
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      query._id = userId;
+    } else {
+      query.publicId = userId;
+    }
     const user = await User.findOneAndUpdate(
-      { _id: userId, gymId, isDeleted: false },
+      query,
       { $set: update },
       { new: true, runValidators: true }
     ).select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion');
@@ -68,7 +81,13 @@ export class UserService {
   }
 
   static async deleteUser(gymId, userId) {
-    const user = await User.findOne({ _id: userId, gymId, isDeleted: false });
+    const query = { gymId, isDeleted: false };
+    if (mongoose.Types.ObjectId.isValid(userId)) {
+      query._id = userId;
+    } else {
+      query.publicId = userId;
+    }
+    const user = await User.findOne(query);
     if (!user) throw createError.NotFound('User not found');
 
     if (user.role === ROLES.GYM_ADMIN) {

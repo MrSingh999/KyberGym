@@ -1,4 +1,5 @@
 import { DeliveryLogRepository } from './deliveryLog.repository.js';
+import { BroadcastRepository } from '../broadcast/broadcast.repository.js';
 import createError from 'http-errors';
 
 export class DeliveryLogService {
@@ -6,7 +7,11 @@ export class DeliveryLogService {
     const { page = 1, limit = 10, broadcastId, status, channel } = query;
     const filter = {};
 
-    if (broadcastId) filter.broadcastId = broadcastId;
+    if (broadcastId) {
+      const broadcast = await BroadcastRepository.findById(broadcastId, gymId);
+      if (!broadcast) throw createError.NotFound('Broadcast not found');
+      filter.broadcastId = broadcast._id;
+    }
     if (status) filter.status = status;
     if (channel) filter.channel = channel;
 

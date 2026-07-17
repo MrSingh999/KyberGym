@@ -57,13 +57,13 @@ export function usePayments(params: UsePaymentsParams = {}) {
       if (planIds.length > 0) {
         try {
           const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
-          (plansRes.data.data || []).forEach((pl: any) => planNames.set(pl._id, pl.name));
+          (plansRes.data.data || []).forEach((pl: any) => planNames.set(pl.id || pl._id, pl.name));
         } catch { /* fallback */ }
       }
 
       let results: PaymentListItem[] = rawPayments.map((p: any) => ({
-        id: p._id,
-        memberId: p.memberId?._id || "",
+        id: p.id || p._id,
+        memberId: p.memberId?.id || p.memberId?._id || "",
         memberName: p.memberId?.fullName || "Unknown Member",
         memberCode: p.memberId?.memberCode || "N/A",
         planName: planNames.get(p.subscriptionId?.membershipPlanId) || "Gym Membership",
@@ -114,9 +114,9 @@ export function usePayment(paymentId: string) {
       }
 
       return {
-        id: p._id,
+        id: p.id || p._id,
         gymId: p.gymId,
-        memberId: p.memberId?._id || "",
+        memberId: p.memberId?.id || p.memberId?._id || "",
         memberName: p.memberId?.fullName || "Unknown Member",
         memberCode: p.memberId?.memberCode || "N/A",
         memberPhone: "",
@@ -158,14 +158,14 @@ export function useMemberPayments(memberId: string) {
       if (planIds.length > 0) {
         try {
           const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
-          (plansRes.data.data || []).forEach((pl: any) => planNames.set(pl._id, pl.name));
+          (plansRes.data.data || []).forEach((pl: any) => planNames.set(pl.id || pl._id, pl.name));
         } catch { /* fallback */ }
       }
 
       return rawPayments.map((p: any) => ({
-        id: p._id,
+        id: p.id || p._id,
         gymId: p.gymId,
-        memberId: p.memberId?._id || "",
+        memberId: p.memberId?.id || p.memberId?._id || "",
         memberName: p.memberId?.fullName || "",
         memberCode: p.memberId?.memberCode || "",
         planName: planNames.get(p.subscriptionId?.membershipPlanId) || "Gym Membership",
@@ -198,7 +198,7 @@ export function usePaymentDues() {
       
       d.dueToday?.forEach((m: any) => {
         list.push({
-          memberId: m.memberId?._id || m._id,
+          memberId: m.memberId?.id || m.memberId?._id || m.id || m._id,
           memberName: m.memberId?.fullName || "Member",
           memberCode: m.memberId?.memberCode || "N/A",
           phone: m.memberId?.phone || "",
@@ -211,7 +211,7 @@ export function usePaymentDues() {
       
       d.dueIn3Days?.forEach((m: any) => {
         list.push({
-          memberId: m.memberId?._id || m._id,
+          memberId: m.memberId?.id || m.memberId?._id || m.id || m._id,
           memberName: m.memberId?.fullName || "Member",
           memberCode: m.memberId?.memberCode || "N/A",
           phone: m.memberId?.phone || "",
@@ -224,7 +224,7 @@ export function usePaymentDues() {
 
       d.dueIn7Days?.forEach((m: any) => {
         list.push({
-          memberId: m.memberId?._id || m._id,
+          memberId: m.memberId?.id || m.memberId?._id || m.id || m._id,
           memberName: m.memberId?.fullName || "Member",
           memberCode: m.memberId?.memberCode || "N/A",
           phone: m.memberId?.phone || "",
@@ -255,7 +255,7 @@ export function useCollectPayment() {
         const subRes = await apiClient.get('/member-subscriptions', {
           params: { memberId: data.memberId, status: 'active', limit: 1 }
         });
-        subscriptionId = subRes.data.data?.[0]?._id;
+        subscriptionId = subRes.data.data?.[0]?.id || subRes.data.data?.[0]?._id;
       } catch {
         // fallback
       }

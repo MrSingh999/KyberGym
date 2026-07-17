@@ -52,7 +52,7 @@ export function useSAGyms(params: UseSAGymsParams = {}) {
       const meta = response.data.meta;
       return {
         data: (gyms || []).map((g: any): GymTenantListItem => ({
-          id: g._id,
+          id: g.id || g._id,
           name: g.name,
           subdomain: g.subdomain,
           subscriptionStatus: g.subscription?.status || "unknown",
@@ -75,12 +75,12 @@ export function useSAGym(id: string) {
       const response = await apiClient.get(`${SA_PREFIX}/gyms/${id}`);
       const g = response.data.data;
       return {
-        id: g._id,
+        id: g.id || g._id,
         name: g.name,
         slug: g.slug,
         subdomain: g.subdomain,
         owner: g.ownerId && typeof g.ownerId === "object" ? {
-          id: g.ownerId._id,
+          id: g.ownerId.id || g.ownerId._id,
           name: g.ownerId.name,
           email: g.ownerId.email,
           phone: g.ownerId.phone,

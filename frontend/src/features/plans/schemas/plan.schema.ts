@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+const preprocessNumber = (val: unknown) => {
+  if (val === '' || val === null || val === undefined) return undefined;
+  const num = Number(val);
+  return isNaN(num) ? val : num;
+};
+
 // ─── Step 1: Basic Info ───────────────────────────────────────────────────────
 
 export const createPlanStep1Schema = z.object({
@@ -13,13 +19,17 @@ export type CreatePlanStep1 = z.infer<typeof createPlanStep1Schema>;
 // ─── Step 2: Pricing ─────────────────────────────────────────────────────────
 
 export const createPlanStep2Schema = z.object({
-  price: z
-    .number({ invalid_type_error: 'Price must be a number' })
-    .min(0, 'Price cannot be negative'),
-  joiningFee: z
-    .number({ invalid_type_error: 'Joining fee must be a number' })
-    .min(0)
-    .optional(),
+  price: z.preprocess(
+    preprocessNumber,
+    z.number({ invalid_type_error: 'Price must be a number' })
+      .min(0, 'Price cannot be negative')
+  ),
+  joiningFee: z.preprocess(
+    preprocessNumber,
+    z.number({ invalid_type_error: 'Joining fee must be a number' })
+      .min(0, 'Joining fee cannot be negative')
+      .optional()
+  ),
   isDefault: z.boolean().default(false),
   isPopular: z.boolean().default(false),
 });
@@ -29,10 +39,12 @@ export type CreatePlanStep2 = z.infer<typeof createPlanStep2Schema>;
 // ─── Step 3: Duration ────────────────────────────────────────────────────────
 
 export const createPlanStep3Schema = z.object({
-  duration: z
-    .number({ invalid_type_error: 'Duration must be a number' })
-    .int('Duration must be a whole number')
-    .min(1, 'Duration must be at least 1'),
+  duration: z.preprocess(
+    preprocessNumber,
+    z.number({ invalid_type_error: 'Duration must be a number' })
+      .int('Duration must be a whole number')
+      .min(1, 'Duration must be at least 1')
+  ),
   durationType: z.enum(['days', 'weeks', 'months', 'years'], {
     required_error: 'Please select a duration type',
   }),

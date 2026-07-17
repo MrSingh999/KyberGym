@@ -20,10 +20,10 @@ export function ExpiringWidget() {
 
   const items: DueMember[] =
     timeframe === "today"
-      ? dues?.dueToday || []
+      ? [...(dues?.overdue || []), ...(dues?.dueToday || [])]
       : timeframe === "3days"
-        ? dues?.dueIn3Days || []
-        : dues?.dueIn7Days || [];
+        ? [...(dues?.overdue || []), ...(dues?.dueToday || []), ...(dues?.dueIn3Days || [])]
+        : [...(dues?.overdue || []), ...(dues?.dueToday || []), ...(dues?.dueIn3Days || []), ...(dues?.dueIn7Days || [])];
 
   const getDaysDiff = (dateStr: string) => {
     if (!dateStr) return 0;
@@ -95,14 +95,14 @@ export function ExpiringWidget() {
 
               return (
                 <div
-                  key={member._id}
+                  key={member.id || member._id}
                   className={cn(
                   "flex items-center justify-between gap-3 p-3 rounded-xl border transition-all cursor-pointer hover:bg-surface-hover/30",
                   isOverdue
                     ? "border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
                     : "border-border-default hover:border-border-hover border-l-[3px] border-l-warning",
                 )}
-                  onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?._id}`)}
+                  onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <Avatar className="h-9 w-9 shrink-0">

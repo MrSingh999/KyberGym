@@ -1,7 +1,17 @@
 import mongoose from 'mongoose';
+import { generatePublicId } from '../../../shared/publicId.js';
+import { ENTITY_PREFIXES } from '../../../shared/idPrefixes.js';
 
 const broadcastSchema = new mongoose.Schema(
   {
+    publicId: {
+      type: String,
+      required: true,
+      unique: true,
+      immutable: true,
+      index: true,
+      default: () => generatePublicId(ENTITY_PREFIXES.BC),
+    },
     gymId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
     title: { type: String, required: true },
     channel: { type: String, enum: ['whatsapp', 'email', 'inApp'], required: true },

@@ -1,3 +1,5 @@
+import { serialize } from './responseSerializer.js';
+
 export class ApiSuccess {
   static send(res, statusCode, message, data = null, meta = null) {
     const response = {
@@ -6,11 +8,11 @@ export class ApiSuccess {
     };
 
     if (data !== null) {
-      response.data = data;
+      response.data = serialize(data);
     }
 
     if (meta !== null) {
-      response.meta = meta;
+      response.meta = serialize(meta);
     }
 
     return res.status(statusCode).json(response);

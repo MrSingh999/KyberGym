@@ -20,7 +20,7 @@ export class MemberQrService {
     const member = await MemberRepository.findById(memberId, gymId);
     if (!member) throw createError.NotFound('Member not found');
 
-    const qrCodeData = this.generateSecurePayload(gymId, memberId);
+    const qrCodeData = this.generateSecurePayload(gymId, member.publicId);
     
     // Generate base64 SVG or PNG image data
     const base64Image = await QRCode.toDataURL(qrCodeData, {
@@ -33,11 +33,14 @@ export class MemberQrService {
       }
     });
 
-    return MemberQrRepository.upsert(gymId, memberId, qrCodeData, base64Image);
+    return MemberQrRepository.upsert(gymId, member._id, qrCodeData, base64Image);
   }
 
   static async getQr(gymId, memberId) {
-    const qr = await MemberQrRepository.findByMemberId(gymId, memberId);
+    const member = await MemberRepository.findById(memberId, gymId);
+    if (!member) throw createError.NotFound('Member not found');
+
+    const qr = await MemberQrRepository.findByMemberId(gymId, member._id);
     if (!qr) throw createError.NotFound('QR Code not found for this member');
     return qr;
   }

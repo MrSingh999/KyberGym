@@ -1,8 +1,18 @@
 import mongoose from 'mongoose';
 import { ROLES } from '../../../shared/constants.js';
+import { generatePublicId } from '../../../shared/publicId.js';
+import { ENTITY_PREFIXES } from '../../../shared/idPrefixes.js';
 
 const userSchema = new mongoose.Schema(
   {
+    publicId: {
+      type: String,
+      required: true,
+      unique: true,
+      immutable: true,
+      index: true,
+      default: () => generatePublicId(ENTITY_PREFIXES.USR),
+    },
     gymId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
     role: { 
       type: String, 

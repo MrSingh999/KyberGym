@@ -3,7 +3,7 @@ import { PaginationState, SortingState } from "@tanstack/react-table";
 import { apiClient } from "@/lib/apiClient";
 import { useGymStore } from "@/store/gym.store";
 import { useMemberDirectoryStore } from "../store/useMemberDirectoryStore";
-import { MembersResponse } from "../types";
+import { MembersResponse, computeDueStatus } from "../types";
 
 export function useMembers(pagination: PaginationState, sorting: SortingState) {
   const { selectedGymId } = useGymStore();
@@ -33,7 +33,7 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
         let mapped = subList.map((sub: any) => {
           const m = sub.memberId;
           return {
-            id: m._id,
+            id: m.id || m._id,
             memberCode: m.memberCode,
             name: m.fullName,
             phone: m.phone || "No phone",
@@ -43,6 +43,7 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
             membershipStartDate: sub.startDate ? new Date(sub.startDate).toISOString().split('T')[0] : "",
             membershipEndDate: sub.endDate ? new Date(sub.endDate).toISOString().split('T')[0] : "",
             membershipStatus: "Active" as const,
+            dueStatus: computeDueStatus(sub.endDate),
             planName: sub.membershipPlanId?.name || "Pro Monthly",
             createdAt: m.createdAt,
             updatedAt: m.updatedAt,
@@ -107,20 +108,20 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
 
       const subsByMember = new Map<string, any>();
       (subsRes.data.data || []).forEach((sub: any) => {
-        const mid = typeof sub.memberId === 'string' ? sub.memberId : sub.memberId?._id;
+        const mid = typeof sub.memberId === 'string' ? sub.memberId : (sub.memberId?.id || sub.memberId?._id);
         if (mid && !subsByMember.has(mid)) {
           subsByMember.set(mid, sub);
         }
       });
 
       const mappedMembers = responseData.map((m: any) => {
-        const latestSub = subsByMember.get(m._id);
+        const latestSub = subsByMember.get(m.id || m._id);
         const planName = latestSub?.membershipPlanId?.name || "No plan";
         const membershipStartDate = latestSub?.startDate ? new Date(latestSub.startDate).toISOString().split('T')[0] : "";
         const membershipEndDate = latestSub?.endDate ? new Date(latestSub.endDate).toISOString().split('T')[0] : "";
 
         return {
-          id: m._id,
+          id: m.id || m._id,
           memberCode: m.memberCode,
           name: m.fullName,
           phone: m.phone || "No phone",
@@ -129,7 +130,8 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
           joiningDate: m.joinDate ? new Date(m.joinDate).toISOString().split('T')[0] : "",
           membershipStartDate,
           membershipEndDate,
-          membershipStatus: m.status === 'active' ? 'Active' as const : m.status === 'expired' ? 'Expired' as const : m.status === 'suspended' ? 'Suspended' as const : 'Inactive' as const,
+          membershipStatus: m.status === 'active' ? 'Active' as const : m.status === 'suspended' ? 'Suspended' as const : 'Inactive' as const,
+          dueStatus: m.status === 'active' ? computeDueStatus(membershipEndDate) : undefined,
           planName,
           createdAt: m.createdAt,
           updatedAt: m.updatedAt,

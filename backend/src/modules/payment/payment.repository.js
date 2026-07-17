@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Payment } from './models/Payment.model.js';
 
 export class PaymentRepository {
@@ -6,7 +7,13 @@ export class PaymentRepository {
   }
 
   static async findById(id, gymId) {
-    return Payment.findOne({ _id: id, gymId })
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Payment.findOne(query)
       .populate('memberId', 'fullName memberCode')
       .populate('subscriptionId', 'startDate endDate amount status');
   }
@@ -36,6 +43,12 @@ export class PaymentRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return Payment.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Payment.findOneAndUpdate(query, updateData, { new: true });
   }
 }

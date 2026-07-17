@@ -17,7 +17,7 @@ export function useMemberQr(memberId: string) {
       const response = await apiClient.get(`/members/${memberId}/qr`);
       const qr = response.data.data;
       return {
-        id: qr._id,
+        id: qr.id || qr._id,
         gymId: qr.gymId,
         memberId: qr.memberId,
         qrCodeData: qr.qrCodeData,

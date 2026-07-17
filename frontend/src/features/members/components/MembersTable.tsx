@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { DataTable } from "@/components/data-display/DataTable";
 import { MemberDirectoryItem } from "../types";
 import { MemberStatusBadge } from "./MemberStatusBadge";
+import { DueBadge } from "./DueBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/data-display/Avatar";
 import { Button } from "@/components/ui/button";
 
@@ -103,11 +104,15 @@ export function MembersTable({
     {
       accessorKey: "membershipStatus",
       header: "Status",
-      cell: ({ row }) => (
-        <div className="flex justify-center">
-          <MemberStatusBadge status={row.getValue("membershipStatus")} />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <div className="flex items-center justify-center gap-1.5">
+            <MemberStatusBadge status={row.getValue("membershipStatus")} />
+            {member.dueStatus && <DueBadge status={member.dueStatus} />}
+          </div>
+        );
+      },
     },
     {
       id: "actions",

@@ -54,7 +54,7 @@ export function KpiGrid() {
     },
     {
       title: "Overdue",
-      value: stats?.expiredMembers ?? 0,
+      value: dues?.overdue?.length ?? 0,
       icon: <AlertTriangle className="h-4 w-4" />,
       color: "bg-red-500/10 text-red-600 dark:text-red-400",
     },

@@ -28,7 +28,7 @@ export function useWorkouts(params: UseWorkoutsParams = {}) {
       const raw = response.data.data || response.data;
 
       let list: WorkoutListItem[] = raw.map((w: any) => ({
-        id: w._id,
+        id: w.id || w._id,
         title: w.title,
         description: w.description,
         assignmentType: w.assignmentType,
@@ -82,7 +82,7 @@ export function useWorkout(id: string) {
       const response = await apiClient.get(`/workouts/${id}`);
       const w = response.data.data || response.data;
       return {
-        id: w._id,
+        id: w.id || w._id,
         gymId: w.gymId,
         title: w.title,
         description: w.description,
@@ -93,7 +93,7 @@ export function useWorkout(id: string) {
         createdAt: w.createdAt,
         updatedAt: w.updatedAt,
         days: (w.days || []).map((d: any) => ({
-          id: d._id,
+          id: d.id || d._id,
           workoutId: d.workoutId || id,
           dayNumber: d.dayNumber,
           dayName: d.dayName,
@@ -202,7 +202,7 @@ export function useMemberWorkouts() {
       const response = await apiClient.get("/members/me/workouts");
       const raw = response.data.data || response.data;
       return (Array.isArray(raw) ? raw : []).map((w: any): WorkoutWithDays => ({
-        id: w._id,
+        id: w.id || w._id,
         gymId: w.gymId,
         title: w.title,
         description: w.description,
@@ -213,8 +213,8 @@ export function useMemberWorkouts() {
         createdAt: w.createdAt,
         updatedAt: w.updatedAt,
         days: (w.days || []).map((d: any) => ({
-          id: d._id,
-          workoutId: d.workoutId || w._id,
+          id: d.id || d._id,
+          workoutId: d.workoutId || w.id || w._id,
           dayNumber: d.dayNumber,
           dayName: d.dayName,
           title: d.title,

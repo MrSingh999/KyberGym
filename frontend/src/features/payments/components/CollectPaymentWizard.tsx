@@ -28,7 +28,8 @@ const STEPS = [
 const DRAFT_KEY = 'kybergym_payment_draft';
 
 interface MemberResult {
-  _id: string;
+  id: string;
+  _id?: string;
   fullName: string;
   memberCode: string;
   phone?: string;
@@ -80,7 +81,7 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
   }, [memberSearch, doMemberSearch]);
 
   const selectMember = (m: MemberResult) => {
-    s1.setValue('memberId', m._id);
+    s1.setValue('memberId', m.id || m._id);
     s1.setValue('memberName', m.fullName);
     s1.setValue('memberCode', m.memberCode);
     setMemberSearch(m.fullName);
@@ -186,7 +187,7 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
                         <div className="mt-2 border border-default rounded-xl bg-surface overflow-hidden max-h-48 overflow-y-auto">
                           {memberResults.map((m) => (
                             <button
-                              key={m._id}
+                              key={m.id || m._id}
                               type="button"
                               onClick={() => selectMember(m)}
                               className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left hover:bg-surface-hover transition-colors border-b border-subtle last:border-b-0"

@@ -1,7 +1,17 @@
 import mongoose from 'mongoose';
+import { generatePublicId } from '../../../shared/publicId.js';
+import { ENTITY_PREFIXES } from '../../../shared/idPrefixes.js';
 
 const workoutSchema = new mongoose.Schema(
   {
+    publicId: {
+      type: String,
+      required: true,
+      unique: true,
+      immutable: true,
+      index: true,
+      default: () => generatePublicId(ENTITY_PREFIXES.WRK),
+    },
     gymId: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
 
     title: { type: String, required: true, trim: true },

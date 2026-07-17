@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { MemberSubscription } from './models/MemberSubscription.model.js';
 
 export class MemberSubscriptionRepository {
@@ -6,7 +7,13 @@ export class MemberSubscriptionRepository {
   }
 
   static async findById(id, gymId) {
-    return MemberSubscription.findOne({ _id: id, gymId })
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MemberSubscription.findOne(query)
       .populate('memberId', 'fullName memberCode')
       .populate('membershipPlanId', 'name durationInDays');
   }
@@ -37,7 +44,13 @@ export class MemberSubscriptionRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return MemberSubscription.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return MemberSubscription.findOneAndUpdate(query, updateData, { new: true });
   }
 
   static async findActiveForMember(memberId, gymId) {

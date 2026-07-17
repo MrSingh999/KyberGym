@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Notification } from './models/Notification.model.js';
 
 export class NotificationRepository {
@@ -26,8 +27,14 @@ export class NotificationRepository {
   }
 
   static async markAsRead(id, gymId, userId) {
+    const query = { gymId, userId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
     return Notification.findOneAndUpdate(
-      { _id: id, gymId, userId },
+      query,
       { read: true, readAt: new Date() },
       { new: true }
     );

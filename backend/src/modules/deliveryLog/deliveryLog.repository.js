@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { DeliveryLog } from './models/DeliveryLog.model.js';
 
 export class DeliveryLogRepository {
@@ -27,7 +28,13 @@ export class DeliveryLogRepository {
   }
 
   static async findById(id, gymId) {
-    return DeliveryLog.findOne({ _id: id, gymId })
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return DeliveryLog.findOne(query)
       .populate('broadcastId', 'title channel')
       .populate('memberId', 'fullName phone email');
   }

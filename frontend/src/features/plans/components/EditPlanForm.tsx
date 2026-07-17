@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useBlocker } from 'react-router';
@@ -8,6 +8,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MembershipPlan, DURATION_TYPE_LABELS } from '../types';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 const ACCENT_COLORS = [
   '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e',
@@ -21,6 +31,8 @@ interface EditPlanFormProps {
 }
 
 export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps) {
+  const [hasJoiningFee, setHasJoiningFee] = useState(!!plan.joiningFee && plan.joiningFee > 0);
+
   const form = useForm<EditPlanData>({
     resolver: zodResolver(editPlanSchema),
     defaultValues: {
@@ -28,7 +40,7 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
       description: plan.description ?? '',
       color: plan.color ?? '',
       price: plan.price,
-      joiningFee: plan.joiningFee ?? 0,
+      joiningFee: plan.joiningFee || ('' as any),
       isDefault: plan.isDefault,
       isPopular: plan.isPopular,
       duration: plan.duration,
@@ -46,19 +58,24 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
       isDirty && currentLocation.pathname !== nextLocation.pathname,
   );
 
+  // Clean form on mount to prevent dynamic list mapping or UUIDs from flagging dirty state falsely
   useEffect(() => {
-    if (blocker.state === 'blocked') {
-      if (window.confirm('You have unsaved changes. Discard them and leave?')) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker]);
+    form.reset(form.getValues());
+  }, []);
+
+  const handleFormSubmit = async (data: EditPlanData) => {
+    const payload = {
+      ...data,
+      joiningFee: hasJoiningFee ? (Number(data.joiningFee) || 0) : 0,
+    };
+    await onSubmit(payload);
+    form.reset(data); // Clear dirty state so navigation blocker doesn't intercept save
+  };
 
   return (
+    <>
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
 
         {/* Basic Info */}
         <section className="space-y-5">
@@ -98,27 +115,47 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
         {/* Pricing */}
         <section className="space-y-5">
           <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Pricing</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-5">
             <FormField control={form.control} name="price" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-text-primary">Price (₹) <span className="text-error">*</span></FormLabel>
                 <FormControl>
-                  <Input type="number" min={0} step={0.01} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                  <Input type="number" min={0} step={0.01} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
-            <FormField control={form.control} name="joiningFee" render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-semibold text-text-primary">Joining Fee (₹)</FormLabel>
-                <FormControl>
-                  <Input type="number" min={0} step={0.01} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+
+            <div className="flex items-center gap-2.5 space-y-0">
+              <input
+                type="checkbox"
+                id="hasJoiningFee"
+                checked={hasJoiningFee}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setHasJoiningFee(checked);
+                  form.setValue('joiningFee', checked ? plan.joiningFee || ('' as any) : ('' as any), { shouldDirty: true });
+                }}
+                className="w-4 h-4 accent-primary cursor-pointer"
+              />
+              <label htmlFor="hasJoiningFee" className="text-sm font-normal cursor-pointer text-text-primary">
+                Charge a joining fee for this plan
+              </label>
+            </div>
+
+            {hasJoiningFee && (
+              <FormField control={form.control} name="joiningFee" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Joining Fee (₹)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} step={0.01} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            )}
           </div>
-          <div className="flex gap-6">
+          <div className="flex gap-6 pt-2">
             <FormField control={form.control} name="isPopular" render={({ field }) => (
               <FormItem className="flex items-center gap-2.5 space-y-0">
                 <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary cursor-pointer" /></FormControl>
@@ -142,7 +179,7 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-text-primary">Duration <span className="text-error">*</span></FormLabel>
                 <FormControl>
-                  <Input type="number" min={1} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 1)} />
+                  <Input type="number" min={1} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -193,5 +230,28 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
         </div>
       </form>
     </Form>
+
+    <AlertDialog open={blocker.state === 'blocked'}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+          <AlertDialogDescription>
+            You have unsaved changes on this page. Leaving this page will discard all unsaved edits. Are you sure you want to proceed?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => blocker.reset()}>
+            Keep Editing
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-error text-error-foreground hover:bg-error/90 animate-none"
+            onClick={() => blocker.proceed()}
+          >
+            Discard & Leave
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

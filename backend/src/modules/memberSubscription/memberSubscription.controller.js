@@ -35,4 +35,13 @@ export class MemberSubscriptionController {
     const sub = await MemberSubscriptionService.updateStatus(id, gymId, userId, req.body);
     return ApiSuccess.send(res, httpStatus.OK, 'Subscription status updated', sub);
   }
+
+  static async updateSubscription(req, res) {
+    const gymId = req.gym._id;
+    const userId = req.user._id;
+    const { id } = req.params;
+    
+    const sub = await MemberSubscriptionService.updateSubscription(id, gymId, userId, req.body);
+    return ApiSuccess.send(res, httpStatus.OK, 'Subscription updated successfully', sub);
+  }
 }

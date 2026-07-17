@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Member } from './models/Member.model.js';
 
 export class MemberRepository {
@@ -6,7 +7,13 @@ export class MemberRepository {
   }
 
   static async findById(id, gymId) {
-    return Member.findOne({ _id: id, gymId, isDeleted: false });
+    const query = { gymId, isDeleted: false };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Member.findOne(query);
   }
 
   static async findPaginated(gymId, filter = {}, page = 1, limit = 10) {
@@ -30,7 +37,13 @@ export class MemberRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return Member.findOneAndUpdate({ _id: id, gymId, isDeleted: false }, updateData, { new: true });
+    const query = { gymId, isDeleted: false };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Member.findOneAndUpdate(query, updateData, { new: true });
   }
 
   static async checkExists(gymId, email) {

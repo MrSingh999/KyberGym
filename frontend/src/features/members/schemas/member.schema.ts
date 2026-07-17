@@ -37,3 +37,19 @@ export type CreateMemberStep2Data = z.infer<typeof createMemberStep2Schema>;
 export type CreateMemberStep3Data = z.infer<typeof createMemberStep3Schema>;
 export type RenewMembershipData = z.infer<typeof renewMembershipSchema>;
 export type SuspendMemberData = z.infer<typeof suspendMemberSchema>;
+
+export const editMemberSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email").or(z.literal("")),
+  phone: z.string().min(10, "Phone must be at least 10 digits"),
+  gender: z.enum(["male", "female", "other"]),
+  dateOfBirth: z.string().optional(),
+  address: z.string().optional(),
+  emergencyContactName: z.string().optional(),
+  emergencyContactPhone: z.string().optional(),
+  notes: z.string().optional(),
+  membershipStartDate: z.string().optional(),
+  membershipEndDate: z.string().optional(),
+});
+
+export type EditMemberData = z.infer<typeof editMemberSchema>;

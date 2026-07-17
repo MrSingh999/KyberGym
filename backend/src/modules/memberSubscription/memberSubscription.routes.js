@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { MemberSubscriptionController } from './memberSubscription.controller.js';
 import { validateRequest } from '../../validators/validateRequest.js';
-import { createSubscriptionSchema, updateSubscriptionStatusSchema } from './memberSubscription.validators.js';
+import { createSubscriptionSchema, updateSubscriptionStatusSchema, updateSubscriptionSchema } from './memberSubscription.validators.js';
 import { asyncHandler } from '../../middleware/asyncHandler.js';
 import { resolveTenant } from '../../middleware/tenant.middleware.js';
 import { authenticate } from '../../middleware/authenticate.js';
@@ -32,6 +32,14 @@ router.patch(
   requireRoles(ROLES.GYM_ADMIN, ROLES.STAFF), 
   validateRequest(updateSubscriptionStatusSchema), 
   asyncHandler(MemberSubscriptionController.updateStatus)
+);
+
+// Update subscription details (dates, plan, discount)
+router.patch(
+  '/:id',
+  requireRoles(ROLES.GYM_ADMIN, ROLES.STAFF),
+  validateRequest(updateSubscriptionSchema),
+  asyncHandler(MemberSubscriptionController.updateSubscription)
 );
 
 export default router;

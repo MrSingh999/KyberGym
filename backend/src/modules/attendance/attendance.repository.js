@@ -7,7 +7,13 @@ export class AttendanceRepository {
   }
 
   static async findById(id, gymId) {
-    return Attendance.findOne({ _id: id, gymId })
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Attendance.findOne(query)
       .populate('memberId', 'fullName memberCode profilePhoto phone status')
       .populate('markedBy', 'fullName');
   }
@@ -64,7 +70,13 @@ export class AttendanceRepository {
   }
 
   static async update(id, gymId, updateData) {
-    return Attendance.findOneAndUpdate({ _id: id, gymId }, updateData, { new: true })
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Attendance.findOneAndUpdate(query, updateData, { new: true })
       .populate('memberId', 'fullName memberCode profilePhoto phone status')
       .populate('markedBy', 'fullName');
   }

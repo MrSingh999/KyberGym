@@ -34,7 +34,7 @@ export function useBroadcasts(params: UseBroadcastsParams = {}) {
       const meta = response.data.meta;
       return {
         data: data.map((b: any): BroadcastListItem => ({
-          id: b._id,
+          id: b.id || b._id,
           title: b.title,
           channel: b.channel,
           status: b.status,
@@ -59,11 +59,11 @@ export function useBroadcast(id: string) {
       const response = await apiClient.get(`/broadcasts/${id}`);
       const b = response.data.data || response.data;
       return {
-        id: b._id,
+        id: b.id || b._id,
         gymId: b.gymId,
         title: b.title,
         channel: b.channel,
-        messageTemplateId: b.messageTemplateId?._id || b.messageTemplateId,
+        messageTemplateId: b.messageTemplateId?.id || b.messageTemplateId?._id || b.messageTemplateId,
         message: b.message,
         recipientCriteria: {
           target: b.recipientCriteria?.target || "all",
@@ -161,10 +161,10 @@ export function useDeliveryLogs(broadcastId: string) {
       });
       const data = response.data.data || [];
       return data.map((l: any): DeliveryLog => ({
-        id: l._id,
+        id: l.id || l._id,
         gymId: l.gymId,
-        broadcastId: l.broadcastId?._id || l.broadcastId,
-        memberId: l.memberId?._id || l.memberId,
+        broadcastId: l.broadcastId?.id || l.broadcastId?._id || l.broadcastId,
+        memberId: l.memberId?.id || l.memberId?._id || l.memberId,
         memberName: l.memberId?.fullName,
         memberPhone: l.memberId?.phone,
         status: l.status,

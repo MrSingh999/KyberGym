@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { WorkoutDay } from './models/WorkoutDay.model.js';
 
 export class WorkoutDayRepository {
@@ -10,18 +11,36 @@ export class WorkoutDayRepository {
   }
 
   static async findById(id, workoutId) {
-    return WorkoutDay.findOne({ _id: id, workoutId });
+    const query = { workoutId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return WorkoutDay.findOne(query);
   }
 
   static async update(id, workoutId, data) {
+    const query = { workoutId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
     return WorkoutDay.findOneAndUpdate(
-      { _id: id, workoutId },
+      query,
       data,
       { new: true, runValidators: true }
     );
   }
 
   static async delete(id, workoutId) {
-    return WorkoutDay.findOneAndDelete({ _id: id, workoutId });
+    const query = { workoutId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return WorkoutDay.findOneAndDelete(query);
   }
 }

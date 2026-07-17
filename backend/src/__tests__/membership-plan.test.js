@@ -74,4 +74,55 @@ describe('MembershipPlan Routes', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.active).toBe(false);
   });
+
+  it('POST - support additional fields (joiningFee, isDefault, isPopular, features)', async () => {
+    const res = await request(app)
+      .post('/api/v1/membership-plans')
+      .set('Authorization', `Bearer ${token}`)
+      .set('x-tenant-id', gym._id.toString())
+      .send({
+        name: 'Pro Membership',
+        durationInDays: 90,
+        price: 2999,
+        joiningFee: 500,
+        isDefault: true,
+        isPopular: true,
+        features: [
+          { id: 'f1', label: 'Locker', included: true },
+          { id: 'f2', label: 'Trainer', included: false }
+        ]
+      });
+    expect(res.status).toBe(201);
+    expect(res.body.data.joiningFee).toBe(500);
+    expect(res.body.data.isDefault).toBe(true);
+    expect(res.body.data.isPopular).toBe(true);
+    expect(res.body.data.features.length).toBe(2);
+    expect(res.body.data.features[0].label).toBe('Locker');
+    expect(res.body.data.features[0].included).toBe(true);
+  });
+
+  it('POST/PATCH - clear default flag on other plans when a plan is set to default', async () => {
+    // 1. Create a default plan
+    const plan1 = await MembershipPlan.create({
+      gymId: gym._id,
+      name: 'Plan 1',
+      durationInDays: 30,
+      price: 100,
+      isDefault: true
+    });
+
+    // 2. Create another plan and set isDefault: true
+    const res = await request(app)
+      .post('/api/v1/membership-plans')
+      .set('Authorization', `Bearer ${token}`)
+      .set('x-tenant-id', gym._id.toString())
+      .send({ name: 'Plan 2', durationInDays: 30, price: 200, isDefault: true });
+    
+    expect(res.status).toBe(201);
+    expect(res.body.data.isDefault).toBe(true);
+
+    // 3. Verify that Plan 1 is no longer default
+    const check1 = await MembershipPlan.findById(plan1._id);
+    expect(check1.isDefault).toBe(false);
+  });
 });

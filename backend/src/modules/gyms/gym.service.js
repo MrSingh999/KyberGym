@@ -8,7 +8,13 @@ import { hashData } from '../auth/auth.utils.js';
 export class GymService {
 
   static async getMyGym(gymId) {
-    const gym = await Gym.findById(gymId).lean();
+    const query = {};
+    if (mongoose.Types.ObjectId.isValid(gymId)) {
+      query._id = gymId;
+    } else {
+      query.publicId = gymId;
+    }
+    const gym = await Gym.findOne(query).lean();
     if (!gym || gym.isDeleted) throw createError.NotFound('Gym not found');
     return gym;
   }
@@ -21,8 +27,14 @@ export class GymService {
         update[key] = data[key];
       }
     }
-    const gym = await Gym.findByIdAndUpdate(
-      gymId,
+    const query = {};
+    if (mongoose.Types.ObjectId.isValid(gymId)) {
+      query._id = gymId;
+    } else {
+      query.publicId = gymId;
+    }
+    const gym = await Gym.findOneAndUpdate(
+      query,
       { $set: update },
       { new: true, runValidators: true }
     );
@@ -31,7 +43,13 @@ export class GymService {
   }
 
   static async getBranding(gymId) {
-    const gym = await Gym.findById(gymId).select('branding');
+    const query = {};
+    if (mongoose.Types.ObjectId.isValid(gymId)) {
+      query._id = gymId;
+    } else {
+      query.publicId = gymId;
+    }
+    const gym = await Gym.findOne(query).select('branding');
     if (!gym) throw createError.NotFound('Gym not found');
     return gym.branding || {};
   }
@@ -46,8 +64,14 @@ export class GymService {
       }
     }
 
-    const gym = await Gym.findByIdAndUpdate(
-      gymId,
+    const query = {};
+    if (mongoose.Types.ObjectId.isValid(gymId)) {
+      query._id = gymId;
+    } else {
+      query.publicId = gymId;
+    }
+    const gym = await Gym.findOneAndUpdate(
+      query,
       { $set: update },
       { new: true, runValidators: true }
     ).select('branding');

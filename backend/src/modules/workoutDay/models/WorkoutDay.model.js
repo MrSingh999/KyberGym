@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { generatePublicId } from '../../../shared/publicId.js';
+import { ENTITY_PREFIXES } from '../../../shared/idPrefixes.js';
 
 const exerciseSchema = new mongoose.Schema(
   {
@@ -15,6 +17,14 @@ const exerciseSchema = new mongoose.Schema(
 
 const workoutDaySchema = new mongoose.Schema(
   {
+    publicId: {
+      type: String,
+      required: true,
+      unique: true,
+      immutable: true,
+      index: true,
+      default: () => generatePublicId(ENTITY_PREFIXES.WD),
+    },
     workoutId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workout', required: true },
 
     dayNumber: { type: Number, required: true, min: 1, max: 7 },

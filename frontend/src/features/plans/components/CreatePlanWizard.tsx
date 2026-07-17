@@ -38,11 +38,18 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
   const [step1Data, setStep1Data] = useState<Partial<CreatePlanStep1>>({});
   const [step2Data, setStep2Data] = useState<Partial<CreatePlanStep2>>({});
   const [step3Data, setStep3Data] = useState<Partial<CreatePlanStep3>>({});
+  const [hasJoiningFee, setHasJoiningFee] = useState(false);
   const createPlan = useCreatePlan();
 
   const s1 = useForm<CreatePlanStep1>({ resolver: zodResolver(createPlanStep1Schema) });
-  const s2 = useForm<CreatePlanStep2>({ resolver: zodResolver(createPlanStep2Schema), defaultValues: { price: 0, joiningFee: 0, isDefault: false, isPopular: false } });
-  const s3 = useForm<CreatePlanStep3>({ resolver: zodResolver(createPlanStep3Schema), defaultValues: { duration: 1, durationType: 'months' } });
+  const s2 = useForm<CreatePlanStep2>({
+    resolver: zodResolver(createPlanStep2Schema),
+    defaultValues: { price: '' as any, joiningFee: '' as any, isDefault: false, isPopular: false }
+  });
+  const s3 = useForm<CreatePlanStep3>({
+    resolver: zodResolver(createPlanStep3Schema),
+    defaultValues: { duration: 1, durationType: 'months' }
+  });
   const s4 = useForm<CreatePlanStep4>({
     resolver: zodResolver(createPlanStep4Schema),
     defaultValues: {
@@ -58,7 +65,13 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
       if (!raw) return;
       const d = JSON.parse(raw);
       if (d.step1) { setStep1Data(d.step1); s1.reset(d.step1); }
-      if (d.step2) { setStep2Data(d.step2); s2.reset(d.step2); }
+      if (d.step2) {
+        setStep2Data(d.step2);
+        s2.reset(d.step2);
+        if (d.step2.joiningFee && Number(d.step2.joiningFee) > 0) {
+          setHasJoiningFee(true);
+        }
+      }
       if (d.step3) { setStep3Data(d.step3); s3.reset(d.step3); }
       if (d.currentStep) setStep(d.currentStep);
     } catch { /* ignore */ }
@@ -70,7 +83,12 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
   }, [step1Data, step2Data, step3Data, step]);
 
   const handleFinalSubmit = async (s4d: CreatePlanStep4) => {
-    const payload: CreatePlanData = { ...step1Data as CreatePlanStep1, ...step2Data as CreatePlanStep2, ...step3Data as CreatePlanStep3, ...s4d };
+    const payload: CreatePlanData = {
+      ...step1Data as CreatePlanStep1,
+      ...step2Data as CreatePlanStep2,
+      ...step3Data as CreatePlanStep3,
+      ...s4d
+    };
     localStorage.removeItem(DRAFT_KEY);
     await createPlan.mutateAsync(payload);
     onSuccess();
@@ -150,28 +168,71 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
             {/* Step 2 – Pricing */}
             {step === 2 && (
               <Form {...s2}>
-                <form id="wizard-step-2" onSubmit={s2.handleSubmit((d) => { setStep2Data(d); setStep(3); })} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
+                <form
+                  id="wizard-step-2"
+                  onSubmit={s2.handleSubmit((d) => {
+                    const finalStep2Data = {
+                      ...d,
+                      joiningFee: hasJoiningFee ? (Number(d.joiningFee) || 0) : 0,
+                    };
+                    setStep2Data(finalStep2Data);
+                    setStep(3);
+                  })}
+                  className="space-y-5"
+                >
+                  <div className="space-y-5">
                     <FormField control={s2.control} name="price" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-semibold text-text-primary">Price (₹) <span className="text-error">*</span></FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} step={0.01} placeholder="39.00" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
+                          <Input type="number" min={0} step={0.01} placeholder="39.00" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={s2.control} name="joiningFee" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-semibold text-text-primary">Joining Fee (₹)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} step={0.01} placeholder="0.00" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+
+                    <div className="flex items-center gap-2.5 space-y-0">
+                      <input
+                        type="checkbox"
+                        id="hasJoiningFee"
+                        checked={hasJoiningFee}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setHasJoiningFee(checked);
+                          if (!checked) {
+                            s2.setValue('joiningFee', '' as any);
+                          }
+                        }}
+                        className="w-4 h-4 accent-primary cursor-pointer"
+                      />
+                      <label htmlFor="hasJoiningFee" className="text-sm font-normal cursor-pointer text-text-primary">
+                        Charge a joining fee for this plan
+                      </label>
+                    </div>
+
+                    <AnimatePresence>
+                      {hasJoiningFee && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <FormField control={s2.control} name="joiningFee" render={({ field }) => (
+                            <FormItem className="pt-2">
+                              <FormLabel className="text-sm font-semibold text-text-primary">Joining Fee (₹)</FormLabel>
+                              <FormControl>
+                                <Input type="number" min={0} step={0.01} placeholder="0.00" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <div className="flex gap-6">
+                  <div className="flex gap-6 pt-2">
                     <FormField control={s2.control} name="isPopular" render={({ field }) => (
                       <FormItem className="flex items-center gap-2.5 space-y-0">
                         <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary cursor-pointer" /></FormControl>
@@ -198,7 +259,7 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                       <FormItem>
                         <FormLabel className="text-sm font-semibold text-text-primary">Duration <span className="text-error">*</span></FormLabel>
                         <FormControl>
-                          <Input type="number" min={1} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 1)} />
+                          <Input type="number" min={1} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

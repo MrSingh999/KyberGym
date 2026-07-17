@@ -3,6 +3,9 @@ import createError from 'http-errors';
 
 export class MembershipPlanService {
   static async createPlan(gymId, data) {
+    if (data.isDefault) {
+      await MembershipPlanRepository.clearDefault(gymId);
+    }
     return MembershipPlanRepository.create({ ...data, gymId });
   }
 
@@ -19,6 +22,9 @@ export class MembershipPlanService {
   }
 
   static async updatePlan(id, gymId, data) {
+    if (data.isDefault) {
+      await MembershipPlanRepository.clearDefault(gymId);
+    }
     const plan = await MembershipPlanRepository.update(id, gymId, data);
     if (!plan) {
       throw createError.NotFound('Membership plan not found');

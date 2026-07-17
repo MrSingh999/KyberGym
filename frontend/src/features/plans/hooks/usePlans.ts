@@ -61,20 +61,20 @@ export function usePlans(params: UsePlansParams = {}) {
         }
 
         return {
-          id: p._id,
+          id: p.id || p._id,
           gymId: p.gymId,
           name: p.name,
           description: p.description || '',
           duration,
           durationType,
           price: p.price,
-          joiningFee: 0,
+          joiningFee: p.joiningFee || 0,
           status: p.active ? 'active' : 'inactive',
           color: p.color || '#3B82F6',
-          isDefault: false,
-          isPopular: false,
-          memberCount: 0,
-          featureCount: 0,
+          isDefault: p.isDefault || false,
+          isPopular: p.isPopular || false,
+          memberCount: p.memberCount || 0,
+          featureCount: p.features?.length || 0,
           createdAt: p.createdAt,
           updatedAt: p.updatedAt,
         };
@@ -144,20 +144,20 @@ export function usePlan(planId: string) {
       }
 
       return {
-        id: p._id,
+        id: p.id || p._id,
         gymId: p.gymId,
         name: p.name,
         description: p.description || '',
         duration,
         durationType,
         price: p.price,
-        joiningFee: 0,
+        joiningFee: p.joiningFee || 0,
         status: p.active ? 'active' : 'inactive',
         color: p.color || '#3B82F6',
-        isDefault: false,
-        isPopular: false,
-        memberCount: 0,
-        features: [],
+        isDefault: p.isDefault || false,
+        isPopular: p.isPopular || false,
+        memberCount: p.memberCount || 0,
+        features: p.features || [],
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
       };
@@ -184,8 +184,12 @@ export function useCreatePlan() {
         name: data.name,
         description: data.description,
         price: data.price,
+        joiningFee: data.joiningFee || 0,
         durationInDays,
         color: data.color || '#3B82F6',
+        isDefault: data.isDefault || false,
+        isPopular: data.isPopular || false,
+        features: data.features || [],
         displayOrder: data.displayOrder,
       });
       return response.data.data;
@@ -207,6 +211,10 @@ export function useUpdatePlan(planId: string) {
       if (data.description !== undefined) payload.description = data.description;
       if (data.price !== undefined) payload.price = data.price;
       if (data.color !== undefined) payload.color = data.color;
+      if (data.joiningFee !== undefined) payload.joiningFee = data.joiningFee;
+      if (data.isDefault !== undefined) payload.isDefault = data.isDefault;
+      if (data.isPopular !== undefined) payload.isPopular = data.isPopular;
+      if (data.features !== undefined) payload.features = data.features;
       
       if (data.duration !== undefined && data.durationType !== undefined) {
         let durationInDays = data.duration;

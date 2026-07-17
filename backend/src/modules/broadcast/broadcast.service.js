@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { BroadcastRepository } from './broadcast.repository.js';
 import { Member } from '../member/models/Member.model.js';
 import { MemberSubscription } from '../memberSubscription/models/MemberSubscription.model.js';
@@ -7,6 +8,7 @@ import { EmailService } from '../../services/email.service.js';
 import { logger } from '../../config/logger.js';
 import { startOfDay, endOfDay, addDays } from 'date-fns';
 import createError from 'http-errors';
+import { MessageTemplateRepository } from '../messageTemplate/messageTemplate.repository.js';
 
 export class BroadcastService {
   static async createBroadcast(gymId, userId, data) {
@@ -15,8 +17,28 @@ export class BroadcastService {
       status = 'scheduled';
     }
 
+    const resolvedData = { ...data };
+
+    if (data.recipientCriteria?.selectedMemberIds) {
+      const members = await Member.find({
+        publicId: { $in: data.recipientCriteria.selectedMemberIds },
+        gymId
+      }).select('_id');
+      resolvedData.recipientCriteria = {
+        ...data.recipientCriteria,
+        selectedMemberIds: members.map(m => m._id)
+      };
+    }
+
+    if (data.messageTemplateId) {
+      const template = await MessageTemplateRepository.findById(data.messageTemplateId, gymId);
+      if (template) {
+        resolvedData.messageTemplateId = template._id;
+      }
+    }
+
     return BroadcastRepository.create({
-      ...data,
+      ...resolvedData,
       gymId,
       status,
       createdBy: userId
@@ -52,7 +74,27 @@ export class BroadcastService {
       status = new Date(data.scheduledAt) > new Date() ? 'scheduled' : 'draft';
     }
 
-    return BroadcastRepository.update(id, gymId, { ...data, status });
+    const resolvedData = { ...data, status };
+
+    if (data.recipientCriteria?.selectedMemberIds) {
+      const members = await Member.find({
+        publicId: { $in: data.recipientCriteria.selectedMemberIds },
+        gymId
+      }).select('_id');
+      resolvedData.recipientCriteria = {
+        ...data.recipientCriteria,
+        selectedMemberIds: members.map(m => m._id)
+      };
+    }
+
+    if (data.messageTemplateId) {
+      const template = await MessageTemplateRepository.findById(data.messageTemplateId, gymId);
+      if (template) {
+        resolvedData.messageTemplateId = template._id;
+      }
+    }
+
+    return BroadcastRepository.update(id, gymId, resolvedData);
   }
 
   static async deleteBroadcast(id, gymId) {

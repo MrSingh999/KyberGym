@@ -29,7 +29,7 @@ export function useNotifications(params: UseNotificationsParams = {}) {
       const meta = response.data.meta;
       return {
         data: data.map((n: any) => ({
-          id: n._id,
+          id: n.id || n._id,
           gymId: n.gymId,
           userId: n.userId,
           type: n.type,

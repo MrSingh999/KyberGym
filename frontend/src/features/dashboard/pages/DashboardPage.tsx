@@ -56,9 +56,9 @@ export function DashboardPage() {
   };
 
   const activeDues =
-    dueTimeframe === "today" ? dues?.dueToday || [] :
-    dueTimeframe === "3days" ? dues?.dueIn3Days || [] :
-    dues?.dueIn7Days || [];
+    dueTimeframe === "today" ? [...(dues?.overdue || []), ...(dues?.dueToday || [])] :
+    dueTimeframe === "3days" ? [...(dues?.overdue || []), ...(dues?.dueToday || []), ...(dues?.dueIn3Days || [])] :
+    [...(dues?.overdue || []), ...(dues?.dueToday || []), ...(dues?.dueIn3Days || []), ...(dues?.dueIn7Days || [])];
 
   const overdueCount = activeDues.filter(m => getDaysDiff(m.endDate) < 0).length;
   const dueCount = activeDues.filter(m => getDaysDiff(m.endDate) >= 0).length;
@@ -213,7 +213,7 @@ export function DashboardPage() {
                       const isOverdue = daysDiff < 0;
                       return (
                         <div
-                          key={member._id || idx}
+                          key={member.id || member._id || idx}
                           className={cn(
                             "p-3 sm:p-4 rounded-xl border transition-all duration-300 bg-surface/30 hover:bg-surface/50 hover:shadow-sm hover:border-border-hover hover:translate-y-[-1px] group",
                             isOverdue
@@ -277,7 +277,7 @@ export function DashboardPage() {
                             </div>
                             <Button
                               size="xs"
-                              onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?._id}`)}
+                              onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
                               className="text-[10px] sm:text-[9px] font-bold h-7 sm:h-6 cursor-pointer rounded-[4px] px-2 active:scale-95 transition-transform"
                             >
                               Collect Payment

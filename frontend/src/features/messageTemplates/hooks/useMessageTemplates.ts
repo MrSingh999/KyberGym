@@ -30,7 +30,7 @@ export function useMessageTemplates(params: UseMessageTemplatesParams = {}) {
       const meta = response.data.meta;
       return {
         data: data.map((t: any): MessageTemplate => ({
-          id: t._id,
+          id: t.id || t._id,
           gymId: t.gymId,
           name: t.name,
           type: t.type,
@@ -59,7 +59,7 @@ export function useMessageTemplate(id: string) {
       const response = await apiClient.get(`/message-templates/${id}`);
       const t = response.data.data || response.data;
       return {
-        id: t._id,
+        id: t.id || t._id,
         gymId: t.gymId,
         name: t.name,
         type: t.type,

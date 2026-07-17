@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Workout } from './models/Workout.model.js';
 
 export class WorkoutRepository {
@@ -12,20 +13,38 @@ export class WorkoutRepository {
   }
 
   static async findById(id, gymId) {
-    return Workout.findOne({ _id: id, gymId });
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
+    return Workout.findOne(query);
   }
 
   static async update(id, gymId, data) {
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
     return Workout.findOneAndUpdate(
-      { _id: id, gymId },
+      query,
       data,
       { new: true, runValidators: true }
     );
   }
 
   static async deactivate(id, gymId) {
+    const query = { gymId };
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query._id = id;
+    } else {
+      query.publicId = id;
+    }
     return Workout.findOneAndUpdate(
-      { _id: id, gymId },
+      query,
       { isActive: false },
       { new: true }
     );

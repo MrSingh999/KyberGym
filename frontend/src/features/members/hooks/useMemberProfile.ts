@@ -10,6 +10,7 @@ import {
   RenewMembershipFormData,
   SuspendMemberFormData,
 } from "../types/profile";
+import { computeDueStatus } from "../types";
 
 // ------ Queries ------
 
@@ -36,7 +37,7 @@ export function useMemberProfile(memberId: string) {
           planName = activeSub.membershipPlanId?.name || "Pro Monthly";
           membershipStartDate = activeSub.startDate ? new Date(activeSub.startDate).toISOString().split('T')[0] : "";
           membershipEndDate = activeSub.endDate ? new Date(activeSub.endDate).toISOString().split('T')[0] : "";
-          activeSubId = activeSub._id;
+          activeSubId = activeSub.id || activeSub._id;
           subscriptionStatus = activeSub.status;
         }
       } catch {
@@ -44,7 +45,7 @@ export function useMemberProfile(memberId: string) {
       }
 
       return {
-        id: m._id,
+        id: m.id || m._id,
         memberCode: m.memberCode,
         name: m.fullName,
         phone: m.phone || undefined,
@@ -57,8 +58,12 @@ export function useMemberProfile(memberId: string) {
         joiningDate: m.joinDate ? new Date(m.joinDate).toISOString().split('T')[0] : "",
         membershipStartDate,
         membershipEndDate,
-        membershipStatus: m.status === 'active' ? 'Active' : m.status === 'expired' ? 'Expired' : m.status === 'suspended' ? 'Suspended' : 'Inactive',
+        membershipStatus: m.status === 'active' ? 'Active' : m.status === 'suspended' ? 'Suspended' : 'Inactive',
+        dueStatus: m.status === 'active' ? computeDueStatus(membershipEndDate) : undefined,
         planName,
+        emergencyContactName: m.emergencyContact?.name,
+        emergencyContactPhone: m.emergencyContact?.phone,
+        rawNotes: m.notes || "",
         createdAt: m.createdAt,
         updatedAt: m.updatedAt,
         activeSubId,
@@ -95,7 +100,7 @@ export function useMemberActivities(memberId: string) {
 
       subs.forEach((sub: any) => {
         activities.push({
-          id: `sub-${sub._id}`,
+          id: `sub-${sub.id || sub._id}`,
           type: "membership_renewed",
           description: `Subscription to ${sub.membershipPlanId?.name || "Plan"} created (Status: ${sub.status})`,
           createdAt: sub.createdAt,
@@ -105,7 +110,7 @@ export function useMemberActivities(memberId: string) {
 
       payments.forEach((pay: any) => {
         activities.push({
-          id: `pay-${pay._id}`,
+          id: `pay-${pay.id || pay._id}`,
           type: "payment_received",
           description: `Payment of $${pay.finalAmount || pay.amount} received (Status: ${pay.status})`,
           createdAt: pay.paymentDate || pay.createdAt,
@@ -169,13 +174,13 @@ export function useMemberPaymentSummary(memberId: string) {
         try {
           const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
           (plansRes.data.data || []).forEach((pl: any) => {
-            planNames.set(pl._id, pl.name);
+            planNames.set(pl.id || pl._id, pl.name);
           });
         } catch { /* fallback */ }
       }
 
       const paymentsWithPlans = rawPayments.map((p: any) => ({
-        id: p._id,
+        id: p.id || p._id,
         amount: p.finalAmount || p.amount,
         date: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
         status: p.status || "paid",
@@ -200,7 +205,7 @@ export function useMemberWorkoutSummary(memberId: string) {
         (w.assignmentType === 'SELECTED' && w.assignedMembers?.includes(memberId))
       );
       return assigned.map((w: any) => ({
-        id: w._id,
+        id: w.id || w._id,
         title: w.title,
         assignedAt: w.createdAt ? new Date(w.createdAt).toISOString().split('T')[0] : "",
         status: w.isActive ? "in_progress" as const : "completed" as const,

@@ -19,6 +19,7 @@ export interface DueMember {
 }
 
 export interface DueTrackingResponse {
+  overdue: DueMember[];
   dueToday: DueMember[];
   dueIn3Days: DueMember[];
   dueIn7Days: DueMember[];

@@ -8,6 +8,7 @@ export interface MemberProfile extends MemberDirectoryItem {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
+  rawNotes?: string;
   notes?: MemberNote[];
   activeSubId?: string;
   subscriptionStatus?: string;
