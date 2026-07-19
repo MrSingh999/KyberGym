@@ -16,7 +16,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
         'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
         active
           ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-surface border-default text-secondary hover:border-hover hover:text-primary',
+          : 'bg-surface border-border-default text-text-secondary hover:border-border-hover hover:text-text-primary',
       )}
     >
       {label}
@@ -27,7 +27,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2.5">
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">{title}</h4>
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted">{title}</h4>
       <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
@@ -67,7 +67,7 @@ function FiltersContent() {
       <FilterSection title="Date Range">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] text-muted uppercase font-semibold mb-1 block">From</label>
+            <label className="text-[10px] text-text-muted uppercase font-semibold mb-1 block">From</label>
             <Input type="date" value={filters.dateFrom || ''} onChange={(e) => setFilters({ dateFrom: e.target.value || undefined })} className="h-9 text-xs" />
           </div>
           <div>
@@ -77,8 +77,8 @@ function FiltersContent() {
         </div>
       </FilterSection>
 
-      {hasFilters && (
-        <button onClick={clearFilters} className="text-xs text-destructive hover:underline flex items-center gap-1">
+        {hasFilters && (
+        <button onClick={clearFilters} className="text-xs text-error hover:underline flex items-center gap-1">
           <X className="w-3 h-3" /> Clear all filters
         </button>
       )}
@@ -89,8 +89,8 @@ function FiltersContent() {
 export function PaymentsFiltersSidebar() {
   return (
     <aside className="w-64 flex-shrink-0 hidden lg:block">
-      <div className="sticky top-24 bg-surface border border-default rounded-2xl p-5 shadow-sm">
-        <h3 className="font-heading font-semibold text-sm text-primary mb-6">Filters</h3>
+      <div className="sticky top-24 bg-surface border border-border-default rounded-2xl p-5 shadow-sm">
+        <h3 className="font-heading font-semibold text-sm text-text-primary mb-6">Filters</h3>
         <FiltersContent />
       </div>
     </aside>
@@ -117,8 +117,8 @@ export function PaymentsFiltersSheet() {
             className="fixed bottom-0 inset-x-0 z-50 bg-surface rounded-t-3xl shadow-xl p-6 pb-safe-area-inset-bottom lg:hidden max-h-[85vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-heading font-semibold text-base text-primary">Filters</h3>
-              <button onClick={() => setFilterSheetOpen(false)} className="p-1.5 rounded-full hover:bg-surface-hover text-muted">
+              <h3 className="font-heading font-semibold text-base text-text-primary">Filters</h3>
+              <button onClick={() => setFilterSheetOpen(false)} className="p-1.5 rounded-full hover:bg-surface-hover text-text-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>

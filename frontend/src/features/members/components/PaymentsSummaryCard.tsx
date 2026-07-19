@@ -53,7 +53,7 @@ export function PaymentsSummaryCard({ payments, isLoading }: PaymentsSummaryCard
                     <p className="text-xs text-text-secondary">{format(parseISO(payment.date), "MMM d, yyyy")}</p>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-text-primary shrink-0">${payment.amount}</span>
+                <span className="text-sm font-semibold text-text-primary shrink-0">₹{payment.amount}</span>
               </div>
             );
           })}

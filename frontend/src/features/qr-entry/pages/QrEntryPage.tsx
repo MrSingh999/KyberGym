@@ -22,7 +22,6 @@ export function QrEntryPage() {
     ? members.filter(
         (m) =>
           m.name.toLowerCase().includes(search.toLowerCase()) ||
-          m.memberCode.toLowerCase().includes(search.toLowerCase()) ||
           m.phone.includes(search),
       )
     : [];
@@ -54,7 +53,7 @@ export function QrEntryPage() {
   const handleDownload = () => {
     if (!qr?.base64Image) return;
     const link = document.createElement("a");
-    link.download = `qr-${selectedMember?.memberCode || selectedMemberId}.png`;
+    link.download = `qr-${selectedMemberId}.png`;
     link.href = qr.base64Image;
     link.click();
   };
@@ -101,7 +100,7 @@ export function QrEntryPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-primary">{m.name}</p>
-                        <p className="text-xs text-muted">{m.memberCode} • {m.phone}</p>
+                        <p className="text-xs text-muted">{m.phone}</p>
                       </div>
                     </button>
                   ))
@@ -120,7 +119,7 @@ export function QrEntryPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-primary">{selectedMember.name}</h3>
-                <p className="text-sm text-muted">{selectedMember.memberCode}</p>
+                <p className="text-sm text-muted">{selectedMember.id}</p>
               </div>
             </div>
 

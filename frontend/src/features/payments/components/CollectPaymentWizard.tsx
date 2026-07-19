@@ -31,7 +31,6 @@ interface MemberResult {
   id: string;
   _id?: string;
   fullName: string;
-  memberCode: string;
   phone?: string;
 }
 
@@ -83,7 +82,6 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
   const selectMember = (m: MemberResult) => {
     s1.setValue('memberId', m.id || m._id);
     s1.setValue('memberName', m.fullName);
-    s1.setValue('memberCode', m.memberCode);
     setMemberSearch(m.fullName);
     setMemberResults([]);
   };
@@ -152,9 +150,9 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
                 )}>
                   {step > s.id ? <Check className="w-4 h-4" /> : s.id}
                 </div>
-                <span className={cn('text-[10px] font-medium hidden sm:block', step === s.id ? 'text-primary' : 'text-muted')}>{s.label}</span>
+                <span className={cn('text-[10px] font-medium hidden sm:block', step === s.id ? 'text-text-primary' : 'text-text-muted')}>{s.label}</span>
               </div>
-              {i < STEPS.length - 1 && <div className={cn('flex-1 h-px mx-2', step > s.id ? 'bg-primary' : 'bg-subtle')} />}
+                  {i < STEPS.length - 1 && <div className={cn('flex-1 h-px mx-2', step > s.id ? 'bg-primary' : 'bg-border-default')} />}
             </React.Fragment>
           ))}
         </div>
@@ -173,38 +171,38 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
                       <FormLabel>Search Member *</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted" />
+                          <Search className="absolute left-3.5 top-3 h-4 w-4 text-text-muted" />
                           <input
                             placeholder="Search by name, phone, or code..."
-                            className="flex h-11 w-full rounded-lg border border-default bg-surface pl-10 pr-3 py-2 text-sm text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                            className="flex h-11 w-full rounded-lg border border-border-default bg-surface pl-10 pr-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                             value={memberSearch}
                             onChange={(e) => { setMemberSearch(e.target.value); field.onChange(''); }}
                           />
                         </div>
                       </FormControl>
-                      {memberSearching && <p className="text-xs text-muted mt-1">Searching...</p>}
+                      {memberSearching && <p className="text-xs text-text-muted mt-1">Searching...</p>}
                       {memberResults.length > 0 && (
-                        <div className="mt-2 border border-default rounded-xl bg-surface overflow-hidden max-h-48 overflow-y-auto">
+                        <div className="mt-2 border border-border-default rounded-xl bg-surface overflow-hidden max-h-48 overflow-y-auto">
                           {memberResults.map((m) => (
                             <button
                               key={m.id || m._id}
                               type="button"
                               onClick={() => selectMember(m)}
-                              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left hover:bg-surface-hover transition-colors border-b border-subtle last:border-b-0"
+                              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left hover:bg-surface-hover transition-colors border-b border-border-default last:border-b-0"
                             >
                               <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                                 {m.fullName.substring(0, 2).toUpperCase()}
                               </div>
                               <div className="min-w-0">
-                                <p className="font-medium text-primary truncate">{m.fullName}</p>
-                                <p className="text-xs text-muted">{m.memberCode}{m.phone ? ` · ${m.phone}` : ''}</p>
+                                <p className="font-medium text-text-primary truncate">{m.fullName}</p>
+                                <p className="text-xs text-text-muted">{m.phone}</p>
                               </div>
                             </button>
                           ))}
                         </div>
                       )}
                       {field.value && (
-                        <p className="text-xs text-emerald-600 mt-1">Selected: {s1.watch('memberName')} ({s1.watch('memberCode')})</p>
+                        <p className="text-xs text-text-secondary mt-1">Selected: {s1.watch('memberName')}</p>
                       )}
                       <FormMessage />
                     </FormItem>
@@ -224,11 +222,11 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
                         <select
                           value={field.value}
                           onChange={(e) => selectPlan(e.target.value)}
-                          className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary"
+                          className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary"
                         >
                           <option value="">Select a plan...</option>
                           {activePlans.map(p => (
-                            <option key={p.id} value={p.id}>{p.name} — ${p.price}/{p.duration} {p.durationType}</option>
+                            <option key={p.id} value={p.id}>{p.name} — ₹{p.price}/{p.duration} {p.durationType}</option>
                           ))}
                         </select>
                       </FormControl>
@@ -254,21 +252,21 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
                 <form id="w-s3" onSubmit={s3.handleSubmit((d) => { setS3Data(d); setStep(4); })} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={s3.control} name="amount" render={({ field }) => (
-                      <FormItem><FormLabel>Amount ($) *</FormLabel><FormControl><Input type="number" step={0.01} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Amount (₹) *</FormLabel><FormControl><Input type="number" step={0.01} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={s3.control} name="discount" render={({ field }) => (
-                      <FormItem><FormLabel>Discount ($)</FormLabel><FormControl><Input type="number" step={0.01} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Discount (₹)</FormLabel><FormControl><Input type="number" step={0.01} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
 
-                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex justify-between items-center">
-                    <span className="text-sm font-medium text-primary">Final Amount</span>
-                    <span className="text-xl font-bold font-heading text-primary">${s3.watch('finalAmount').toFixed(2)}</span>
+                  <div className="bg-surface-hover border border-border-default rounded-xl p-4 flex justify-between items-center">
+                    <span className="text-sm font-medium text-text-primary">Final Amount</span>
+                    <span className="text-xl font-bold font-heading text-text-primary">₹{s3.watch('finalAmount').toFixed(2)}</span>
                   </div>
 
                   <FormField control={s3.control} name="paymentMethod" render={({ field }) => (
                     <FormItem><FormLabel>Payment Method *</FormLabel><FormControl>
-                      <select {...field} className="flex h-11 w-full rounded-lg border border-default bg-surface px-3 py-2 text-sm text-primary">
+                      <select {...field} className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary">
                         <option value="">Select method...</option>
                         {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                       </select>
@@ -290,16 +288,16 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
             {/* Step 4: Review */}
             {step === 4 && (
               <div className="space-y-4">
-                <div className="rounded-xl border border-default bg-surface p-4 space-y-3 text-sm">
-                  <h4 className="font-semibold text-primary border-b border-subtle pb-2 mb-2">Summary</h4>
-                  <div className="flex justify-between"><span className="text-muted">Member</span><span className="font-medium text-primary">{s1Data.memberName}</span></div>
-                  <div className="flex justify-between"><span className="text-muted">Plan</span><span className="font-medium text-primary">{s2Data.planName}</span></div>
-                  <div className="flex justify-between"><span className="text-muted">Method</span><span className="font-medium text-primary">{s3Data.paymentMethod ? PAYMENT_METHOD_LABELS[s3Data.paymentMethod] : ''}</span></div>
-                  <div className="flex justify-between"><span className="text-muted">Subtotal</span><span className="font-medium text-primary">${s3Data.amount}</span></div>
+                <div className="rounded-xl border border-border-default bg-surface p-4 space-y-3 text-sm">
+                  <h4 className="font-semibold text-text-primary border-b border-border-default pb-2 mb-2">Summary</h4>
+                  <div className="flex justify-between"><span className="text-text-muted">Member</span><span className="font-medium text-text-primary">{s1Data.memberName}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Plan</span><span className="font-medium text-text-primary">{s2Data.planName}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Method</span><span className="font-medium text-text-primary">{s3Data.paymentMethod ? PAYMENT_METHOD_LABELS[s3Data.paymentMethod] : ''}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Subtotal</span><span className="font-medium text-text-primary">₹{s3Data.amount}</span></div>
                   {Number(s3Data.discount) > 0 && (
-                    <div className="flex justify-between"><span className="text-muted">Discount</span><span className="font-medium text-destructive">-${s3Data.discount}</span></div>
+                    <div className="flex justify-between"><span className="text-text-muted">Discount</span><span className="font-medium text-error">-₹{s3Data.discount}</span></div>
                   )}
-                  <div className="flex justify-between pt-2 border-t border-subtle"><span className="font-semibold">Total Paid</span><span className="font-bold text-primary">${s3Data.finalAmount}</span></div>
+                  <div className="flex justify-between pt-2 border-t border-border-default"><span className="font-semibold">Total Paid</span><span className="font-bold text-text-primary">₹{s3Data.finalAmount}</span></div>
                 </div>
               </div>
             )}
@@ -307,11 +305,11 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
             {/* Step 5: Success */}
             {step === 5 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-success/10 text-success rounded-full flex items-center justify-center mb-4">
                   <CheckCircle2 className="w-8 h-8" />
                 </motion.div>
-                <h3 className="font-heading font-bold text-xl text-primary mb-2">Payment Collected</h3>
-                <p className="text-muted text-sm">Receipt is being generated...</p>
+                <h3 className="font-heading font-bold text-xl text-text-primary mb-2">Payment Collected</h3>
+                <p className="text-text-muted text-sm">Receipt is being generated...</p>
               </div>
             )}
 
@@ -321,8 +319,8 @@ export function CollectPaymentWizard({ onSuccess, onCancel }: { onSuccess: (id: 
 
       {/* Footer Nav */}
       {step < 5 && (
-        <div className="flex items-center justify-between pt-5 mt-5 border-t border-subtle">
-          <button type="button" onClick={step === 1 ? onCancel : () => setStep(p => p - 1)} className="px-4 py-2.5 text-sm font-medium border border-default rounded-xl hover:bg-surface-hover min-h-[44px]">
+        <div className="flex items-center justify-between pt-5 mt-5 border-t border-border-default">
+          <button type="button" onClick={step === 1 ? onCancel : () => setStep(p => p - 1)} className="px-4 py-2.5 text-sm font-medium border border-border-default rounded-xl hover:bg-surface-hover min-h-[44px]">
             {step === 1 ? 'Cancel' : '← Back'}
           </button>
 

@@ -61,19 +61,19 @@ export class DashboardService {
     const [overdue, dueToday, dueIn3Days, dueIn7Days] = await Promise.all([
       // Subscriptions that ended before today but member is still active
       MemberSubscription.find({ gymId, status: 'active', endDate: { $lt: dueTodayStart } })
-        .populate('memberId', 'fullName memberCode phone email'),
+        .populate('memberId', 'fullName phone email publicId'),
 
       // Ending today
       MemberSubscription.find({ gymId, status: 'active', endDate: { $gte: dueTodayStart, $lte: dueTodayEnd } })
-        .populate('memberId', 'fullName memberCode phone email'),
+        .populate('memberId', 'fullName phone email publicId'),
 
       // Ending in 1–3 days
       MemberSubscription.find({ gymId, status: 'active', endDate: { $gte: due3DaysStart, $lte: due3DaysEnd } })
-        .populate('memberId', 'fullName memberCode phone email'),
+        .populate('memberId', 'fullName phone email publicId'),
 
       // Ending in 4–7 days
       MemberSubscription.find({ gymId, status: 'active', endDate: { $gte: due7DaysStart, $lte: due7DaysEnd } })
-        .populate('memberId', 'fullName memberCode phone email'),
+        .populate('memberId', 'fullName phone email publicId'),
     ]);
 
     return {

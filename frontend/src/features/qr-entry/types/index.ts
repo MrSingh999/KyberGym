@@ -14,7 +14,6 @@ export interface QrViewData {
   member: {
     id: string;
     name: string;
-    memberCode: string;
     phone?: string;
   };
   qr: MemberQr | null;

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SortingState } from '@tanstack/react-table';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useSearchParams } from 'react-router';
 import { usePayments } from '../hooks/usePayments';
 import { usePaymentStore } from '../store/usePaymentStore';
 import { PaymentsToolbar } from '../components/PaymentsToolbar';
@@ -13,10 +14,21 @@ import { EmptyPaymentsState } from '../components/EmptyPaymentsState';
 import { BulkActionBar } from '../components/BulkActionBar';
 
 export function PaymentsPage() {
+  const [searchParams] = useSearchParams();
+  const searchParam = searchParams.get('search');
+
   const {
-    searchQuery, filters, sortField, sortDir, viewMode,
+    searchQuery, setSearchQuery, filters, sortField, sortDir, viewMode,
     selectedRows, setSelectedRows, clearSelection,
   } = usePaymentStore();
+
+  useEffect(() => {
+    if (searchParam !== null) {
+      if (searchParam !== searchQuery) {
+        setSearchQuery(searchParam);
+      }
+    }
+  }, [searchParam, searchQuery, setSearchQuery]);
 
   const [sorting, setSorting] = useState<SortingState>([{ id: sortField, desc: sortDir === 'desc' }]);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
@@ -54,10 +66,13 @@ export function PaymentsPage() {
 
   return (
     <div className="flex flex-col min-h-full bg-canvas">
-      <div className="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-h2 font-heading font-bold text-primary">Payments</h1>
-          <p className="text-sm text-muted mt-1">Manage membership dues and track transaction history.</p>
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">Payments</h1>
+            <p className="text-text-secondary mt-1 text-xs">Manage membership dues and track transaction history.</p>
+          </div>
         </div>
 
         <div className="mb-6">
@@ -74,7 +89,6 @@ export function PaymentsPage() {
               <EmptyPaymentsState variant={emptyVariant} />
             ) : (
               <>
-                {/* Desktop View: table or cards layout depending on viewMode */}
                 <div className="hidden lg:block">
                   {viewMode === 'table' ? (
                     <PaymentsTable
@@ -96,7 +110,6 @@ export function PaymentsPage() {
                   )}
                 </div>
 
-                {/* Mobile View: always display cards layout */}
                 <div className="block lg:hidden">
                   <motion.div
                     className="grid grid-cols-1 sm:grid-cols-2 gap-4"

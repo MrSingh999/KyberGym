@@ -4,7 +4,6 @@ export type Gender = "male" | "female" | "other";
 
 export interface MemberDirectoryItem {
   id: string;
-  memberCode: string;
   name: string;
   phone: string;
   email: string;

@@ -23,7 +23,7 @@ const statusConfig = {
 export function PaymentCard({ 
   id,
   amount, 
-  currency = "$", 
+  currency = "₹", 
   date, 
   status, 
   description,

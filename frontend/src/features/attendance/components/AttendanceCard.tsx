@@ -57,7 +57,7 @@ export function AttendanceCard({ record }: AttendanceCardProps) {
             </h3>
             <div className="flex items-center text-xs text-text-muted mt-0.5 gap-1.5">
               <User className="h-3 w-3" />
-              <span className="font-mono">{record.memberCode}</span>
+              <span className="font-mono">{record.id}</span>
             </div>
           </div>
         </div>

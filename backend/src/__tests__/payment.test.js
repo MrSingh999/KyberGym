@@ -13,7 +13,7 @@ describe('Payment Routes', () => {
     gym = ctx.gym;
     token = ctx.token;
     userId = ctx.user._id;
-    member = await Member.create({ gymId: gym._id, memberCode: 'M-001', fullName: 'Test Member', createdBy: userId });
+    member = await Member.create({ gymId: gym._id, fullName: 'Test Member', createdBy: userId });
   });
 
   it('POST /api/v1/payments - record payment', async () => {

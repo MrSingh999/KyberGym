@@ -20,11 +20,11 @@ describe('Member Routes', () => {
       .set('x-tenant-id', gym._id.toString())
       .send({ fullName: 'John Doe', email: 'john@test.com', phone: '1234567890' });
     expect(res.status).toBe(201);
-    expect(res.body.data.memberCode).toBeDefined();
+    expect(res.body.data.publicId).toBeDefined();
   });
 
   it('POST /api/v1/members - return 409 on duplicate email', async () => {
-    await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'A', email: 'dup@test.com', createdBy: gym.ownerId });
+    await Member.create({ gymId: gym._id, fullName: 'A', email: 'dup@test.com', createdBy: gym.ownerId });
     const res = await request(app)
       .post('/api/v1/members')
       .set('Authorization', `Bearer ${token}`)
@@ -34,8 +34,8 @@ describe('Member Routes', () => {
   });
 
   it('GET /api/v1/members - list members', async () => {
-    await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'Alice', createdBy: gym.ownerId });
-    await Member.create({ gymId: gym._id, memberCode: 'G-002', fullName: 'Bob', createdBy: gym.ownerId });
+    await Member.create({ gymId: gym._id, fullName: 'Alice', createdBy: gym.ownerId });
+    await Member.create({ gymId: gym._id, fullName: 'Bob', createdBy: gym.ownerId });
     const res = await request(app)
       .get('/api/v1/members')
       .set('Authorization', `Bearer ${token}`)
@@ -46,8 +46,8 @@ describe('Member Routes', () => {
   });
 
   it('GET /api/v1/members - search by name', async () => {
-    await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'Alice Wonder', createdBy: gym.ownerId });
-    await Member.create({ gymId: gym._id, memberCode: 'G-002', fullName: 'Bob Smith', createdBy: gym.ownerId });
+    await Member.create({ gymId: gym._id, fullName: 'Alice Wonder', createdBy: gym.ownerId });
+    await Member.create({ gymId: gym._id, fullName: 'Bob Smith', createdBy: gym.ownerId });
     const res = await request(app)
       .get('/api/v1/members?search=Alice')
       .set('Authorization', `Bearer ${token}`)
@@ -58,7 +58,7 @@ describe('Member Routes', () => {
   });
 
   it('GET /api/v1/members/:id - get by id', async () => {
-    const member = await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'Charlie', createdBy: gym.ownerId });
+    const member = await Member.create({ gymId: gym._id, fullName: 'Charlie', createdBy: gym.ownerId });
     const res = await request(app)
       .get(`/api/v1/members/${member._id}`)
       .set('Authorization', `Bearer ${token}`)
@@ -68,7 +68,7 @@ describe('Member Routes', () => {
   });
 
   it('GET /api/v1/members/:id - return 404 for wrong gym', async () => {
-    const member = await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'Charlie', createdBy: gym.ownerId });
+    const member = await Member.create({ gymId: gym._id, fullName: 'Charlie', createdBy: gym.ownerId });
     const res = await request(app)
       .get(`/api/v1/members/${member._id}`)
       .set('Authorization', `Bearer ${token}`)
@@ -77,7 +77,7 @@ describe('Member Routes', () => {
   });
 
   it('PATCH /api/v1/members/:id - update member', async () => {
-    const member = await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'Old Name', createdBy: gym.ownerId });
+    const member = await Member.create({ gymId: gym._id, fullName: 'Old Name', createdBy: gym.ownerId });
     const res = await request(app)
       .patch(`/api/v1/members/${member._id}`)
       .set('Authorization', `Bearer ${token}`)
@@ -88,7 +88,7 @@ describe('Member Routes', () => {
   });
 
   it('DELETE /api/v1/members/:id - soft delete', async () => {
-    const member = await Member.create({ gymId: gym._id, memberCode: 'G-001', fullName: 'To Delete', createdBy: gym.ownerId });
+    const member = await Member.create({ gymId: gym._id, fullName: 'To Delete', createdBy: gym.ownerId });
     const res = await request(app)
       .delete(`/api/v1/members/${member._id}`)
       .set('Authorization', `Bearer ${token}`)

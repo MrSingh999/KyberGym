@@ -61,7 +61,7 @@ export function ProfileHeader({ member, onRenew, onSuspend, onActivate, onFreeze
               <div>
                 <h1 className="text-xl font-heading font-bold text-text-primary truncate">{member.name}</h1>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                  <span className="text-xs font-mono text-text-secondary">{member.memberCode}</span>
+                  <span className="text-xs font-mono text-text-secondary">{member.id}</span>
                   <MemberStatusBadge status={member.membershipStatus} />
                   {member.subscriptionStatus && (
                     <span className={cn(

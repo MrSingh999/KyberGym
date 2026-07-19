@@ -73,7 +73,7 @@ export function MemberAttendancePage() {
         </h1>
         {records.length > 0 && (
           <p className="text-text-secondary mt-1 text-xs font-mono">
-            {records[0].memberName} · {records[0].memberCode}
+            {records[0].memberName}
           </p>
         )}
       </div>

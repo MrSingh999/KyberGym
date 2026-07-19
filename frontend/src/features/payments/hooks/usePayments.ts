@@ -65,7 +65,6 @@ export function usePayments(params: UsePaymentsParams = {}) {
         id: p.id || p._id,
         memberId: p.memberId?.id || p.memberId?._id || "",
         memberName: p.memberId?.fullName || "Unknown Member",
-        memberCode: p.memberId?.memberCode || "N/A",
         planName: planNames.get(p.subscriptionId?.membershipPlanId) || "Gym Membership",
         finalAmount: p.amount,
         paymentMethod: p.paymentMethod === 'bankTransfer' ? 'bank_transfer' : p.paymentMethod,
@@ -79,7 +78,6 @@ export function usePayments(params: UsePaymentsParams = {}) {
         results = results.filter(
           (p) =>
             p.memberName.toLowerCase().includes(q) ||
-            p.memberCode.toLowerCase().includes(q) ||
             p.transactionReference?.toLowerCase().includes(q)
         );
       }
@@ -118,7 +116,6 @@ export function usePayment(paymentId: string) {
         gymId: p.gymId,
         memberId: p.memberId?.id || p.memberId?._id || "",
         memberName: p.memberId?.fullName || "Unknown Member",
-        memberCode: p.memberId?.memberCode || "N/A",
         memberPhone: "",
         planId,
         planName,
@@ -167,7 +164,6 @@ export function useMemberPayments(memberId: string) {
         gymId: p.gymId,
         memberId: p.memberId?.id || p.memberId?._id || "",
         memberName: p.memberId?.fullName || "",
-        memberCode: p.memberId?.memberCode || "",
         planName: planNames.get(p.subscriptionId?.membershipPlanId) || "Gym Membership",
         amount: p.amount,
         discount: 0,
@@ -200,7 +196,6 @@ export function usePaymentDues() {
         list.push({
           memberId: m.memberId?.id || m.memberId?._id || m.id || m._id,
           memberName: m.memberId?.fullName || "Member",
-          memberCode: m.memberId?.memberCode || "N/A",
           phone: m.memberId?.phone || "",
           planName: "Gym Member",
           membershipEndDate: m.endDate ? new Date(m.endDate).toISOString().split('T')[0] : "",
@@ -213,7 +208,6 @@ export function usePaymentDues() {
         list.push({
           memberId: m.memberId?.id || m.memberId?._id || m.id || m._id,
           memberName: m.memberId?.fullName || "Member",
-          memberCode: m.memberId?.memberCode || "N/A",
           phone: m.memberId?.phone || "",
           planName: "Gym Member",
           membershipEndDate: m.endDate ? new Date(m.endDate).toISOString().split('T')[0] : "",
@@ -226,7 +220,6 @@ export function usePaymentDues() {
         list.push({
           memberId: m.memberId?.id || m.memberId?._id || m.id || m._id,
           memberName: m.memberId?.fullName || "Member",
-          memberCode: m.memberId?.memberCode || "N/A",
           phone: m.memberId?.phone || "",
           planName: "Gym Member",
           membershipEndDate: m.endDate ? new Date(m.endDate).toISOString().split('T')[0] : "",

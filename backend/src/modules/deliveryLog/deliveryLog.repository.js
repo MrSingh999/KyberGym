@@ -8,8 +8,8 @@ export class DeliveryLogRepository {
 
     const [logs, total] = await Promise.all([
       DeliveryLog.find(query)
-        .populate('broadcastId', 'title')
-        .populate('memberId', 'fullName phone email')
+        .populate('broadcastId', 'title publicId')
+        .populate('memberId', 'fullName phone email publicId')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -35,7 +35,7 @@ export class DeliveryLogRepository {
       query.publicId = id;
     }
     return DeliveryLog.findOne(query)
-      .populate('broadcastId', 'title channel')
-      .populate('memberId', 'fullName phone email');
+      .populate('broadcastId', 'title channel publicId')
+      .populate('memberId', 'fullName phone email publicId');
   }
 }

@@ -18,7 +18,6 @@ export interface Payment {
   gymId: string;
   memberId: string;
   memberName: string;
-  memberCode: string;
   memberPhone?: string;
   planId: string;
   planName: string;
@@ -43,7 +42,6 @@ export type PaymentListItem = Pick<
   | 'id'
   | 'memberId'
   | 'memberName'
-  | 'memberCode'
   | 'planName'
   | 'finalAmount'
   | 'paymentMethod'
@@ -57,7 +55,6 @@ export type PaymentListItem = Pick<
 export interface DueEntry {
   memberId: string;
   memberName: string;
-  memberCode: string;
   phone: string;
   planName: string;
   membershipEndDate: string;
@@ -112,7 +109,6 @@ export type SortDir = 'asc' | 'desc';
 export interface CollectPaymentStep1Data {
   memberId: string;
   memberName: string;
-  memberCode: string;
 }
 
 export interface CollectPaymentStep2Data {

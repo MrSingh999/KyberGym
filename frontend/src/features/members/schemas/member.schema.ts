@@ -26,6 +26,9 @@ export const renewMembershipSchema = z.object({
   planId: z.string().min(1, "Please select a plan"),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
+  paymentMethod: z.enum(['cash', 'upi', 'card', 'bank_transfer'], {
+    required_error: "Please select a payment method",
+  }),
 });
 
 export const suspendMemberSchema = z.object({

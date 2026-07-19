@@ -97,7 +97,6 @@ function mapNotificationType(type: string): Activity["type"] {
 interface MemberRecord {
   id: string;
   _id?: string;
-  memberCode: string;
   fullName: string;
   email: string;
   phone: string;
@@ -109,7 +108,6 @@ interface MemberRecord {
 
 export interface RecentMember {
   id: string;
-  memberCode: string;
   fullName: string;
   email: string;
   phone: string;
@@ -127,7 +125,6 @@ export async function fetchRecentMembers(limit: number = 5): Promise<RecentMembe
 
   return members.map((m) => ({
     id: m.id || m._id,
-    memberCode: m.memberCode,
     fullName: m.fullName,
     email: m.email,
     phone: m.phone,

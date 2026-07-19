@@ -10,12 +10,12 @@ interface PaymentMethodIconProps {
 
 const METHOD_CONFIG: Record<
   PaymentMethod,
-  { icon: React.ElementType; color: string }
+  { icon: React.ElementType }
 > = {
-  cash: { icon: Banknote, color: 'text-emerald-600 dark:text-emerald-400' },
-  upi: { icon: Smartphone, color: 'text-violet-600 dark:text-violet-400' },
-  card: { icon: CreditCard, color: 'text-blue-600 dark:text-blue-400' },
-  bank_transfer: { icon: Building2, color: 'text-amber-600 dark:text-amber-400' },
+  cash: { icon: Banknote },
+  upi: { icon: Smartphone },
+  card: { icon: CreditCard },
+  bank_transfer: { icon: Building2 },
 };
 
 export function PaymentMethodIcon({
@@ -23,11 +23,11 @@ export function PaymentMethodIcon({
   showLabel = true,
   className,
 }: PaymentMethodIconProps) {
-  const { icon: Icon, color } = METHOD_CONFIG[method];
+  const { icon: Icon } = METHOD_CONFIG[method];
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-      <Icon className={cn('w-3.5 h-3.5 flex-shrink-0', color)} />
+      <Icon className="w-3.5 h-3.5 flex-shrink-0 text-text-muted" />
       {showLabel && (
         <span className="text-xs font-medium text-secondary">
           {PAYMENT_METHOD_LABELS[method]}

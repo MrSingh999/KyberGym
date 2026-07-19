@@ -1,4 +1,4 @@
-import { DollarSign, Clock, Users, Star } from 'lucide-react';
+import { IndianRupee, Clock, Users, Star } from 'lucide-react';
 import { MembershipPlan, DURATION_TYPE_LABELS } from '../types';
 import { PlanStatusBadge } from './PlanStatusBadge';
 import { PlanFeaturesList } from './PlanFeaturesList';
@@ -37,7 +37,7 @@ export function PlanOverviewCard({ plan }: PlanOverviewCardProps) {
         {/* Metrics grid */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: DollarSign, label: 'Price', value: `₹${plan.price}` },
+            { icon: IndianRupee, label: 'Price', value: `₹${plan.price}` },
             { icon: Clock, label: 'Duration', value: `${plan.duration} ${DURATION_TYPE_LABELS[plan.durationType]}` },
             { icon: Users, label: 'Members', value: String(plan.memberCount ?? 0) },
           ].map(({ icon: Icon, label, value }) => (

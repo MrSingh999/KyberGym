@@ -5,7 +5,6 @@ import { z } from 'zod';
 export const collectStep1Schema = z.object({
   memberId: z.string().min(1, 'Please select a member'),
   memberName: z.string().min(1),
-  memberCode: z.string().min(1),
 });
 
 export type CollectStep1 = z.infer<typeof collectStep1Schema>;

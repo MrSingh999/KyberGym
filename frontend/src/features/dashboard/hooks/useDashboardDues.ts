@@ -7,7 +7,6 @@ export interface DueMember {
   memberId: {
     _id: string;
     fullName: string;
-    memberCode: string;
     phone?: string;
     email: string;
   };

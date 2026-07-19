@@ -89,7 +89,7 @@ export function RecentMembers({ className }: { className?: string }) {
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-xs text-text-muted font-mono min-w-0">
-                      <span>{member.memberCode}</span>
+                      <span>{member.id}</span>
                       {member.phone && (
                         <>
                           <span className="text-border-default shrink-0">|</span>

@@ -5,7 +5,6 @@ export interface AttendanceRecord {
   id: string;
   memberId: string;
   memberName: string;
-  memberCode: string;
   profilePhoto?: string;
   phone?: string;
   membershipStatus: string;

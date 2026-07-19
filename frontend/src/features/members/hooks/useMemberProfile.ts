@@ -46,7 +46,6 @@ export function useMemberProfile(memberId: string) {
 
       return {
         id: m.id || m._id,
-        memberCode: m.memberCode,
         name: m.fullName,
         phone: m.phone || undefined,
         email: m.email || undefined,
@@ -112,7 +111,7 @@ export function useMemberActivities(memberId: string) {
         activities.push({
           id: `pay-${pay.id || pay._id}`,
           type: "payment_received",
-          description: `Payment of $${pay.finalAmount || pay.amount} received (Status: ${pay.status})`,
+          description: `Payment of ₹${pay.finalAmount || pay.amount} received (Status: ${pay.status})`,
           createdAt: pay.paymentDate || pay.createdAt,
           actorName: "System",
         });
@@ -239,17 +238,19 @@ export function useRenewMembership(memberId: string) {
         }
       }
 
-      // 1. Create a subscription
+      // 1. Create a subscription (backend auto-creates payment if paymentMethod is provided)
       await apiClient.post('/member-subscriptions', {
         memberId,
         membershipPlanId: data.planId,
         startDate: new Date(data.startDate).toISOString(),
+        paymentMethod: data.paymentMethod,
       });
       return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["member", selectedGymId, memberId] });
       queryClient.invalidateQueries({ queryKey: ["member-activities", selectedGymId, memberId] });
+      queryClient.invalidateQueries({ queryKey: ["payments", selectedGymId] });
     },
   });
 }

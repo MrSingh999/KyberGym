@@ -14,7 +14,7 @@ export class BroadcastRepository {
       query.publicId = id;
     }
     return Broadcast.findOne(query)
-      .populate('messageTemplateId', 'name type content');
+      .populate('messageTemplateId', 'name type content publicId');
   }
 
   static async findPaginated(gymId, filter = {}, page = 1, limit = 10) {
@@ -23,7 +23,7 @@ export class BroadcastRepository {
 
     const [broadcasts, total] = await Promise.all([
       Broadcast.find(query)
-        .populate('messageTemplateId', 'name type')
+        .populate('messageTemplateId', 'name type publicId')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),

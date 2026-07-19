@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/button";
 import { addDays, format } from "date-fns";
 import { usePlans } from "@/features/plans/hooks/usePlans";
+import { PAYMENT_METHOD_LABELS } from "@/features/payments/types";
 import { renewMembershipSchema, RenewMembershipData } from "../schemas/member.schema";
 import { useRenewMembership } from "../hooks/useMemberProfile";
 
@@ -28,6 +29,7 @@ export function RenewMembershipForm({ memberId, memberName, onSuccess }: RenewMe
       planId: "",
       startDate: format(new Date(), "yyyy-MM-dd"),
       endDate: "",
+      paymentMethod: "cash" as const,
     },
   });
 
@@ -92,7 +94,7 @@ export function RenewMembershipForm({ memberId, memberName, onSuccess }: RenewMe
                   <option value="">Select a plan...</option>
                   {activePlans.map(plan => (
                     <option key={plan.id} value={plan.id}>
-                      {plan.name} (${plan.price})
+                      {plan.name} (₹{plan.price})
                     </option>
                   ))}
                 </select>
@@ -129,6 +131,27 @@ export function RenewMembershipForm({ memberId, memberName, onSuccess }: RenewMe
             )}
           />
         </div>
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment Method *</FormLabel>
+              <FormControl>
+                <select
+                  {...field}
+                  className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                >
+                  <option value="" disabled>Select method...</option>
+                  {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <LoadingButton type="submit" className="w-full" isLoading={isPending} loadingText="Renewing...">
           Confirm Renewal
         </LoadingButton>

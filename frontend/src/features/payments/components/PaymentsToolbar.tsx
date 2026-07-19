@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Plus, Filter, SlidersHorizontal, LayoutList, Table2, ChevronDown } from 'lucide-react';
 import { usePaymentStore } from '../store/usePaymentStore';
@@ -19,6 +20,19 @@ interface PaymentsToolbarProps {
 
 export function PaymentsToolbar({ totalCount }: PaymentsToolbarProps) {
   const navigate = useNavigate();
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const {
     searchQuery, setSearchQuery,
     viewMode, setViewMode,
@@ -38,7 +52,7 @@ export function PaymentsToolbar({ totalCount }: PaymentsToolbarProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3 flex-wrap">
-        <PaymentsSearch value={searchQuery} onChange={setSearchQuery} className="flex-1" />
+        <PaymentsSearch value={searchQuery} onChange={setSearchQuery} className="flex-1 min-w-[200px]" />
 
         {/* Filter */}
         <button
@@ -46,8 +60,8 @@ export function PaymentsToolbar({ totalCount }: PaymentsToolbarProps) {
           className={cn(
             'flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border transition-colors',
             activeFiltersCount > 0
-              ? 'border-primary text-primary bg-primary/5'
-              : 'border-default text-muted hover:text-primary hover:border-hover bg-surface',
+              ? 'border-border-default text-text-primary bg-surface'
+              : 'border-border-default text-text-muted hover:text-text-primary hover:border-border-hover bg-surface',
           )}
         >
           <Filter className="w-4 h-4" />
@@ -60,37 +74,42 @@ export function PaymentsToolbar({ totalCount }: PaymentsToolbarProps) {
         </button>
 
         {/* Sort */}
-        <details className="relative">
-          <summary className="list-none flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border border-default bg-surface text-muted hover:text-primary hover:border-hover transition-colors cursor-pointer select-none">
+        <div className="relative" ref={sortRef}>
+          <button
+            onClick={() => setSortOpen(!sortOpen)}
+            className="flex items-center gap-2 px-3.5 py-2.5 text-sm font-medium rounded-xl border border-border-default bg-surface text-text-muted hover:text-text-primary hover:border-border-hover transition-colors cursor-pointer select-none"
+          >
             <SlidersHorizontal className="w-4 h-4" />
             <span className="hidden sm:inline">{currentSort}</span>
-            <ChevronDown className="w-3.5 h-3.5" />
-          </summary>
-          <div className="absolute right-0 top-11 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-44 text-sm">
-            {SORT_OPTIONS.map((opt) => (
-              <button
-                key={`${opt.field}-${opt.dir}`}
-                onClick={() => setSort(opt.field, opt.dir)}
-                className={cn(
-                  'w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors',
-                  opt.field === sortField && opt.dir === sortDir ? 'text-primary font-semibold' : 'text-secondary',
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </details>
+            <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', sortOpen && 'rotate-180')} />
+          </button>
+          {sortOpen && (
+            <div className="absolute right-0 top-11 z-20 bg-surface border border-border-default rounded-xl shadow-lg py-1.5 w-44 text-sm">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={`${opt.field}-${opt.dir}`}
+                  onClick={() => { setSort(opt.field, opt.dir); setSortOpen(false); }}
+                  className={cn(
+                    'w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors',
+                    opt.field === sortField && opt.dir === sortDir ? 'text-text-primary font-semibold' : 'text-text-secondary',
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* View toggle */}
-        <div className="hidden sm:flex items-center gap-1 p-1 bg-surface-hover rounded-xl border border-default">
+        <div className="hidden sm:flex items-center gap-1 p-1 bg-surface-hover rounded-xl border border-border-default">
           {(['card', 'table'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
               className={cn(
                 'p-1.5 rounded-lg transition-colors',
-                viewMode === mode ? 'bg-surface text-primary shadow-sm' : 'text-muted hover:text-primary',
+                viewMode === mode ? 'bg-surface text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary',
               )}
               title={`${mode} view`}
             >
@@ -110,7 +129,7 @@ export function PaymentsToolbar({ totalCount }: PaymentsToolbarProps) {
       </div>
 
       {totalCount > 0 && (
-        <p className="text-xs text-muted">
+        <p className="text-xs text-text-muted">
           {totalCount} payment{totalCount !== 1 ? 's' : ''}
           {searchQuery && ` matching "${searchQuery}"`}
         </p>

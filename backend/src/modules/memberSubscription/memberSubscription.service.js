@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { MemberSubscriptionRepository } from './memberSubscription.repository.js';
 import { MembershipPlanRepository } from '../membershipPlan/membershipPlan.repository.js';
 import { MemberRepository } from '../member/member.repository.js';
+import { PaymentRepository } from '../payment/payment.repository.js';
 import createError from 'http-errors';
 import { addDays } from 'date-fns';
 
@@ -38,7 +39,7 @@ export class MemberSubscriptionService {
     }
 
     // 5. Create Subscription
-    return MemberSubscriptionRepository.create({
+    const subscription = await MemberSubscriptionRepository.create({
       gymId,
       memberId: resolvedMemberId,
       membershipPlanId: resolvedPlanId,
@@ -51,6 +52,28 @@ export class MemberSubscriptionService {
       assignedBy: userId,
       notes: data.notes
     });
+
+    // 6. Auto-create Payment if paymentMethod is provided
+    if (data.paymentMethod) {
+      const pmNormalized = data.paymentMethod === 'bank_transfer' ? 'bankTransfer' : data.paymentMethod;
+      try {
+        await PaymentRepository.create({
+          gymId,
+          memberId: resolvedMemberId,
+          subscriptionId: subscription._id,
+          amount: finalAmount,
+          paymentMethod: pmNormalized,
+          paymentDate: new Date(),
+          status: 'completed',
+          receivedBy: userId,
+          notes: data.notes
+        });
+      } catch (err) {
+        console.error('Failed to auto-create payment for subscription:', err.message);
+      }
+    }
+
+    return subscription;
   }
 
   static async getSubscriptions(gymId, query) {

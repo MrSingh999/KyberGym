@@ -75,7 +75,7 @@ export function MembershipHistory({ memberId }: MembershipHistoryProps) {
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-text-muted font-mono">
                     <span>{formatDate(sub.startDate)} → {formatDate(sub.endDate)}</span>
                     <span>({daysDiff} days)</span>
-                    {sub.finalAmount > 0 && <span>${sub.finalAmount.toFixed(2)}</span>}
+                    {sub.finalAmount > 0 && <span>₹{sub.finalAmount.toFixed(2)}</span>}
                   </div>
                   {sub.notes && (
                     <p className="text-xs text-text-muted mt-1 italic">{sub.notes}</p>

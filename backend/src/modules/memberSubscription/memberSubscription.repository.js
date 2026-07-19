@@ -14,8 +14,8 @@ export class MemberSubscriptionRepository {
       query.publicId = id;
     }
     return MemberSubscription.findOne(query)
-      .populate('memberId', 'fullName memberCode')
-      .populate('membershipPlanId', 'name durationInDays');
+      .populate('memberId', 'fullName publicId')
+      .populate('membershipPlanId', 'name durationInDays publicId');
   }
 
   static async findPaginated(gymId, filter = {}, page = 1, limit = 10) {
@@ -24,8 +24,8 @@ export class MemberSubscriptionRepository {
 
     const [subscriptions, total] = await Promise.all([
       MemberSubscription.find(query)
-        .populate('memberId', 'fullName memberCode')
-        .populate('membershipPlanId', 'name durationInDays')
+        .populate('memberId', 'fullName publicId')
+        .populate('membershipPlanId', 'name durationInDays publicId')
         .sort({ endDate: -1 })
         .skip(skip)
         .limit(limit),

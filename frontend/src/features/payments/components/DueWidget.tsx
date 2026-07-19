@@ -10,10 +10,10 @@ const CATEGORY_CONFIG: Record<
   DueCategory,
   { icon: React.ElementType; color: string; bg: string; border: string }
 > = {
-  overdue: { icon: AlertCircle, color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' },
-  today: { icon: Clock, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-  in_3_days: { icon: CalendarDays, color: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
-  in_7_days: { icon: CalendarDays, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  overdue: { icon: AlertCircle, color: 'text-error', bg: 'bg-error/10', border: 'border-error/20' },
+  today: { icon: Clock, color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20' },
+  in_3_days: { icon: CalendarDays, color: 'text-text-secondary', bg: 'bg-surface-hover', border: 'border-border-default' },
+  in_7_days: { icon: CalendarDays, color: 'text-text-muted', bg: 'bg-surface', border: 'border-border-default' },
 };
 
 export function DueWidget() {

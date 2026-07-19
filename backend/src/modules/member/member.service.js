@@ -1,5 +1,4 @@
 import { MemberRepository } from './member.repository.js';
-import { generateMemberCode } from './member.utils.js';
 import { escapeRegex } from '../../shared/constants.js';
 import createError from 'http-errors';
 
@@ -13,15 +12,12 @@ export class MemberService {
       }
     }
 
-    const memberCode = await generateMemberCode(gymId);
-    
     // Convert empty strings to undefined for dates
     if (data.dateOfBirth === '') delete data.dateOfBirth;
 
     return MemberRepository.create({ 
       ...data, 
       gymId, 
-      memberCode,
       createdBy: userId 
     });
   }
@@ -39,8 +35,7 @@ export class MemberService {
       filter.$or = [
         { fullName: { $regex: safeSearch, $options: 'i' } },
         { phone: { $regex: safeSearch, $options: 'i' } },
-        { email: { $regex: safeSearch, $options: 'i' } },
-        { memberCode: { $regex: safeSearch, $options: 'i' } }
+        { email: { $regex: safeSearch, $options: 'i' } }
       ];
     }
 

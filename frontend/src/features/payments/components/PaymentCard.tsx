@@ -27,49 +27,44 @@ export function PaymentCard({ payment, index = 0 }: PaymentCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.035 }}
       onClick={() => navigate(`/admin/payments/${payment.id}`)}
-      className="bg-surface border border-default rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-hover transition-all cursor-pointer group"
+      className="bg-surface border border-border-default rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-border-hover transition-all cursor-pointer group"
     >
       <div className="flex items-start gap-3">
-        {/* Avatar */}
         <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0">
           {getInitials(payment.memberName)}
         </div>
 
-        {/* Details */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="font-semibold text-sm text-primary truncate">{payment.memberName}</p>
-              <p className="text-xs text-muted">{payment.memberCode} · {payment.planName}</p>
+              <p className="font-semibold text-sm text-text-primary truncate">{payment.memberName}</p>
+              <p className="text-xs text-text-muted">{payment.planName}</p>
             </div>
-            {/* Amount */}
             <div className="text-right flex-shrink-0">
-              <p className="text-lg font-bold font-heading text-primary tabular-nums">
-                ${payment.finalAmount}
+              <p className="text-lg font-bold font-heading text-text-primary tabular-nums">
+                ₹{payment.finalAmount}
               </p>
               <PaymentStatusBadge status={payment.paymentStatus} />
             </div>
           </div>
 
-          {/* Footer row */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-subtle">
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border-default">
             <div className="flex items-center gap-3">
               <PaymentMethodIcon method={payment.paymentMethod} />
-              <span className="text-xs text-muted">{formattedDate}</span>
+              <span className="text-xs text-text-muted">{formattedDate}</span>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => navigate(`/admin/payments/${payment.id}`)}
-                className="p-1.5 rounded-lg hover:bg-surface-hover text-muted hover:text-primary transition-colors"
+                className="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
                 title="View Details"
               >
                 <Eye className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => window.print()}
-                className="p-1.5 rounded-lg hover:bg-surface-hover text-muted hover:text-primary transition-colors"
+                className="p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
                 title="Print Receipt"
               >
                 <Printer className="w-3.5 h-3.5" />

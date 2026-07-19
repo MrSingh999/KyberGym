@@ -79,7 +79,7 @@ export function AttendanceTable({
                 </div>
                 <div className="flex items-center text-xs text-text-muted gap-1.5 mt-0.5 font-mono">
                   <User className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{r.memberCode}</span>
+                  <span className="truncate">{r.id}</span>
                 </div>
               </div>
             </div>

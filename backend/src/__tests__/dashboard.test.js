@@ -16,8 +16,8 @@ describe('Dashboard Routes', () => {
   });
 
   it('GET /api/v1/dashboard/overview - returns stats', async () => {
-    await Member.create({ gymId: gym._id, memberCode: 'M-001', fullName: 'A', status: 'active', createdBy: userId });
-    await Member.create({ gymId: gym._id, memberCode: 'M-002', fullName: 'B', status: 'inactive', createdBy: userId });
+    await Member.create({ gymId: gym._id, fullName: 'A', status: 'active', createdBy: userId });
+    await Member.create({ gymId: gym._id, fullName: 'B', status: 'inactive', createdBy: userId });
     const res = await request(app)
       .get('/api/v1/dashboard/overview')
       .set('Authorization', `Bearer ${token}`)

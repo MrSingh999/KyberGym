@@ -86,6 +86,7 @@ export interface RenewMembershipFormData {
   planId: string;
   startDate: string;
   endDate: string;
+  paymentMethod: 'cash' | 'upi' | 'card' | 'bank_transfer';
 }
 
 export interface SuspendMemberFormData {

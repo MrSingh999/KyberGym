@@ -129,7 +129,7 @@ export class SuperAdminService {
 
   static async getGymById(id) {
     id = await resolveGymId(id);
-    const gym = await Gym.findById(id).populate('ownerId', 'name email phone').lean();
+    const gym = await Gym.findById(id).populate('ownerId', 'name email phone publicId').lean();
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
     }

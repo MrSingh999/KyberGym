@@ -91,7 +91,7 @@ export function ExpiringWidget() {
               const daysDiff = getDaysDiff(member.endDate);
               const isOverdue = daysDiff < 0;
               const name = member.memberId?.fullName || "Unknown";
-              const code = member.memberId?.memberCode || "";
+              const code = member.memberId?._id || "";
 
               return (
                 <div

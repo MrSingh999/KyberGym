@@ -85,7 +85,6 @@ export class AttendanceService {
     if (search) {
       filter.$or = [
         { 'memberId.fullName': { $regex: search, $options: 'i' } },
-        { 'memberId.memberCode': { $regex: search, $options: 'i' } },
         { 'memberId.phone': { $regex: search, $options: 'i' } }
       ];
     }

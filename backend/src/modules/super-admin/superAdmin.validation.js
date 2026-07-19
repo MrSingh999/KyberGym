@@ -13,7 +13,7 @@ export const createGymSchema = {
     subdomain: z.string().min(3).max(30).regex(/^[a-z0-9-]+$/, 'Subdomain can only contain lowercase letters, numbers, and hyphens'),
     ownerName: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+    password: z.string().min(8, 'Password must be at least 8 characters').optional().or(z.literal('')),
     phone: z.string().optional(),
   }),
 };

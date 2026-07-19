@@ -128,8 +128,8 @@ export function MembersTable({
               Details
             </Button>
             <button
-              onClick={() => navigate(`/admin/members/${member.id}`)}
-              title="View History"
+              onClick={() => navigate(`/admin/payments?search=${encodeURIComponent(member.name)}`)}
+              title="View Payment History"
               className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all duration-200 cursor-pointer"
             >
               <History className="h-3.5 w-3.5" />

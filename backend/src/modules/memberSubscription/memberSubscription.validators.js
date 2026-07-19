@@ -6,6 +6,7 @@ export const createSubscriptionSchema = {
     membershipPlanId: z.string().regex(/^([A-Z]{2,5}-[A-Z2-9]{8}|[0-9a-fA-F]{24})$/, 'Invalid plan ID'),
     startDate: z.string().datetime(),
     discount: z.number().min(0).default(0),
+    paymentMethod: z.enum(['cash', 'upi', 'card', 'bank_transfer']).optional(),
     notes: z.string().optional()
   }),
 };

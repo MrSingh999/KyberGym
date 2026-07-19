@@ -47,8 +47,6 @@ export function DirectoryMemberCard({ member, isSelected, onSelect, onDeleteMemb
             <h3 className="font-bold text-sm text-text-primary leading-snug truncate hover:underline">{member.name}</h3>
             <div className="flex items-center text-xs text-text-muted mt-1 space-x-2">
               <span className="capitalize">{member.gender || "—"}</span>
-              <span>&bull;</span>
-              <span className="font-mono">{member.memberCode}</span>
             </div>
           </div>
         </div>
@@ -65,8 +63,8 @@ export function DirectoryMemberCard({ member, isSelected, onSelect, onDeleteMemb
           <p className="font-semibold text-text-primary capitalize font-mono">{member.planName || "N/A"}</p>
         </div>
         <div className="space-y-1">
-          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Member Code</p>
-          <p className="font-bold text-text-primary font-mono">{member.memberCode}</p>
+          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">ID</p>
+          <p className="font-bold text-text-primary font-mono">{member.id}</p>
         </div>
         <div className="space-y-1 col-span-2 pt-2 border-t border-border-default/20">
           <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Timeline</p>
@@ -95,7 +93,7 @@ export function DirectoryMemberCard({ member, isSelected, onSelect, onDeleteMemb
             Details
           </button>
           <button
-            onClick={() => navigate(`/admin/members/${member.id}`)}
+            onClick={() => navigate(`/admin/payments?search=${encodeURIComponent(member.name)}`)}
             aria-label="Payment History"
             className="p-2.5 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
           >

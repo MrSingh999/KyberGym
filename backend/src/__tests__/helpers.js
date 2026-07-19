@@ -80,7 +80,6 @@ export const authRequest = (token, gymId) => {
 export const createTestMember = async (gymId, userId, overrides = {}) => {
   return Member.create({
     gymId,
-    memberCode: faker.string.alphanumeric(6).toUpperCase(),
     fullName: faker.person.fullName(),
     email: faker.internet.email().toLowerCase(),
     phone: faker.phone.number(),

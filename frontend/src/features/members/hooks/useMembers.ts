@@ -34,7 +34,6 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
           const m = sub.memberId;
           return {
             id: m.id || m._id,
-            memberCode: m.memberCode,
             name: m.fullName,
             phone: m.phone || "No phone",
             email: m.email || "No email",
@@ -56,8 +55,7 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
           mapped = mapped.filter((item: any) => 
             item.name.toLowerCase().includes(q) || 
             item.phone.toLowerCase().includes(q) ||
-            item.email.toLowerCase().includes(q) ||
-            item.memberCode.toLowerCase().includes(q)
+            item.email.toLowerCase().includes(q)
           );
         }
 
@@ -122,7 +120,6 @@ export function useMembers(pagination: PaginationState, sorting: SortingState) {
 
         return {
           id: m.id || m._id,
-          memberCode: m.memberCode,
           name: m.fullName,
           phone: m.phone || "No phone",
           email: m.email || "No email",

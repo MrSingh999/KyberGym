@@ -14,8 +14,8 @@ export class AttendanceRepository {
       query.publicId = id;
     }
     return Attendance.findOne(query)
-      .populate('memberId', 'fullName memberCode profilePhoto phone status')
-      .populate('markedBy', 'fullName');
+      .populate('memberId', 'fullName profilePhoto phone status publicId')
+      .populate('markedBy', 'fullName publicId');
   }
 
   static async findPaginated(gymId, filter = {}, page = 1, limit = 10, sort = { date: -1 }) {
@@ -77,8 +77,8 @@ export class AttendanceRepository {
       query.publicId = id;
     }
     return Attendance.findOneAndUpdate(query, updateData, { new: true })
-      .populate('memberId', 'fullName memberCode profilePhoto phone status')
-      .populate('markedBy', 'fullName');
+      .populate('memberId', 'fullName profilePhoto phone status publicId')
+      .populate('markedBy', 'fullName publicId');
   }
 
   static async stats(gymId) {

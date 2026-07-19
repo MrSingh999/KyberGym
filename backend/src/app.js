@@ -66,7 +66,8 @@ app.use(mongoSanitize());
 
 // 4. Logging
 if (env.NODE_ENV !== 'test') {
-  app.use(morgan('combined', {
+  const morganFormat = env.NODE_ENV === 'development' ? 'dev' : 'combined';
+  app.use(morgan(morganFormat, {
     stream: { write: (message) => logger.info(message.trim()) }
   }));
 }
