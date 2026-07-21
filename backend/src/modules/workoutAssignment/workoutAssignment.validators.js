@@ -7,8 +7,8 @@ export const assignWorkoutSchema = {
     workoutId: objectId,
     assignmentType: z.enum(['ALL', 'SELECTED']),
     memberIds: z.array(objectId).optional().default([]),
-    startDate: z.string().datetime().optional(),
-    endDate: z.string().datetime().optional(),
+    startDate: z.string().optional().nullable().transform((val) => val ? new Date(val).toISOString() : undefined),
+    endDate: z.string().optional().nullable().transform((val) => val ? new Date(val).toISOString() : undefined),
   }).superRefine((data, ctx) => {
     if (data.assignmentType === 'SELECTED' && (!data.memberIds || data.memberIds.length === 0)) {
       ctx.addIssue({

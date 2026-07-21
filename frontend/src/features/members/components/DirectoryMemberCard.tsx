@@ -75,34 +75,39 @@ export function DirectoryMemberCard({ member, isSelected, onSelect, onDeleteMemb
       </div>
 
       {/* Actions & Contact */}
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-border-default/50">
         <a
           href={`tel:${member.phone}`}
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center space-x-1.5 text-xs text-text-primary hover:opacity-80 font-bold transition-all duration-200 min-h-[44px] px-1 rounded-[6px] font-mono"
+          className="flex items-center space-x-1.5 text-xs text-text-primary hover:opacity-80 font-bold transition-all duration-200 min-h-[44px] px-2.5 py-1.5 rounded-xl bg-surface-hover/40 border border-border-default/50 font-mono touch-target"
         >
-          <Phone className="h-3.5 w-3.5" />
+          <Phone className="h-3.5 w-3.5 text-primary" />
           <span className="tabular-nums">{member.phone}</span>
         </a>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <button 
             onClick={() => navigate(`/admin/members/${member.id}`)}
-            className="bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 rounded-[6px] text-xs font-bold transition-colors duration-200 cursor-pointer min-h-[44px] flex-1 flex items-center justify-center active:scale-[0.97] border border-border-hover"
+            className="bg-primary hover:opacity-90 text-primary-foreground px-3.5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all duration-200 cursor-pointer min-h-[44px] flex-1 flex items-center justify-center active:scale-[0.97] shadow-xs touch-target"
           >
             Details
           </button>
+          
           <button
-            onClick={() => navigate(`/admin/payments?search=${encodeURIComponent(member.name)}`)}
+            onClick={() => navigate(`/admin/member-payments?search=${encodeURIComponent(member.name)}`)}
+            title="Payment History"
             aria-label="Payment History"
-            className="p-2.5 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-border-default/80 rounded-xl text-xs font-mono font-bold text-text-secondary hover:text-text-primary hover:bg-surface-hover/80 hover:border-border-hover transition-all duration-200 cursor-pointer min-h-[44px] touch-target active:scale-95 bg-surface/80"
           >
-            <History className="h-4 w-4" />
+            <History className="h-4 w-4 text-primary" />
+            <span>Payments</span>
           </button>
+
           <button
             onClick={() => onDeleteMember && onDeleteMember(member.id, member.name)}
+            title="Delete Member"
             aria-label="Delete Member"
-            className="p-2.5 border border-border-default rounded-[6px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
+            className="p-2.5 border border-border-default/80 rounded-xl text-text-muted hover:text-error hover:bg-error/10 hover:border-error/30 transition-all duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95 bg-surface/80 touch-target"
           >
             <Trash2 className="h-4 w-4" />
           </button>

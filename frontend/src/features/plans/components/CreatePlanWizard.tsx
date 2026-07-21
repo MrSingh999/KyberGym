@@ -95,36 +95,36 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 font-mono">
       {/* Step indicator */}
       <div className="flex items-center justify-between mb-6 px-1 shrink-0">
         {STEPS.map((s, i) => (
           <React.Fragment key={s.id}>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-1.5">
               <div className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold border-2 transition-all duration-200',
+                'flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl text-xs font-mono font-bold border-2 transition-all duration-200 touch-target',
                 step > s.id
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                  ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                   : step === s.id
-                  ? 'bg-primary text-primary-foreground border-primary shadow-md scale-105'
-                  : 'bg-surface text-text-secondary border-border-default',
+                  ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-105'
+                  : 'bg-surface text-text-muted border-border-default',
               )}>
-                {step > s.id ? <Check className="h-5 w-5" /> : s.id}
+                {step > s.id ? <Check className="h-4 w-4" /> : s.id}
               </div>
               <span className={cn(
-                'text-[10px] font-semibold uppercase tracking-wide hidden sm:block transition-colors duration-200',
+                'text-[10px] font-mono font-bold uppercase tracking-wider hidden sm:block transition-colors duration-200',
                 step === s.id ? 'text-primary' : 'text-text-muted',
               )}>{s.label}</span>
             </div>
             {i < STEPS.length - 1 && (
-              <div className={cn('flex-1 h-0.5 mx-2 transition-all duration-200', step > s.id ? 'bg-primary' : 'bg-border-default')} />
+              <div className={cn('flex-1 h-0.5 mx-2 transition-all duration-200', step > s.id ? 'bg-primary' : 'bg-border-default/60')} />
             )}
           </React.Fragment>
         ))}
       </div>
 
       {/* Step content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1">
+      <div className="flex-1 overflow-y-auto min-h-0 pr-1 -mr-1 custom-scrollbar">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.18 }}>
 
@@ -134,28 +134,28 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                 <form id="wizard-step-1" onSubmit={s1.handleSubmit((d) => { setStep1Data(d); setStep(2); })} className="space-y-5">
                   <FormField control={s1.control} name="name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-text-primary">Plan Name <span className="text-error">*</span></FormLabel>
+                      <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Plan Name <span className="text-error">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Pro Monthly" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} />
+                        <Input placeholder="e.g. Pro Monthly Fitness" className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={s1.control} name="description" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-text-primary">Description</FormLabel>
+                      <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Description</FormLabel>
                       <FormControl>
-                        <textarea {...field} rows={3} placeholder="What's included in this plan..." className="flex w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all resize-none" />
+                        <textarea {...field} rows={3} placeholder="What's included in this plan..." className="flex w-full rounded-xl border border-border-default/80 bg-surface/90 px-3.5 py-2.5 text-xs sm:text-sm text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all resize-none font-mono" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <div>
-                    <label className="text-sm font-semibold text-text-primary mb-2 block">Accent Color</label>
-                    <div className="flex gap-2 flex-wrap">
+                    <label className="text-xs sm:text-sm font-bold text-text-primary font-mono mb-2.5 block">Accent Color</label>
+                    <div className="flex gap-2.5 flex-wrap">
                       {ACCENT_COLORS.map((c) => (
                         <button key={c} type="button" onClick={() => s1.setValue('color', c)}
-                          className={cn('w-7 h-7 rounded-full border-2 transition-all cursor-pointer', s1.watch('color') === c ? 'border-primary scale-110' : 'border-transparent hover:scale-105')}
+                          className={cn('w-9 h-9 sm:w-8 sm:h-8 rounded-xl border-2 transition-all cursor-pointer touch-target', s1.watch('color') === c ? 'border-primary scale-110 shadow-xs' : 'border-transparent hover:scale-105 opacity-80 hover:opacity-100')}
                           style={{ backgroundColor: c }}
                         />
                       ))}
@@ -180,18 +180,18 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                   })}
                   className="space-y-5"
                 >
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     <FormField control={s2.control} name="price" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-semibold text-text-primary">Price (₹) <span className="text-error">*</span></FormLabel>
+                        <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Price (₹) <span className="text-error">*</span></FormLabel>
                         <FormControl>
-                          <Input type="number" min={0} step={0.01} placeholder="39.00" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                          <Input type="number" min={0} step={0.01} placeholder="2999.00" className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
 
-                    <div className="flex items-center gap-2.5 space-y-0">
+                    <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border border-border-default/60 bg-surface-hover/30 hover:bg-surface-hover/60 transition-colors">
                       <input
                         type="checkbox"
                         id="hasJoiningFee"
@@ -203,10 +203,10 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                             s2.setValue('joiningFee', '' as any);
                           }
                         }}
-                        className="w-4 h-4 accent-primary cursor-pointer"
+                        className="w-5 h-5 accent-primary cursor-pointer rounded shrink-0 touch-target"
                       />
-                      <label htmlFor="hasJoiningFee" className="text-sm font-normal cursor-pointer text-text-primary">
-                        Charge a joining fee for this plan
+                      <label htmlFor="hasJoiningFee" className="text-xs sm:text-sm font-bold font-mono cursor-pointer text-text-primary">
+                        Charge a one-time joining fee for this plan
                       </label>
                     </div>
 
@@ -221,9 +221,9 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                         >
                           <FormField control={s2.control} name="joiningFee" render={({ field }) => (
                             <FormItem className="pt-2">
-                              <FormLabel className="text-sm font-semibold text-text-primary">Joining Fee (₹)</FormLabel>
+                              <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Joining Fee (₹)</FormLabel>
                               <FormControl>
-                                <Input type="number" min={0} step={0.01} placeholder="0.00" className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                                <Input type="number" min={0} step={0.01} placeholder="500.00" className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -232,17 +232,22 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                       )}
                     </AnimatePresence>
                   </div>
-                  <div className="flex gap-6 pt-2">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <FormField control={s2.control} name="isPopular" render={({ field }) => (
-                      <FormItem className="flex items-center gap-2.5 space-y-0">
-                        <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary cursor-pointer" /></FormControl>
-                        <FormLabel className="font-normal cursor-pointer text-text-primary">Mark as Popular</FormLabel>
+                      <FormItem className="flex items-center gap-3 p-3 rounded-xl border border-border-default/60 bg-surface-hover/30 hover:bg-surface-hover/60 transition-colors space-y-0">
+                        <FormControl>
+                          <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-5 h-5 accent-primary cursor-pointer rounded shrink-0 touch-target" />
+                        </FormControl>
+                        <FormLabel className="text-xs sm:text-sm font-bold font-mono cursor-pointer text-text-primary">Mark as Popular Tier</FormLabel>
                       </FormItem>
                     )} />
                     <FormField control={s2.control} name="isDefault" render={({ field }) => (
-                      <FormItem className="flex items-center gap-2.5 space-y-0">
-                        <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary cursor-pointer" /></FormControl>
-                        <FormLabel className="font-normal cursor-pointer text-text-primary">Set as Default</FormLabel>
+                      <FormItem className="flex items-center gap-3 p-3 rounded-xl border border-border-default/60 bg-surface-hover/30 hover:bg-surface-hover/60 transition-colors space-y-0">
+                        <FormControl>
+                          <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-5 h-5 accent-primary cursor-pointer rounded shrink-0 touch-target" />
+                        </FormControl>
+                        <FormLabel className="text-xs sm:text-sm font-bold font-mono cursor-pointer text-text-primary">Set as Default Selection</FormLabel>
                       </FormItem>
                     )} />
                   </div>
@@ -254,21 +259,21 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
             {step === 3 && (
               <Form {...s3}>
                 <form id="wizard-step-3" onSubmit={s3.handleSubmit((d) => { setStep3Data(d); setStep(4); })} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={s3.control} name="duration" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-semibold text-text-primary">Duration <span className="text-error">*</span></FormLabel>
+                        <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Duration Count <span className="text-error">*</span></FormLabel>
                         <FormControl>
-                          <Input type="number" min={1} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
+                          <Input type="number" min={1} className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={s3.control} name="durationType" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-semibold text-text-primary">Duration Type <span className="text-error">*</span></FormLabel>
+                        <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Duration Unit <span className="text-error">*</span></FormLabel>
                         <FormControl>
-                          <select {...field} className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all cursor-pointer">
+                          <select {...field} className="flex h-11 min-h-[44px] w-full rounded-xl border border-border-default/80 bg-surface/90 px-3.5 py-2.5 text-xs sm:text-sm font-mono text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all cursor-pointer">
                             {Object.entries(DURATION_TYPE_LABELS).map(([val, label]) => (
                               <option key={val} value={val}>{label}</option>
                             ))}
@@ -278,8 +283,10 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
                       </FormItem>
                     )} />
                   </div>
-                  <div className="p-4 rounded-xl bg-surface-hover border border-border-default">
-                    <p className="text-sm text-text-muted">Preview: <span className="font-semibold text-text-primary">{s3.watch('duration')} {DURATION_TYPE_LABELS[s3.watch('durationType')]}</span></p>
+                  <div className="p-4 rounded-xl bg-surface-hover/50 border border-border-default/60">
+                    <p className="text-xs sm:text-sm text-text-muted font-mono">
+                      Cycle Summary: <span className="font-bold text-text-primary">{s3.watch('duration')} {DURATION_TYPE_LABELS[s3.watch('durationType')]}</span>
+                    </p>
                   </div>
                 </form>
               </Form>
@@ -289,33 +296,36 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
             {step === 4 && (
               <Form {...s4}>
                 <form id="wizard-step-4" onSubmit={s4.handleSubmit(handleFinalSubmit)} className="space-y-6">
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {fields.map((field, i) => (
-                      <div key={field.id} className="flex items-center gap-3 p-3 rounded-xl border border-border-default bg-surface hover:border-border-hover transition-colors">
-                        <input type="checkbox" {...s4.register(`features.${i}.included`)} className="w-4 h-4 accent-primary flex-shrink-0 cursor-pointer" />
-                        <input {...s4.register(`features.${i}.label`)} className="flex-1 bg-transparent text-sm text-text-primary focus:outline-none" placeholder="Feature label..." />
-                        <button type="button" onClick={() => remove(i)} className="text-text-muted hover:text-error transition-colors p-1 cursor-pointer">
-                          <Trash2 className="w-3.5 h-3.5" />
+                      <div key={field.id} className="flex items-center gap-3 p-3 rounded-xl border border-border-default/70 bg-surface/90 hover:border-border-hover/80 transition-colors">
+                        <input type="checkbox" {...s4.register(`features.${i}.included`)} className="w-5 h-5 accent-primary flex-shrink-0 cursor-pointer rounded touch-target" />
+                        <input {...s4.register(`features.${i}.label`)} className="flex-1 bg-transparent text-xs sm:text-sm font-mono text-text-primary focus:outline-none" placeholder="Feature description..." />
+                        <button type="button" onClick={() => remove(i)} className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-error transition-colors cursor-pointer rounded-lg touch-target shrink-0">
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     ))}
-                    <button type="button" onClick={() => append({ id: `feat-${Date.now()}`, label: '', included: false })}
-                      className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors mt-1 cursor-pointer">
-                      <Plus className="w-4 h-4" /> Add feature
+                    <button
+                      type="button"
+                      onClick={() => append({ id: `feat-${Date.now()}`, label: '', included: true })}
+                      className="flex items-center justify-center gap-2 px-4 h-11 w-full border border-dashed border-border-default hover:border-primary/50 rounded-xl text-xs font-mono font-bold text-text-secondary hover:text-primary transition-all cursor-pointer min-h-[44px] touch-target"
+                    >
+                      <Plus className="w-4 h-4" /> Add Feature Item
                     </button>
                   </div>
 
                   {/* Review summary */}
-                  <div className="rounded-xl border border-border-default bg-surface-hover p-4 space-y-2.5 text-sm">
-                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Review</p>
+                  <div className="rounded-2xl border border-border-default/80 bg-surface-hover/40 p-4 sm:p-5 space-y-2.5 text-xs sm:text-sm font-mono">
+                    <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Plan Summary Review</p>
                     {[
-                      ['Name', step1Data.name],
-                      ['Price', `₹${step2Data.price}`],
+                      ['Name', step1Data.name || '—'],
+                      ['Price', `₹${(step2Data.price || 0).toLocaleString()}`],
                       ['Duration', `${step3Data.duration} ${step3Data.durationType ? DURATION_TYPE_LABELS[step3Data.durationType] : ''}`],
                     ].map(([label, value]) => (
-                      <div key={String(label)} className="flex justify-between">
+                      <div key={String(label)} className="flex justify-between py-1 border-b border-border-default/40 last:border-b-0">
                         <span className="text-text-muted">{label}</span>
-                        <span className="font-semibold text-text-primary">{value}</span>
+                        <span className="font-bold text-text-primary">{value}</span>
                       </div>
                     ))}
                   </div>
@@ -328,11 +338,11 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
       </div>
 
       {/* Navigation footer */}
-      <div className="flex items-center gap-3 pt-5 mt-5 border-t border-border-default shrink-0">
+      <div className="flex items-center gap-3 pt-5 mt-5 border-t border-border-default/60 shrink-0">
         <Button
           variant="outline"
           size="lg"
-          className="flex-1 min-h-[44px] border-border-default text-text-secondary hover:text-text-primary"
+          className="flex-1 min-h-[44px] border-border-default/80 text-text-secondary hover:text-text-primary font-mono font-bold text-xs sm:text-sm rounded-xl touch-target cursor-pointer"
           onClick={step === 1 ? onCancel : () => setStep((p) => (p - 1) as WizardStep)}
         >
           {step === 1 ? 'Cancel' : 'Back'}
@@ -342,7 +352,7 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
           <Button
             type="submit"
             size="lg"
-            className="flex-1 min-h-[44px] bg-primary text-primary-foreground hover:opacity-90 font-semibold"
+            className="flex-1 min-h-[44px] bg-primary text-primary-foreground hover:opacity-90 font-mono font-bold text-xs sm:text-sm rounded-xl touch-target cursor-pointer shadow-xs active:scale-95"
             form={`wizard-step-${step}`}
           >
             Continue
@@ -350,11 +360,11 @@ export function CreatePlanWizard({ onSuccess, onCancel }: CreatePlanWizardProps)
         ) : (
           <LoadingButton
             size="lg"
-            className="flex-1 min-h-[44px] bg-primary text-primary-foreground hover:opacity-90 font-semibold"
+            className="flex-1 min-h-[44px] bg-primary text-primary-foreground hover:opacity-90 font-mono font-bold text-xs sm:text-sm rounded-xl touch-target cursor-pointer shadow-xs active:scale-95"
             type="submit"
             form="wizard-step-4"
             isLoading={createPlan.isPending}
-            loadingText="Creating..."
+            loadingText="Creating Plan..."
           >
             Create Plan
           </LoadingButton>

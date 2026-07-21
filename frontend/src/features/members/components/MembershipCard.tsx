@@ -47,24 +47,28 @@ function getDaysRemaining(endDate?: string): number | null {
 export function MembershipCard({ member, isLoading }: MembershipCardProps) {
   const daysRemaining = getDaysRemaining(member?.membershipEndDate);
   const isExpiring = daysRemaining !== null && daysRemaining <= 7;
+  const isExpired = daysRemaining !== null && daysRemaining <= 0;
 
   return (
     <WidgetContainer>
-      <WidgetHeader title="Membership" />
+      <WidgetHeader title="Membership Tier" description="Active subscription & validity details" />
       <WidgetBody isLoading={isLoading}>
         {member && (
-          <div className="divide-y divide-border-default">
-            <div className="flex items-center justify-between py-2.5 sm:py-3">
-              <span className="text-sm font-medium text-text-primary">{member.planName || "No Plan"}</span>
+          <div className="divide-y divide-border-default/60 font-mono">
+            <div className="flex items-center justify-between py-3">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Plan Tier</span>
+                <span className="text-sm sm:text-base font-extrabold text-text-primary mt-0.5">{member.planName || "No Active Plan"}</span>
+              </div>
               <MemberStatusBadge status={member.membershipStatus} />
             </div>
             <StatRow
-              icon={<Calendar className="h-4 w-4" />}
+              icon={<Calendar className="h-4 w-4 text-primary" />}
               label="Start Date"
               value={member.membershipStartDate ? format(parseISO(member.membershipStartDate), "MMM d, yyyy") : "—"}
             />
             <StatRow
-              icon={<Calendar className="h-4 w-4" />}
+              icon={<Calendar className="h-4 w-4 text-primary" />}
               label="End Date"
               value={member.membershipEndDate ? format(parseISO(member.membershipEndDate), "MMM d, yyyy") : "—"}
             />
@@ -72,11 +76,11 @@ export function MembershipCard({ member, isLoading }: MembershipCardProps) {
               icon={<Hourglass className="h-4 w-4" />}
               label="Days Remaining"
               value={daysRemaining !== null ? (daysRemaining > 0 ? `${daysRemaining} days` : "Expired") : "—"}
-              highlighted={isExpiring}
+              highlighted={isExpiring || isExpired}
             />
             <StatRow
-              icon={<LogIn className="h-4 w-4" />}
-              label="Joined"
+              icon={<LogIn className="h-4 w-4 text-text-muted" />}
+              label="Joined Gym"
               value={member.joiningDate ? format(parseISO(member.joiningDate), "MMM d, yyyy") : "—"}
             />
           </div>

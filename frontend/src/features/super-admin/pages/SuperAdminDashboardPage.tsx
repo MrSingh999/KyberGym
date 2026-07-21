@@ -24,19 +24,19 @@ function StatCard({ label, value, icon, color, isLoading }: {
 }) {
   const Icon = icon;
   return (
-    <div className="rounded-xl border border-border-default bg-surface p-4 sm:p-5 hover:border-border-hover transition-all duration-200 card-hover">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", color)}>
-          <Icon className="w-4 h-4" />
+    <div className="rounded-2xl border border-border-default/80 bg-surface/80 backdrop-blur-xs p-4 sm:p-5 hover:border-border-hover/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border border-border-default/50 transition-transform duration-300 group-hover:scale-105", color)}>
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wide font-mono leading-tight sm:leading-none">
+        <span className="text-[11px] sm:text-xs font-bold text-text-muted uppercase tracking-wider font-mono leading-tight truncate">
           {label}
         </span>
       </div>
       {isLoading ? (
-        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-8 w-16 rounded-lg" />
       ) : (
-        <p className="text-2xl font-bold text-text-primary font-mono tracking-tight leading-none">
+        <p className="text-xl sm:text-2xl font-extrabold text-text-primary font-mono tracking-tight leading-none">
           {value.toLocaleString()}
         </p>
       )}

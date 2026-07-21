@@ -59,6 +59,7 @@ export interface WorkoutListItem {
 
 export interface WorkoutFilters {
   status?: WorkoutStatus;
+  category?: string;
 }
 
 export type WorkoutSortField = "title" | "createdAt" | "updatedAt";

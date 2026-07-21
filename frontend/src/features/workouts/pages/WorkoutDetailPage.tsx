@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Edit3, Trash2, Plus, Dumbbell, Calendar, Clock, Target, Copy, Archive,
+  ArrowLeft, Edit3, Trash2, Plus, Dumbbell, Calendar, Clock, Target, Copy, Archive, UserPlus,
 } from "lucide-react";
 import { useWorkout, useDeleteWorkout, useDuplicateWorkout, useArchiveWorkout, useCreateWorkoutDay, useUpdateWorkoutDay, useDeleteWorkoutDay } from "../hooks/useWorkouts";
 import { WorkoutStatusBadge } from "../components/WorkoutStatusBadge";
 import { WorkoutDayCard } from "../components/WorkoutDayCard";
 import { WorkoutDayForm } from "../components/WorkoutDayForm";
+import { AssignWorkoutModal } from "@/features/workoutAssignments/components/AssignWorkoutModal";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Skeleton } from "@/components/feedback/Skeleton";
@@ -29,6 +30,7 @@ export function WorkoutDetailPage() {
   const [showAddDay, setShowAddDay] = useState(false);
   const [editingDay, setEditingDay] = useState<WorkoutDay | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   const handleDeleteWorkout = () => {
     if (!workoutId) return;
@@ -137,15 +139,25 @@ export function WorkoutDetailPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full max-w-4xl mx-auto space-y-6">
-      <button
-        onClick={() => navigate("/admin/workouts")}
-        className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-2"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Workouts
-      </button>
+      <div className="flex items-center justify-between gap-4">
+        <button
+          onClick={() => navigate("/admin/workouts")}
+          className="flex items-center gap-1.5 text-xs font-mono text-text-secondary hover:text-text-primary transition-colors cursor-pointer min-h-[38px]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Workout Library</span>
+        </button>
 
-      <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-border-hover space-y-4">
+        <button
+          onClick={() => setAssignModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[6px] text-xs font-mono font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all cursor-pointer min-h-[38px] active:scale-[0.98]"
+        >
+          <UserPlus className="h-4 w-4" />
+          <span>Assign to Members</span>
+        </button>
+      </div>
+
+      <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-border-default space-y-5">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-border-default/40">
           <div className="space-y-1">
@@ -158,34 +170,34 @@ export function WorkoutDetailPage() {
             </p>
           </div>
 
-          <div className="flex items-center space-x-1.5 shrink-0 self-end sm:self-center">
+          <div className="flex items-center space-x-1 shrink-0 self-end sm:self-center">
             <button
               onClick={() => navigate(`/admin/workouts/${workoutId}/edit`)}
-              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover cursor-pointer"
-              title="Edit Details"
+              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+              title="Edit Program Details"
             >
               <Edit3 className="h-4 w-4" />
             </button>
             <button
               onClick={handleDuplicate}
-              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover cursor-pointer"
-              title="Duplicate"
+              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+              title="Duplicate Program"
             >
               <Copy className="h-4 w-4" />
             </button>
             {workout.status !== "ARCHIVED" && (
               <button
                 onClick={handleArchive}
-                className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-amber-600 hover:bg-amber-500/10 hover:border-amber-500/20 cursor-pointer"
-                title="Archive"
+                className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-amber-500 hover:bg-amber-500/10 transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+                title="Archive Program"
               >
                 <Archive className="h-4 w-4" />
               </button>
             )}
             <button
               onClick={handleDeleteWorkout}
-              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 cursor-pointer"
-              title="Delete"
+              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+              title="Delete Program"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -330,6 +342,13 @@ export function WorkoutDetailPage() {
           </div>
         </div>
       </ResponsiveModal>
+
+      {/* Assign Workout Modal */}
+      <AssignWorkoutModal
+        open={assignModalOpen}
+        onOpenChange={setAssignModalOpen}
+        initialWorkoutId={workoutId}
+      />
     </div>
   );
 }

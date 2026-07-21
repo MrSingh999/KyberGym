@@ -120,24 +120,27 @@ export function MembersTable({
       cell: ({ row }) => {
         const member = row.original;
         return (
-          <div className="flex items-center justify-end space-x-1.5">
+          <div className="flex items-center justify-end gap-2 font-mono">
             <Button
               onClick={() => navigate(`/admin/members/${member.id}`)}
-              className="bg-primary hover:opacity-90 text-primary-foreground px-3 py-1.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer border border-border-hover h-auto min-h-0"
+              className="bg-primary hover:opacity-90 text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer min-h-[36px] sm:min-h-0"
             >
               Details
             </Button>
             <button
-              onClick={() => navigate(`/admin/payments?search=${encodeURIComponent(member.name)}`)}
+              onClick={() => navigate(`/admin/member-payments?search=${encodeURIComponent(member.name)}`)}
               title="View Payment History"
-              className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover transition-all duration-200 cursor-pointer"
+              aria-label="View Payment History"
+              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 border border-border-default/80 rounded-lg text-xs font-bold text-text-secondary hover:text-text-primary hover:bg-surface-hover hover:border-border-hover transition-all duration-200 cursor-pointer min-h-[36px] sm:min-h-0"
             >
-              <History className="h-3.5 w-3.5" />
+              <History className="h-3.5 w-3.5 text-primary" />
+              <span>Payments</span>
             </button>
             <button
               onClick={() => onDeleteMember(member.id, member.name)}
               title="Delete Member"
-              className="p-1.5 border border-border-default rounded-[4px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
+              aria-label="Delete Member"
+              className="p-2 border border-border-default/80 rounded-lg text-text-muted hover:text-error hover:bg-error/10 hover:border-error/30 transition-all duration-200 cursor-pointer min-h-[36px] sm:min-h-0"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>

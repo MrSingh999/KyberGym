@@ -102,7 +102,18 @@ export function useAssignWorkout() {
 
   return useMutation({
     mutationFn: async (data: AssignWorkoutData) => {
-      const response = await apiClient.post("/workout-assignments", data);
+      const payload: any = {
+        workoutId: data.workoutId,
+        assignmentType: data.assignmentType,
+        memberIds: data.assignmentType === "SELECTED" ? data.memberIds : [],
+      };
+      if (data.startDate) {
+        payload.startDate = new Date(data.startDate).toISOString();
+      }
+      if (data.endDate) {
+        payload.endDate = new Date(data.endDate).toISOString();
+      }
+      const response = await apiClient.post("/workout-assignments", payload);
       return response.data.data || response.data;
     },
     onSuccess: () => {

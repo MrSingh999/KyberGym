@@ -14,19 +14,33 @@ export function CreatePlanPage() {
   };
 
   return (
-    <div className="min-h-full bg-canvas">
-      {/* Full-page wrapper with back nav on desktop */}
-      <div className="hidden sm:flex items-center gap-3 px-6 py-4 border-b border-border-default bg-surface">
-        <button onClick={handleClose} className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer">
-          <ArrowLeft className="w-4 h-4" /> Back to Plans
-        </button>
-        <span className="text-text-muted/40">/</span>
-        <span className="text-sm font-semibold text-text-primary">New Plan</span>
+    <div className="min-h-full bg-canvas animate-fade-slide-up">
+      {/* Sticky Glass Navigation Bar */}
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-surface/90 border-b border-border-default/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-2.5">
+          <button 
+            onClick={handleClose} 
+            className="flex items-center gap-2 text-xs sm:text-sm font-mono font-bold text-text-muted hover:text-text-primary transition-colors cursor-pointer min-h-[44px] sm:min-h-0 px-2 rounded-lg touch-target"
+          >
+            <ArrowLeft className="w-4 h-4" /> 
+            <span>Back to Plans</span>
+          </button>
+          <span className="text-text-muted/40 font-mono">/</span>
+          <span className="text-xs sm:text-sm font-mono font-bold text-text-primary">New Plan</span>
+        </div>
       </div>
 
-      <div className="p-4 sm:p-8 max-w-xl mx-auto">
-        <div className="bg-surface border border-border-default rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h1 className="font-bold text-xl text-text-primary mb-6 tracking-tight">Create Membership Plan</h1>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
+        <div className="bg-surface/80 backdrop-blur-xs border border-border-default/80 rounded-2xl p-5 sm:p-8 shadow-xs">
+          <div className="mb-6 pb-4 border-b border-border-default/60">
+            <h1 className="font-extrabold text-xl sm:text-2xl text-text-primary tracking-tight font-mono">
+              Create Membership Plan
+            </h1>
+            <p className="text-xs text-text-secondary mt-1 font-sans">
+              Set up plan parameters, pricing tiers, validity duration, and included perks.
+            </p>
+          </div>
+
           <CreatePlanWizard
             onSuccess={() => {
               navigate('/admin/plans');

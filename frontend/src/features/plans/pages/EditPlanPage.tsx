@@ -20,32 +20,46 @@ export function EditPlanPage() {
   };
 
   return (
-    <div className="min-h-full bg-canvas">
-      <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-border-default bg-surface">
-        <button
-          onClick={() => navigate(`/admin/plans/${planId}`)}
-          className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
-        <span className="text-text-muted/40">/</span>
-        <span className="text-sm font-semibold text-text-primary">Edit Plan</span>
+    <div className="min-h-full bg-canvas animate-fade-slide-up">
+      {/* Sticky Glass Top Navigation */}
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 bg-surface/90 border-b border-border-default/80 backdrop-blur-md">
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate(`/admin/plans/${planId}`)}
+            className="flex items-center gap-2 text-xs sm:text-sm font-mono font-bold text-text-muted hover:text-text-primary transition-colors cursor-pointer min-h-[44px] sm:min-h-0 px-2 rounded-lg touch-target"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+          <span className="text-text-muted/40 font-mono">/</span>
+          <span className="text-xs sm:text-sm font-mono font-bold text-text-primary truncate">
+            Edit Plan {plan ? `— ${plan.name}` : ''}
+          </span>
+        </div>
       </div>
 
-      <div className="p-4 sm:p-8 max-w-2xl mx-auto">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto w-full">
         {isLoading ? (
-          <div className="space-y-5">
-            <Skeleton className="h-7 w-40" />
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-11 rounded-lg" />)}
+          <div className="space-y-5 bg-surface/80 border border-border-default/80 rounded-2xl p-6 sm:p-8">
+            <Skeleton className="h-7 w-48 rounded-lg" />
+            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 rounded-xl" />)}
           </div>
         ) : plan ? (
-          <div className="bg-surface border border-border-default rounded-2xl p-6 sm:p-8 shadow-sm">
-            <h1 className="font-bold text-xl text-text-primary mb-8 tracking-tight">Edit — {plan.name}</h1>
+          <div className="bg-surface/80 backdrop-blur-xs border border-border-default/80 rounded-2xl p-5 sm:p-8 shadow-xs">
+            <div className="mb-6 pb-4 border-b border-border-default/60">
+              <h1 className="font-extrabold text-xl sm:text-2xl text-text-primary tracking-tight font-mono">
+                Edit Membership Plan
+              </h1>
+              <p className="text-xs text-text-secondary mt-1 font-sans">
+                Update plan pricing, billing cycle, feature inclusions, and display settings.
+              </p>
+            </div>
             <EditPlanForm plan={plan} onSubmit={handleSubmit} isSubmitting={isPending} />
           </div>
         ) : (
-          <p className="text-muted text-center py-20">Plan not found.</p>
+          <div className="text-center py-20 bg-surface/40 rounded-2xl border border-border-default/60">
+            <p className="text-sm font-mono text-text-muted">Plan not found.</p>
+          </div>
         )}
       </div>
     </div>

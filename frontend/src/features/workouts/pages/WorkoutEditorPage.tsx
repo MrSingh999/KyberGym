@@ -1,14 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, UserPlus } from "lucide-react";
 import { z } from "zod";
 import { LoadingButton } from "@/components/ui/button";
 import { useWorkout, useCreateWorkout, useSaveNestedWorkout } from "../hooks/useWorkouts";
 import { WorkoutInfoSection } from "../components/WorkoutInfoSection";
 import { WorkoutDayEditor } from "../components/WorkoutDayEditor";
+import { AssignWorkoutModal } from "@/features/workoutAssignments/components/AssignWorkoutModal";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 
@@ -46,6 +47,7 @@ export function WorkoutEditorPage() {
   const { workoutId } = useParams();
   const navigate = useNavigate();
   const isEdit = !!workoutId;
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   const { data: workout, isLoading, isError } = useWorkout(workoutId ?? "", { enabled: isEdit });
   const { mutate: createWorkout, isPending: isCreating } = useCreateWorkout();
@@ -100,7 +102,7 @@ export function WorkoutEditorPage() {
     if (isEdit && workoutId) {
       saveNested(data, {
         onSuccess: () => {
-          toast.success("Workout saved");
+          toast.success("Workout saved successfully");
           navigate(`/admin/workouts/${workoutId}`);
         },
         onError: (err: any) => {
@@ -113,7 +115,7 @@ export function WorkoutEditorPage() {
         {
           onSuccess: (res) => {
             const newId = res._id || res.id;
-            toast.success("Workout created");
+            toast.success("Workout created successfully");
             navigate(`/admin/workouts/${newId}`);
           },
           onError: (err: any) => {
@@ -143,25 +145,75 @@ export function WorkoutEditorPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-4xl mx-auto space-y-6">
-      <button
-        onClick={() => navigate(isEdit ? `/admin/workouts/${workoutId}` : "/admin/workouts")}
-        className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {isEdit ? "Back to Workout" : "Back to Workouts"}
-      </button>
+    <div className="p-4 sm:p-6 lg:p-8 w-full max-w-4xl mx-auto space-y-6 pb-24 sm:pb-8">
+      {/* Top Header Navigation */}
+      <div className="flex items-center justify-between gap-4">
+        <button
+          onClick={() => navigate(isEdit ? `/admin/workouts/${workoutId}` : "/admin/workouts")}
+          className="flex items-center gap-1.5 text-xs font-mono text-text-secondary hover:text-text-primary transition-colors cursor-pointer min-h-[38px]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>{isEdit ? "Back to Workout" : "Back to Workout Library"}</span>
+        </button>
+
+        {isEdit && (
+          <button
+            type="button"
+            onClick={() => setAssignModalOpen(true)}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-[6px] text-xs font-mono font-semibold bg-surface border border-border-default hover:bg-surface-hover transition-all cursor-pointer min-h-[38px]"
+          >
+            <UserPlus className="h-4 w-4 text-primary" />
+            <span>Assign to Members</span>
+          </button>
+        )}
+      </div>
 
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <WorkoutInfoSection form={form} />
         <WorkoutDayEditor form={form} />
 
-        <div className="flex justify-end gap-3 pt-2">
-          <LoadingButton type="submit" loading={isCreating || isSaving}>
+        {/* Desktop Save Bar */}
+        <div className="hidden sm:flex justify-end gap-3 pt-4 border-t border-border-default">
+          <button
+            type="button"
+            onClick={() => navigate(isEdit ? `/admin/workouts/${workoutId}` : "/admin/workouts")}
+            className="px-4 py-2.5 rounded-[6px] text-xs font-mono font-semibold bg-surface border border-border-default hover:bg-surface-hover text-text-secondary transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <LoadingButton type="submit" loading={isCreating || isSaving} className="min-h-[40px] px-6 cursor-pointer">
+            <Save className="h-4 w-4 mr-2" />
+            {isEdit ? "Save Workout Split" : "Create Workout Split"}
+          </LoadingButton>
+        </div>
+
+        {/* Mobile Sticky Bottom Bar */}
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-3 bg-surface/95 backdrop-blur-md border-t border-border-default z-40 flex items-center gap-2">
+          {isEdit && (
+            <button
+              type="button"
+              onClick={() => setAssignModalOpen(true)}
+              className="p-3 rounded-[6px] bg-surface border border-border-default text-text-primary cursor-pointer min-h-[44px] flex items-center justify-center"
+              title="Assign"
+            >
+              <UserPlus className="h-5 w-5 text-primary" />
+            </button>
+          )}
+          <LoadingButton type="submit" loading={isCreating || isSaving} className="flex-1 min-h-[44px] font-mono text-xs cursor-pointer">
+            <Save className="h-4 w-4 mr-2" />
             {isEdit ? "Save Workout" : "Create Workout"}
           </LoadingButton>
         </div>
       </form>
+
+      {/* Assign Workout Modal */}
+      {isEdit && (
+        <AssignWorkoutModal
+          open={assignModalOpen}
+          onOpenChange={setAssignModalOpen}
+          initialWorkoutId={workoutId}
+        />
+      )}
     </div>
   );
 }

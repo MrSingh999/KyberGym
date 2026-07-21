@@ -9,25 +9,25 @@ interface PlanOverviewCardProps {
 
 export function PlanOverviewCard({ plan }: PlanOverviewCardProps) {
   return (
-    <div className="bg-surface border border-border-default rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-surface/80 backdrop-blur-xs border border-border-default/80 rounded-2xl overflow-hidden shadow-xs">
       {plan.color && <div className="h-1.5" style={{ backgroundColor: plan.color }} />}
 
-      <div className="p-6 space-y-6">
+      <div className="p-5 sm:p-6 space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-xl text-text-primary">{plan.name}</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">{plan.name}</h2>
             <PlanStatusBadge status={plan.status} />
           </div>
-          {plan.description && <p className="text-sm text-text-secondary">{plan.description}</p>}
-          <div className="flex gap-2 flex-wrap">
+          {plan.description && <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">{plan.description}</p>}
+          <div className="flex gap-2 flex-wrap pt-1">
             {plan.isPopular && (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning bg-warning/10 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold font-mono uppercase tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
                 <Star className="w-3 h-3 fill-current" /> Popular
               </span>
             )}
             {plan.isDefault && (
-              <span className="text-xs font-semibold text-text-muted bg-surface-hover px-2 py-0.5 rounded-full border border-border-default">
+              <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-text-muted bg-surface-hover px-2 py-0.5 rounded-full border border-border-default">
                 Default Plan
               </span>
             )}
@@ -37,28 +37,32 @@ export function PlanOverviewCard({ plan }: PlanOverviewCardProps) {
         {/* Metrics grid */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: IndianRupee, label: 'Price', value: `₹${plan.price}` },
+            { icon: IndianRupee, label: 'Price', value: `₹${plan.price.toLocaleString()}` },
             { icon: Clock, label: 'Duration', value: `${plan.duration} ${DURATION_TYPE_LABELS[plan.durationType]}` },
             { icon: Users, label: 'Members', value: String(plan.memberCount ?? 0) },
           ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex flex-col items-center p-3 rounded-xl bg-surface-hover border border-border-default text-center">
-              <Icon className="w-4 h-4 text-text-muted mb-1.5" />
-              <span className="text-base font-bold text-text-primary">{value}</span>
-              <span className="text-[10px] text-text-muted mt-0.5">{label}</span>
+            <div key={label} className="flex flex-col items-center p-3 rounded-xl bg-surface-hover/50 border border-border-default/60 text-center">
+              <Icon className="w-4 h-4 text-primary mb-1" />
+              <span className="text-sm sm:text-base font-extrabold font-mono text-text-primary">{value}</span>
+              <span className="text-[10px] text-text-muted uppercase font-mono mt-0.5 font-bold">{label}</span>
             </div>
           ))}
         </div>
 
-        {plan.joiningFee && plan.joiningFee > 0 && (
-          <p className="text-xs text-text-muted">
-            + ₹{plan.joiningFee} one-time joining fee
+        {plan.joiningFee && plan.joiningFee > 0 ? (
+          <p className="text-xs text-text-muted font-mono">
+            + ₹{plan.joiningFee.toLocaleString()} one-time joining fee
+          </p>
+        ) : (
+          <p className="text-xs text-text-muted font-mono">
+            Zero joining fee
           </p>
         )}
 
         {/* Features */}
         {plan.features.length > 0 && (
-          <div className="pt-4 border-t border-border-default">
-            <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">What's included</p>
+          <div className="pt-4 border-t border-border-default/60">
+            <p className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono mb-3">What's included</p>
             <PlanFeaturesList features={plan.features} />
           </div>
         )}

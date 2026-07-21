@@ -79,32 +79,36 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
 
         {/* Basic Info */}
         <section className="space-y-5">
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Basic Information</h3>
+          <div className="pb-2 border-b border-border-default/60">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono">Basic Information</h3>
+          </div>
 
           <FormField control={form.control} name="name" render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-semibold text-text-primary">Plan Name <span className="text-error">*</span></FormLabel>
+              <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Plan Name <span className="text-error">*</span></FormLabel>
               <FormControl>
-                <Input className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} />
+                <Input className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )} />
+
           <FormField control={form.control} name="description" render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-semibold text-text-primary">Description</FormLabel>
+              <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Description</FormLabel>
               <FormControl>
-                <textarea {...field} rows={3} className="flex w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all resize-none" />
+                <textarea {...field} rows={3} className="flex w-full rounded-xl border border-border-default/80 bg-surface/90 px-3.5 py-2.5 text-xs sm:text-sm text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all resize-none font-mono" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )} />
+
           <div>
-            <label className="text-sm font-semibold text-text-primary mb-2 block">Accent Color</label>
-            <div className="flex gap-2 flex-wrap">
+            <label className="text-xs sm:text-sm font-bold text-text-primary font-mono mb-2.5 block">Accent Color</label>
+            <div className="flex gap-2.5 flex-wrap">
               {ACCENT_COLORS.map((c) => (
                 <button key={c} type="button" onClick={() => form.setValue('color', c, { shouldDirty: true })}
-                  className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer ${form.watch('color') === c ? 'border-primary scale-110' : 'border-transparent hover:scale-105'}`}
+                  className={`w-9 h-9 sm:w-8 sm:h-8 rounded-xl border-2 transition-all cursor-pointer touch-target ${form.watch('color') === c ? 'border-primary scale-110 shadow-xs' : 'border-transparent hover:scale-105 opacity-80 hover:opacity-100'}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
@@ -114,19 +118,22 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
 
         {/* Pricing */}
         <section className="space-y-5">
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Pricing</h3>
-          <div className="space-y-5">
+          <div className="pb-2 border-b border-border-default/60">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono">Pricing & Billing</h3>
+          </div>
+
+          <div className="space-y-4">
             <FormField control={form.control} name="price" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-text-primary">Price (₹) <span className="text-error">*</span></FormLabel>
+                <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Price (₹) <span className="text-error">*</span></FormLabel>
                 <FormControl>
-                  <Input type="number" min={0} step={0.01} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                  <Input type="number" min={0} step={0.01} className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
 
-            <div className="flex items-center gap-2.5 space-y-0">
+            <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl border border-border-default/60 bg-surface-hover/30 hover:bg-surface-hover/60 transition-colors">
               <input
                 type="checkbox"
                 id="hasJoiningFee"
@@ -136,36 +143,41 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
                   setHasJoiningFee(checked);
                   form.setValue('joiningFee', checked ? plan.joiningFee || ('' as any) : ('' as any), { shouldDirty: true });
                 }}
-                className="w-4 h-4 accent-primary cursor-pointer"
+                className="w-5 h-5 accent-primary cursor-pointer rounded shrink-0 touch-target"
               />
-              <label htmlFor="hasJoiningFee" className="text-sm font-normal cursor-pointer text-text-primary">
-                Charge a joining fee for this plan
+              <label htmlFor="hasJoiningFee" className="text-xs sm:text-sm font-bold font-mono cursor-pointer text-text-primary">
+                Charge a one-time joining fee for this plan
               </label>
             </div>
 
             {hasJoiningFee && (
               <FormField control={form.control} name="joiningFee" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-text-primary">Joining Fee (₹)</FormLabel>
+                  <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Joining Fee (₹)</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} step={0.01} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                    <Input type="number" min={0} step={0.01} className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
             )}
           </div>
-          <div className="flex gap-6 pt-2">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <FormField control={form.control} name="isPopular" render={({ field }) => (
-              <FormItem className="flex items-center gap-2.5 space-y-0">
-                <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary cursor-pointer" /></FormControl>
-                <FormLabel className="font-normal cursor-pointer text-text-primary">Mark as Popular</FormLabel>
+              <FormItem className="flex items-center gap-3 p-3 rounded-xl border border-border-default/60 bg-surface-hover/30 hover:bg-surface-hover/60 transition-colors space-y-0">
+                <FormControl>
+                  <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-5 h-5 accent-primary cursor-pointer rounded shrink-0 touch-target" />
+                </FormControl>
+                <FormLabel className="text-xs sm:text-sm font-bold font-mono cursor-pointer text-text-primary">Mark as Popular Tier</FormLabel>
               </FormItem>
             )} />
             <FormField control={form.control} name="isDefault" render={({ field }) => (
-              <FormItem className="flex items-center gap-2.5 space-y-0">
-                <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 accent-primary cursor-pointer" /></FormControl>
-                <FormLabel className="font-normal cursor-pointer text-text-primary">Set as Default</FormLabel>
+              <FormItem className="flex items-center gap-3 p-3 rounded-xl border border-border-default/60 bg-surface-hover/30 hover:bg-surface-hover/60 transition-colors space-y-0">
+                <FormControl>
+                  <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-5 h-5 accent-primary cursor-pointer rounded shrink-0 touch-target" />
+                </FormControl>
+                <FormLabel className="text-xs sm:text-sm font-bold font-mono cursor-pointer text-text-primary">Set as Default Selection</FormLabel>
               </FormItem>
             )} />
           </div>
@@ -173,22 +185,24 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
 
         {/* Duration */}
         <section className="space-y-5">
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Duration</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="pb-2 border-b border-border-default/60">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono">Validity & Cycle</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField control={form.control} name="duration" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-text-primary">Duration <span className="text-error">*</span></FormLabel>
+                <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Duration Count <span className="text-error">*</span></FormLabel>
                 <FormControl>
-                  <Input type="number" min={1} className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
+                  <Input type="number" min={1} className="h-11 min-h-[44px] border-border-default/80 bg-surface/90 font-mono text-xs sm:text-sm rounded-xl focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/50" {...field} onChange={(e) => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="durationType" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-text-primary">Type <span className="text-error">*</span></FormLabel>
+                <FormLabel className="text-xs sm:text-sm font-bold text-text-primary font-mono">Duration Unit <span className="text-error">*</span></FormLabel>
                 <FormControl>
-                  <select {...field} className="flex h-11 w-full rounded-lg border border-border-default bg-surface px-3 py-2 text-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all cursor-pointer">
+                  <select {...field} className="flex h-11 min-h-[44px] w-full rounded-xl border border-border-default/80 bg-surface/90 px-3.5 py-2.5 text-xs sm:text-sm font-mono text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all cursor-pointer">
                     {Object.entries(DURATION_TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 </FormControl>
@@ -200,32 +214,40 @@ export function EditPlanForm({ plan, onSubmit, isSubmitting }: EditPlanFormProps
 
         {/* Features */}
         <section className="space-y-4">
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">Features</h3>
-          <div className="space-y-2">
+          <div className="pb-2 border-b border-border-default/60 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-mono">Plan Features & Perks</h3>
+            <span className="text-[10px] font-mono text-text-muted font-bold">{fields.length} items</span>
+          </div>
+
+          <div className="space-y-2.5">
             {fields.map((field, i) => (
-              <div key={field.id} className="flex items-center gap-3 p-3 rounded-xl border border-border-default bg-surface hover:border-border-hover transition-colors">
-                <input type="checkbox" {...form.register(`features.${i}.included`)} className="w-4 h-4 accent-primary flex-shrink-0 cursor-pointer" />
-                <input {...form.register(`features.${i}.label`)} className="flex-1 bg-transparent text-sm text-text-primary focus:outline-none" />
-                <button type="button" onClick={() => remove(i)} className="text-text-muted hover:text-error transition-colors p-1 cursor-pointer">
-                  <Trash2 className="w-3.5 h-3.5" />
+              <div key={field.id} className="flex items-center gap-3 p-3 rounded-xl border border-border-default/70 bg-surface/90 hover:border-border-hover/80 transition-colors">
+                <input type="checkbox" {...form.register(`features.${i}.included`)} className="w-5 h-5 accent-primary flex-shrink-0 cursor-pointer rounded touch-target" />
+                <input {...form.register(`features.${i}.label`)} placeholder="Feature description..." className="flex-1 bg-transparent text-xs sm:text-sm font-mono text-text-primary focus:outline-none" />
+                <button type="button" onClick={() => remove(i)} className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-error transition-colors cursor-pointer rounded-lg touch-target shrink-0">
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             ))}
-            <button type="button" onClick={() => append({ id: `feat-${Date.now()}`, label: '', included: false })}
-              className="flex items-center gap-2 text-sm text-text-muted hover:text-text-primary transition-colors mt-1 cursor-pointer">
-              <Plus className="w-4 h-4" /> Add feature
+            <button
+              type="button"
+              onClick={() => append({ id: `feat-${Date.now()}`, label: '', included: true })}
+              className="flex items-center justify-center gap-2 px-4 h-11 w-full border border-dashed border-border-default hover:border-primary/50 rounded-xl text-xs font-mono font-bold text-text-secondary hover:text-primary transition-all cursor-pointer min-h-[44px] touch-target"
+            >
+              <Plus className="w-4 h-4" /> Add Feature Item
             </button>
           </div>
         </section>
 
-        <div className="pt-4 border-t border-border-default flex justify-end">
+        {/* Footer Actions */}
+        <div className="pt-6 border-t border-border-default/60 flex items-center justify-end gap-3">
           <Button
             type="submit"
             disabled={!isDirty || isSubmitting}
             size="lg"
-            className="min-h-[44px] px-6 bg-primary text-primary-foreground hover:opacity-90 font-semibold disabled:opacity-50"
+            className="min-h-[44px] px-6 bg-primary text-primary-foreground hover:opacity-90 font-mono font-bold text-xs sm:text-sm rounded-xl disabled:opacity-50 touch-target shadow-xs cursor-pointer active:scale-95"
           >
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
+            {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
           </Button>
         </div>
       </form>

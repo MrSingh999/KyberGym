@@ -6,10 +6,12 @@ import {
   SortingState,
   OnChangeFn,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ArrowUp, ArrowDown, XCircle } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, XCircle, Calendar, User } from "lucide-react";
 import { WorkoutAssignmentListItem } from "../types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router";
+import { Avatar, AvatarFallback } from "@/components/data-display/Avatar";
 
 interface AssignmentsTableProps {
   data: WorkoutAssignmentListItem[];
@@ -24,19 +26,44 @@ export function AssignmentsTable({
   sorting,
   onSortingChange,
 }: AssignmentsTableProps) {
+  const navigate = useNavigate();
+
   const columns: ColumnDef<WorkoutAssignmentListItem>[] = [
-    {
-      accessorKey: "workoutTitle",
-      header: ({ column }) => <SortHeader label="Workout" column={column} />,
-      cell: ({ row }) => (
-        <span className="font-medium text-primary font-mono text-[13px]">{row.original.workoutTitle}</span>
-      ),
-    },
     {
       accessorKey: "memberName",
       header: ({ column }) => <SortHeader label="Member" column={column} />,
+      cell: ({ row }) => {
+        const item = row.original;
+        const initials = item.memberName
+          ? item.memberName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+          : "MB";
+        return (
+          <div 
+            onClick={() => navigate(`/admin/members/${item.memberId}`)}
+            className="flex items-center gap-3 cursor-pointer group min-w-0"
+          >
+            <Avatar className="h-8 w-8 rounded-full border border-border-default shrink-0 group-hover:border-primary transition-colors">
+              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-black font-mono">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-semibold text-text-primary font-mono text-xs truncate group-hover:text-primary transition-colors">
+              {item.memberName}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "workoutTitle",
+      header: ({ column }) => <SortHeader label="Workout Program" column={column} />,
       cell: ({ row }) => (
-        <span className="text-sm text-text-primary font-mono">{row.original.memberName}</span>
+        <span 
+          onClick={() => navigate(`/admin/workouts/${row.original.workoutId}`)}
+          className="font-bold text-text-primary hover:text-primary font-mono text-xs cursor-pointer truncate"
+        >
+          {row.original.workoutTitle}
+        </span>
       ),
     },
     {
@@ -51,9 +78,9 @@ export function AssignmentsTable({
     },
     {
       accessorKey: "assignedAt",
-      header: ({ column }) => <SortHeader label="Assigned" column={column} />,
+      header: ({ column }) => <SortHeader label="Assigned Date" column={column} />,
       cell: ({ getValue }) => (
-        <span className="text-sm text-muted font-mono">
+        <span className="text-xs text-text-secondary font-mono">
           {new Date(getValue<string>()).toLocaleDateString()}
         </span>
       ),
@@ -61,19 +88,22 @@ export function AssignmentsTable({
     },
     {
       id: "dates",
-      header: "Period",
+      header: "Schedule Period",
       cell: ({ row }) => {
         const { startDate, endDate } = row.original;
-        if (!startDate && !endDate) return <span className="text-xs text-muted font-mono">—</span>;
+        if (!startDate && !endDate) return <span className="text-xs text-text-muted font-mono">—</span>;
         return (
-          <span className="text-xs text-muted font-mono">
-            {startDate ? new Date(startDate).toLocaleDateString() : "∞"}
-            {" → "}
-            {endDate ? new Date(endDate).toLocaleDateString() : "∞"}
-          </span>
+          <div className="flex items-center gap-1.5 text-xs text-text-secondary font-mono">
+            <Calendar className="h-3.5 w-3.5 text-text-muted shrink-0" />
+            <span>
+              {startDate ? new Date(startDate).toLocaleDateString() : "Ongoing"}
+              {" → "}
+              {endDate ? new Date(endDate).toLocaleDateString() : "Ongoing"}
+            </span>
+          </div>
         );
       },
-      size: 160,
+      size: 180,
     },
     {
       id: "actions",
@@ -82,7 +112,7 @@ export function AssignmentsTable({
         row.original.status === "ACTIVE" ? (
           <button
             onClick={(e) => { e.stopPropagation(); onRemove(row.original.id); }}
-            className="p-1.5 rounded-lg hover:bg-surface-hover text-muted hover:text-destructive transition-colors cursor-pointer"
+            className="p-1.5 rounded-md hover:bg-destructive/10 text-text-muted hover:text-destructive transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
             title="Remove assignment"
           >
             <XCircle className="w-4 h-4" />
@@ -104,17 +134,17 @@ export function AssignmentsTable({
   });
 
   return (
-    <div className="rounded-[16px] border border-default overflow-hidden bg-surface shadow-sm">
+    <div className="rounded-[16px] border border-border-default overflow-hidden bg-surface shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-default bg-elevated/50">
+              <tr key={hg.id} className="border-b border-border-default bg-surface-hover/50">
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     style={{ width: header.getSize() }}
-                    className="text-left px-5 py-3.5 text-[10px] font-bold text-muted uppercase tracking-wider font-mono"
+                    className="text-left px-5 py-3.5 text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono"
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
@@ -127,11 +157,11 @@ export function AssignmentsTable({
               <tr
                 key={row.id}
                 className={cn(
-                  "border-b border-default/30 hover:bg-surface-hover transition-colors table-row-hover table-zebra",
+                  "border-b border-border-default/40 hover:bg-surface-hover/60 transition-colors",
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-5 py-3">
+                  <td key={cell.id} className="px-5 py-3.5">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -149,7 +179,7 @@ function SortHeader({ label, column }: { label: string; column: any }) {
   return (
     <button
       onClick={column.getToggleSortingHandler()}
-      className="flex items-center gap-1.5 hover:text-primary transition-colors group"
+      className="flex items-center gap-1.5 hover:text-text-primary transition-colors group cursor-pointer"
     >
       {label}
       {sorted === "asc" ? (
@@ -162,3 +192,4 @@ function SortHeader({ label, column }: { label: string; column: any }) {
     </button>
   );
 }
+

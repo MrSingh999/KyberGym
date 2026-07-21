@@ -27,6 +27,7 @@ export function DashboardPage() {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [dueTimeframe, setDueTimeframe] = useState<"today" | "3days" | "7days">("7days");
   const [dueFilter, setDueFilter] = useState<"all" | "overdue" | "due">("all");
+  const [duesSearch, setDuesSearch] = useState("");
 
   const {
     data: dues,
@@ -42,6 +43,13 @@ export function DashboardPage() {
     error: revenueError,
     refetch: refetchRevenue,
   } = useDashboardRevenue();
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
 
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -67,8 +75,15 @@ export function DashboardPage() {
   const filteredDues = activeDues.filter((member) => {
     const daysDiff = getDaysDiff(member.endDate);
     const isOverdue = daysDiff < 0;
-    if (dueFilter === "overdue") return isOverdue;
-    if (dueFilter === "due") return !isOverdue;
+    if (dueFilter === "overdue" && !isOverdue) return false;
+    if (dueFilter === "due" && isOverdue) return false;
+
+    if (duesSearch) {
+      const q = duesSearch.toLowerCase();
+      const name = (member.memberId?.fullName || "").toLowerCase();
+      const code = (member.memberId?.memberCode || member.memberId?._id || "").toLowerCase();
+      return name.includes(q) || code.includes(q);
+    }
     return true;
   });
 
@@ -76,20 +91,26 @@ export function DashboardPage() {
     <div className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto animate-fade-slide-up">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border-default/50 pb-5">
         <div>
-          <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
-            Console <span className="text-text-secondary font-normal ml-0.5">Overview</span>
-          </h1>
-          <p className="text-text-secondary mt-1 text-xs font-mono">
-            Gym membership statuses & financial diagnostics dashboard.
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
+              {getGreeting()}, <span className="text-primary font-bold">Coach</span> 👋
+            </h1>
+            <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:inline-block">
+              {format(new Date(), "EEEE, MMM d")}
+            </span>
+          </div>
+          <p className="text-text-secondary text-xs font-mono">
+            Gym SaaS operations console & real-time membership analytics.
           </p>
         </div>
+
         <Button
           onClick={() => setIsAddMemberOpen(true)}
-          className="bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-xs transition-opacity duration-150 cursor-pointer border border-border-hover flex items-center gap-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
+          className="bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[8px] font-semibold text-xs transition-all duration-150 cursor-pointer border border-border-hover flex items-center gap-2 min-h-[44px] sm:min-h-[40px] w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98] shadow-sm"
         >
-          <UserPlus className="h-3.5 w-3.5" />
+          <UserPlus className="h-4 w-4" />
           <span>Register Member</span>
         </Button>
       </div>
@@ -101,19 +122,19 @@ export function DashboardPage() {
       <QuickActions />
 
       {/* Membership Dues — full width, top priority */}
-      <WidgetContainer className="w-full min-h-[300px] sm:min-h-[400px]">
+      <WidgetContainer className="w-full min-h-[340px] sm:min-h-[400px]">
         <WidgetHeader
-          title="Membership Dues"
-          description="Memberships expiring or overdue"
+          title="Membership Dues & Billing Diagnostics"
+          description="Track active expirations and pending payment collections"
           action={
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               {overdueCount > 0 && (
-                <Badge variant="destructive" className="text-[10px] sm:text-[9px] px-1.5 py-0.2 font-bold font-sans">
+                <Badge variant="destructive" className="text-xs sm:text-[10px] px-2.5 py-1 font-bold font-mono">
                   {overdueCount} Overdue
                 </Badge>
               )}
               {dueCount > 0 && (
-                <Badge variant="warning" className="text-[10px] sm:text-[9px] px-1.5 py-0.2 font-bold font-sans">
+                <Badge variant="warning" className="text-xs sm:text-[10px] px-2.5 py-1 font-bold font-mono">
                   {dueCount} Expiring
                 </Badge>
               )}
@@ -121,55 +142,71 @@ export function DashboardPage() {
           }
         />
         <WidgetBody isLoading={isDuesLoading} isEmpty={false} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Filters row inside body */}
-          <div className="flex flex-col gap-3 pb-3 border-b border-border-default shrink-0">
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
-              <div className="flex items-center space-x-2">
-                <span className="text-[10px] sm:text-[9px] text-text-muted font-bold uppercase tracking-wider font-mono shrink-0">
-                  Timeframe:
-                </span>
-                <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px]">
+          {/* Filters & Search row inside body */}
+          <div className="flex flex-col gap-3 pb-4 border-b border-border-default/60 shrink-0">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              
+              {/* Live Search Box */}
+              <div className="relative flex-1 w-full md:max-w-xs">
+                <input
+                  type="text"
+                  placeholder="Search member by name or code..."
+                  value={duesSearch}
+                  onChange={(e) => setDuesSearch(e.target.value)}
+                  className="w-full bg-surface/90 border border-border-default rounded-xl px-3.5 py-2.5 text-xs text-text-primary placeholder-text-muted focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 font-mono min-h-[44px] md:min-h-[38px] transition-all"
+                />
+              </div>
+
+              {/* Timeframe & Status Filter Buttons */}
+              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5">
+                <div className="flex items-center justify-between sm:justify-start gap-2 bg-surface/60 border border-border-default/70 p-1 rounded-xl">
+                  <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono pl-2 shrink-0">
+                    Range:
+                  </span>
+                  <div className="flex items-center gap-1 flex-1 sm:flex-initial">
+                    {[
+                      { val: "today" as const, label: "Today" },
+                      { val: "3days" as const, label: "3 Days" },
+                      { val: "7days" as const, label: "7 Days" },
+                    ].map((tf) => (
+                      <button
+                        key={tf.val}
+                        type="button"
+                        onClick={() => setDueTimeframe(tf.val)}
+                        className={cn(
+                          "flex-1 sm:flex-initial px-3 h-10 sm:h-7 rounded-lg text-xs sm:text-[10px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center font-mono touch-target",
+                          dueTimeframe === tf.val
+                            ? "bg-primary text-primary-foreground shadow-xs"
+                            : "text-text-secondary hover:text-text-primary hover:bg-surface-hover",
+                        )}
+                      >
+                        {tf.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 bg-surface/60 border border-border-default/70 p-1 rounded-xl overflow-x-auto custom-scrollbar">
                   {[
-                    { val: "today" as const, label: "Today" },
-                    { val: "3days" as const, label: "3 Days" },
-                    { val: "7days" as const, label: "7 Days" },
-                  ].map((tf) => (
+                    { key: "all" as const, label: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold shadow-xs" },
+                    { key: "overdue" as const, label: `Overdue (${overdueCount})`, activeClass: "bg-error/15 text-error border border-error/30 font-bold" },
+                    { key: "due" as const, label: `Due (${dueCount})`, activeClass: "bg-warning/15 text-warning border border-warning/30 font-bold" },
+                  ].map((f) => (
                     <button
-                      key={tf.val}
+                      key={f.key}
                       type="button"
-                      onClick={() => setDueTimeframe(tf.val)}
+                      onClick={() => setDueFilter(f.key)}
                       className={cn(
-                        "px-2 h-6 sm:h-5 rounded-[4px] text-[10px] sm:text-[9px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center",
-                        dueTimeframe === tf.val
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-text-secondary hover:text-text-primary",
+                        "flex-1 sm:flex-initial px-3 h-10 sm:h-7 rounded-lg text-xs sm:text-[10px] transition-all duration-150 cursor-pointer shrink-0 flex items-center justify-center border border-transparent font-mono touch-target",
+                        dueFilter === f.key
+                          ? f.activeClass
+                          : "text-text-secondary hover:text-text-primary hover:bg-surface-hover",
                       )}
                     >
-                      {tf.label}
+                      {f.label}
                     </button>
                   ))}
                 </div>
-              </div>
-              
-              <div className="flex bg-canvas border border-border-default p-0.5 rounded-[6px] self-start sm:self-center">
-                {[
-                  { key: "all" as const, label: `All (${totalDuesCount})`, activeClass: "bg-primary text-primary-foreground font-bold" },
-                  { key: "overdue" as const, label: `Overdue (${overdueCount})`, activeClass: "bg-error/10 text-error border border-error/20 font-bold" },
-                  { key: "due" as const, label: `Due (${dueCount})`, activeClass: "bg-warning/10 text-warning border border-warning/20 font-bold" },
-                ].map((f) => (
-                  <button
-                    key={f.key}
-                    onClick={() => setDueFilter(f.key)}
-                    className={cn(
-                      "px-2.5 h-6 sm:h-5 rounded-[4px] text-[10px] sm:text-[9px] transition-all duration-150 cursor-pointer shrink-0 flex items-center justify-center border border-transparent",
-                      dueFilter === f.key
-                        ? f.activeClass
-                        : "text-text-secondary hover:text-text-primary",
-                    )}
-                  >
-                    {f.label}
-                  </button>
-                ))}
               </div>
             </div>
           </div>
@@ -184,8 +221,8 @@ export function DashboardPage() {
               />
             ) : filteredDues.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-10 h-10 border border-border-default rounded-[8px] flex items-center justify-center mx-auto mb-3 text-text-secondary">
-                  <TrendingUp className="h-4 w-4" />
+                <div className="w-12 h-12 border border-border-default rounded-2xl flex items-center justify-center mx-auto mb-3 text-text-secondary bg-surface/50">
+                  <TrendingUp className="h-5 w-5" />
                 </div>
                 <h3 className="text-xs font-bold text-text-primary mb-1 font-mono">
                   Diagnostics Clear
@@ -196,14 +233,14 @@ export function DashboardPage() {
                 <Button
                   onClick={() => setIsAddMemberOpen(true)}
                   variant="outline"
-                  className="text-[10px] h-8 flex items-center gap-1.5 mx-auto rounded-[6px] cursor-pointer"
+                  className="text-xs h-10 px-4 flex items-center gap-2 mx-auto rounded-xl cursor-pointer min-h-[44px]"
                 >
-                  <UserPlus className="h-3 w-3" />
+                  <UserPlus className="h-4 w-4" />
                   <span>Register Member</span>
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-2.5">
+              <div className="grid grid-cols-1 gap-3">
                 {filteredDues.map((member, idx) => {
                   const daysDiff = getDaysDiff(member.endDate);
                   const isOverdue = daysDiff < 0;
@@ -211,16 +248,16 @@ export function DashboardPage() {
                     <div
                       key={member.id || member._id || idx}
                       className={cn(
-                        "p-3 sm:p-4 rounded-xl border transition-all duration-300 bg-surface/30 hover:bg-surface/50 hover:shadow-sm hover:border-border-hover hover:translate-y-[-1px] group",
+                        "p-4 rounded-xl border transition-all duration-300 bg-surface/40 hover:bg-surface/80 hover:shadow-md hover:-translate-y-0.5 group flex flex-col sm:flex-row sm:items-center justify-between gap-3",
                         isOverdue
-                          ? "border-error/15 border-l-[3px] border-l-error"
-                          : "border-warning/15 border-l-[3px] border-l-warning",
+                          ? "border-error/20 border-l-4 border-l-error"
+                          : "border-warning/20 border-l-4 border-l-warning",
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 sm:h-8 sm:w-8 shrink-0">
+                      <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                        <Avatar className="h-11 w-11 sm:h-10 sm:w-10 shrink-0">
                           <AvatarFallback className={cn(
-                            "text-xs sm:text-[10px] font-bold transition-all duration-300 group-hover:scale-105",
+                            "text-xs font-bold transition-transform duration-300 group-hover:scale-105",
                             isOverdue 
                               ? "bg-error/10 text-error border border-error/20" 
                               : "bg-warning/10 text-warning border border-warning/20"
@@ -230,53 +267,45 @@ export function DashboardPage() {
                         </Avatar>
 
                         <div className="min-w-0 flex-1">
-                          <h4 className="font-bold text-sm sm:text-xs text-text-primary truncate group-hover:text-primary transition-colors duration-200">
-                            {member.memberId?.fullName || "Gym Member"}
-                          </h4>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-bold text-sm text-text-primary truncate group-hover:text-primary transition-colors">
+                              {member.memberId?.fullName || "Gym Member"}
+                            </h4>
                             <span className={cn(
-                              "text-[10px] sm:text-[9px] font-bold px-1.5 py-0.2 rounded-full",
-                              isOverdue ? "bg-error/10 text-error" : "bg-warning/10 text-warning"
+                              "text-[10px] font-bold px-2 py-0.5 rounded-full font-mono",
+                              isOverdue ? "bg-error/15 text-error" : "bg-warning/15 text-warning"
                             )}>
                               {isOverdue ? "Expired" : "Expiring"}
                             </span>
-                            <span className="text-[10px] sm:text-[9px] text-text-muted font-mono">
-                              {member.memberId?._id}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-text-muted font-mono truncate">
+                              ID: {member.memberId?._id || member.memberId?.memberCode || "—"}
+                            </span>
+                            <span className="text-border-default">•</span>
+                            <span className="text-xs text-text-muted font-mono">
+                              Due: {formatDate(member.endDate)}
                             </span>
                           </div>
                         </div>
-
-                        <div className="text-right shrink-0">
-                          <span className="text-[10px] sm:text-[9px] text-text-muted font-mono block">
-                            Due: {formatDate(member.endDate)}
-                          </span>
-                          {isOverdue ? (
-                            <span className="text-[10px] sm:text-[9px] text-error font-bold font-mono block mt-0.5">
-                              {Math.abs(daysDiff)}d overdue
-                            </span>
-                          ) : (
-                            <span className="text-[10px] sm:text-[9px] text-warning font-bold font-mono block mt-0.5">
-                              {daysDiff}d left
-                            </span>
-                          )}
-                        </div>
                       </div>
                       
-                      <div className="flex items-center justify-between border-t border-border-default/50 pt-2 mt-2">
-                        <div>
-                          <p className="text-[10px] sm:text-[9px] text-text-muted uppercase font-bold font-mono leading-none">
-                            Amount
+                      {/* Amount & Collect Action */}
+                      <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-border-default/50 pt-2.5 sm:pt-0 mt-1 sm:mt-0 shrink-0">
+                        <div className="text-left sm:text-right">
+                          <p className="text-[10px] text-text-muted uppercase font-bold font-mono leading-none">
+                            Amount Due
                           </p>
-                          <p className="text-sm sm:text-xs font-bold text-text-primary font-mono mt-0.5">
+                          <p className="text-base sm:text-sm font-extrabold text-text-primary font-mono mt-0.5">
                             ₹{(member.amount || 0).toLocaleString()}
                           </p>
                         </div>
                         <Button
-                          size="xs"
+                          size="sm"
                           onClick={() => navigate(`/admin/member-payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
-                          className="text-[10px] sm:text-[9px] font-bold h-7 sm:h-6 cursor-pointer rounded-[4px] px-2 active:scale-95 transition-transform"
+                          className="text-xs font-bold h-11 sm:h-9 cursor-pointer rounded-xl px-4 min-h-[44px] sm:min-h-[36px] active:scale-95 transition-transform flex items-center justify-center gap-1.5 bg-primary text-primary-foreground shadow-xs"
                         >
-                          Collect Payment
+                          <span>Collect Payment</span>
                         </Button>
                       </div>
                     </div>

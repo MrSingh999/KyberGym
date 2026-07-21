@@ -24,6 +24,7 @@ export function useWorkouts(params: UseWorkoutsParams = {}) {
   const queryParams = new URLSearchParams();
   if (search) queryParams.set("search", search);
   if (filters.status) queryParams.set("status", filters.status);
+  if (filters.category) queryParams.set("category", filters.category);
   if (sorting?.length) {
     const { id, desc } = sorting[0];
     queryParams.set("sort", id);

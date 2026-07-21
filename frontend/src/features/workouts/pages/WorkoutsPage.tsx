@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SortingState } from "@tanstack/react-table";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Dumbbell, Flame, Sparkles, Layers, UserPlus } from "lucide-react";
 import { useWorkouts, useDeleteWorkout, useDuplicateWorkout, useArchiveWorkout } from "../hooks/useWorkouts";
 import { useWorkoutStore } from "../store/useWorkoutStore";
 import { WorkoutToolbar } from "../components/WorkoutToolbar";
@@ -11,15 +11,19 @@ import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutsTable } from "../components/WorkoutsTable";
 import { WorkoutsSkeleton } from "../components/WorkoutsSkeleton";
 import { EmptyWorkoutsState } from "../components/EmptyWorkoutsState";
+import { AssignWorkoutModal } from "@/features/workoutAssignments/components/AssignWorkoutModal";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { WorkoutListItem } from "../types";
 
 export function WorkoutsPage() {
   const navigate = useNavigate();
   const { searchQuery, filters, viewMode } = useWorkoutStore();
   const [sorting, setSorting] = useState<SortingState>([{ id: "createdAt", desc: true }]);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignWorkoutId, setAssignWorkoutId] = useState<string | undefined>(undefined);
 
   const { data, isLoading } = useWorkouts({ search: searchQuery, filters, sorting });
   const { mutate: deleteWorkout } = useDeleteWorkout();
@@ -28,7 +32,15 @@ export function WorkoutsPage() {
 
   const workouts = data ?? [];
   const totalCount = workouts.length;
-  const hasSearch = searchQuery !== "";
+  const hasSearch = searchQuery !== "" || Object.keys(filters).length > 0;
+
+  // Compute metric stats
+  const metrics = useMemo(() => {
+    const activeCount = workouts.filter((w) => w.status === "ACTIVE").length;
+    const strengthCount = workouts.filter((w) => (w.category || "").toLowerCase().includes("strength")).length;
+    const hiitCount = workouts.filter((w) => (w.category || "").toLowerCase().includes("hiit") || (w.category || "").toLowerCase().includes("cardio")).length;
+    return { activeCount, strengthCount, hiitCount };
+  }, [workouts]);
 
   const handleDelete = (id: string) => {
     setDeleteConfirm(id);
@@ -70,6 +82,11 @@ export function WorkoutsPage() {
     });
   };
 
+  const handleOpenAssign = (workout?: WorkoutListItem) => {
+    setAssignWorkoutId(workout?.id);
+    setAssignModalOpen(true);
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto space-y-6">
       {/* Title Header */}
@@ -79,16 +96,68 @@ export function WorkoutsPage() {
             Workout <span className="text-text-secondary font-normal ml-0.5">Library</span>
           </h1>
           <p className="text-text-secondary mt-1 text-xs font-mono">
-            Create and manage reusable workout templates.
+            Create, customize, and assign reusable workout programs.
           </p>
         </div>
-        <button
-          onClick={() => navigate("/admin/workouts/new")}
-          className="flex items-center space-x-2 bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 cursor-pointer border border-border-hover min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Workout</span>
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => handleOpenAssign()}
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-surface hover:bg-surface-hover text-text-primary px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-xs font-mono border border-border-default transition-all duration-200 cursor-pointer min-h-[44px] sm:min-h-0"
+          >
+            <UserPlus className="h-4 w-4 text-primary" />
+            <span>Assign Program</span>
+          </button>
+          <button
+            onClick={() => navigate("/admin/workouts/new")}
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-xs font-mono transition-all duration-200 cursor-pointer border border-border-hover min-h-[44px] sm:min-h-0 active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Workout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Top Analytics Metrics Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 font-mono">
+        <div className="bg-surface border border-border-default rounded-[12px] p-3.5 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <Layers className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Total Programs</p>
+            <p className="text-lg font-bold text-text-primary tabular-nums">{totalCount}</p>
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border-default rounded-[12px] p-3.5 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Active Templates</p>
+            <p className="text-lg font-bold text-text-primary tabular-nums">{metrics.activeCount}</p>
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border-default rounded-[12px] p-3.5 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
+            <Dumbbell className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Strength</p>
+            <p className="text-lg font-bold text-text-primary tabular-nums">{metrics.strengthCount}</p>
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border-default rounded-[12px] p-3.5 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+            <Flame className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-[10px] text-text-muted uppercase font-bold tracking-wider">Cardio / HIIT</p>
+            <p className="text-lg font-bold text-text-primary tabular-nums">{metrics.hiitCount}</p>
+          </div>
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -132,6 +201,7 @@ export function WorkoutsPage() {
                     onDuplicate={handleDuplicate}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
+                    onAssign={handleOpenAssign}
                   />
                 ))}
               </motion.div>
@@ -154,12 +224,20 @@ export function WorkoutsPage() {
                   onDuplicate={handleDuplicate}
                   onArchive={handleArchive}
                   onDelete={handleDelete}
+                  onAssign={handleOpenAssign}
                 />
               ))}
             </motion.div>
           </div>
         </>
       )}
+
+      {/* Assign Workout Modal */}
+      <AssignWorkoutModal
+        open={assignModalOpen}
+        onOpenChange={setAssignModalOpen}
+        initialWorkoutId={assignWorkoutId}
+      />
 
       {/* Delete confirmation modal */}
       <ResponsiveModal

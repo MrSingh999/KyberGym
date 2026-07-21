@@ -174,17 +174,17 @@ export function PlansTable({
   });
 
   return (
-    <div className="rounded-xl border border-border-default overflow-hidden bg-surface shadow-sm">
-      <div className="overflow-x-auto">
+    <div className="rounded-2xl border border-border-default/80 overflow-hidden bg-surface/80 backdrop-blur-xs shadow-xs">
+      <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-border-default bg-surface-hover">
+              <tr key={hg.id} className="border-b border-border-default/80 bg-surface-hover/60">
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     style={{ width: header.getSize() }}
-                    className="text-left px-4 py-3 text-xs font-semibold text-text-muted uppercase tracking-wide"
+                    className="text-left px-4 py-3.5 text-xs font-mono font-bold text-text-muted uppercase tracking-wider"
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
@@ -192,18 +192,18 @@ export function PlansTable({
               </tr>
             ))}
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border-default/60">
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
                 onClick={() => navigate(`/admin/plans/${row.original.id}`)}
                 className={cn(
-                  'border-b border-border-default hover:bg-surface-hover transition-colors cursor-pointer',
+                  'hover:bg-surface-hover/80 transition-colors cursor-pointer',
                   row.getIsSelected() && 'bg-primary/5',
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3.5">
+                  <td key={cell.id} className="px-4 py-3.5 font-sans">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

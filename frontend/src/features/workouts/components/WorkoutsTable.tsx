@@ -7,9 +7,17 @@ import {
   OnChangeFn,
 } from "@tanstack/react-table";
 import { useNavigate } from "react-router";
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit3, Trash2, MoreVertical, Copy, Archive, Users, Calendar, Clock, Target } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Edit3, Trash2, MoreVertical, Copy, Archive, Calendar, Clock, Target, Eye } from "lucide-react";
 import { WorkoutListItem } from "../types";
 import { WorkoutStatusBadge } from "./WorkoutStatusBadge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface WorkoutsTableProps {
@@ -31,15 +39,19 @@ export function WorkoutsTable({
 }: WorkoutsTableProps) {
   const navigate = useNavigate();
 
+  function Dashed({ children }: { children: React.ReactNode }) {
+    return children ?? <span className="text-text-muted/40 font-mono">&mdash;</span>;
+  }
+
   const columns: ColumnDef<WorkoutListItem>[] = [
     {
       accessorKey: "title",
       header: ({ column }) => <SortHeader label="Workout" column={column} />,
       cell: ({ row }) => (
-        <div>
-          <span className="font-medium text-primary font-mono text-[13px]">{row.original.title}</span>
+        <div className="min-w-0">
+          <span className="font-semibold text-[14px] text-text-primary leading-tight block truncate">{row.original.title}</span>
           {row.original.description && (
-            <p className="text-xs text-muted truncate max-w-[250px] mt-0.5">
+            <p className="text-[11px] text-text-muted truncate max-w-[280px] mt-0.5 leading-relaxed">
               {row.original.description}
             </p>
           )}
@@ -50,12 +62,14 @@ export function WorkoutsTable({
       id: "goal",
       header: "Goal",
       cell: ({ row }) => (
-        row.original.goal ? (
-          <span className="inline-flex items-center gap-1 text-xs text-muted font-mono">
-            <Target className="w-3 h-3" />
-            {row.original.goal}
-          </span>
-        ) : null
+        <Dashed>
+          {row.original.goal && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-text-secondary font-mono">
+              <Target className="w-3 h-3 text-text-muted" />
+              {row.original.goal}
+            </span>
+          )}
+        </Dashed>
       ),
       size: 140,
     },
@@ -63,33 +77,37 @@ export function WorkoutsTable({
       id: "category",
       header: "Category",
       cell: ({ row }) => (
-        row.original.category ? (
-          <span className="text-xs text-muted font-mono bg-surface/50 px-2 py-0.5 rounded">
-            {row.original.category}
-          </span>
-        ) : null
+        <Dashed>
+          {row.original.category && (
+            <span className="inline-flex items-center text-[11px] font-medium font-mono bg-surface-hover text-text-secondary px-2 py-1 rounded-[6px] border border-border-default/50">
+              {row.original.category}
+            </span>
+          )}
+        </Dashed>
       ),
-      size: 120,
+      size: 130,
     },
     {
       id: "estimatedDuration",
       header: "Duration",
       cell: ({ row }) => (
-        row.original.estimatedDuration ? (
-          <span className="flex items-center gap-1 text-xs text-muted font-mono">
-            <Clock className="w-3 h-3" />
-            {row.original.estimatedDuration}m
-          </span>
-        ) : null
+        <Dashed>
+          {row.original.estimatedDuration && (
+            <span className="flex items-center gap-1.5 text-xs text-text-secondary font-mono">
+              <Clock className="w-3 h-3 text-text-muted" />
+              {row.original.estimatedDuration}m
+            </span>
+          )}
+        </Dashed>
       ),
-      size: 90,
+      size: 100,
     },
     {
       id: "days",
       header: "Days",
       cell: ({ row }) => (
-        <span className="flex items-center gap-1.5 text-sm text-muted font-mono">
-          <Calendar className="w-3.5 h-3.5" />
+        <span className="flex items-center gap-1.5 text-xs text-text-secondary font-mono tabular-nums">
+          <Calendar className="w-3.5 h-3.5 text-text-muted" />
           {row.original.daysCount}
         </span>
       ),
@@ -105,53 +123,60 @@ export function WorkoutsTable({
       accessorKey: "createdAt",
       header: ({ column }) => <SortHeader label="Created" column={column} />,
       cell: ({ getValue }) => (
-        <span className="text-sm text-muted font-mono">
-          {new Date(getValue<string>()).toLocaleDateString()}
+        <span className="text-xs text-text-secondary font-mono tabular-nums">
+          {new Date(getValue<string>()).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
         </span>
       ),
-      size: 110,
+      size: 120,
     },
     {
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <details className="relative group">
-            <summary className="list-none p-1.5 rounded-lg hover:bg-surface-hover text-muted hover:text-primary cursor-pointer">
-              <MoreVertical className="w-4 h-4" />
-            </summary>
-            <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-default rounded-xl shadow-lg py-1.5 w-40 text-sm">
-              <button
-                onClick={() => navigate(`/admin/workouts/${row.original.id}`)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
-              >
-                <Edit3 className="h-3.5 w-3.5" /> View / Edit
-              </button>
-              <button
-                onClick={() => onDuplicate(row.original.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-primary transition-colors"
-              >
-                <Copy className="h-3.5 w-3.5" /> Duplicate
-              </button>
+        <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(`/admin/workouts/${row.original.id}`)}
+            className="mr-1 text-text-muted hover:text-text-primary"
+            title="View workout"
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => navigate(`/admin/workouts/${row.original.id}`)}>
+                <Edit3 className="h-4 w-4" /> View / Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDuplicate(row.original.id)}>
+                <Copy className="h-4 w-4" /> Duplicate
+              </DropdownMenuItem>
               {row.original.status !== "ARCHIVED" && (
-                <button
-                  onClick={() => onArchive(row.original.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-amber-600 transition-colors"
-                >
-                  <Archive className="h-3.5 w-3.5" /> Archive
-                </button>
+                <DropdownMenuItem onClick={() => onArchive(row.original.id)}>
+                  <Archive className="h-4 w-4" /> Archive
+                </DropdownMenuItem>
               )}
-              <button
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
                 onClick={() => onDelete(row.original.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface-hover text-destructive transition-colors"
               >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
-              </button>
-            </div>
-          </details>
+                <Trash2 className="h-4 w-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
-      size: 48,
+      size: 100,
     },
   ];
 
@@ -166,17 +191,17 @@ export function WorkoutsTable({
   });
 
   return (
-    <div className="rounded-[16px] border border-default overflow-hidden bg-surface shadow-sm">
-      <div className="overflow-x-auto">
+    <div className="rounded-[14px] border border-border-default overflow-hidden bg-surface shadow-sm">
+      <div className="overflow-x-auto overflow-y-auto">
         <table className="w-full text-sm">
           <thead>
             {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id} className="border-b border-default bg-elevated/50">
+              <tr key={hg.id} className="border-b border-border-default">
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
                     style={{ width: header.getSize() }}
-                    className="text-left px-5 py-3.5 text-[10px] font-bold text-muted uppercase tracking-wider font-mono"
+                    className="sticky top-0 z-10 text-left px-5 py-3.5 text-[10px] font-bold text-text-muted uppercase tracking-widest font-mono bg-elevated/80 backdrop-blur-sm border-b border-border-default"
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </th>
@@ -185,16 +210,18 @@ export function WorkoutsTable({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
+            {table.getRowModel().rows.map((row, i) => (
               <tr
                 key={row.id}
                 onClick={() => navigate(`/admin/workouts/${row.original.id}`)}
                 className={cn(
-                  "border-b border-default/30 hover:bg-surface-hover transition-colors cursor-pointer table-row-hover table-zebra",
+                  "group border-b border-border-default/40 last:border-b-0",
+                  "hover:bg-surface-hover hover:shadow-sm transition-all duration-150 cursor-pointer",
+                  i % 2 === 0 ? "bg-surface" : "bg-black/[0.01] dark:bg-white/[0.01]",
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-5 py-3">
+                  <td key={cell.id} className="px-5 py-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -212,15 +239,15 @@ function SortHeader({ label, column }: { label: string; column: any }) {
   return (
     <button
       onClick={column.getToggleSortingHandler()}
-      className="flex items-center gap-1.5 hover:text-primary transition-colors group"
+      className="flex items-center gap-1.5 hover:text-text-primary transition-colors group cursor-pointer"
     >
       {label}
       {sorted === "asc" ? (
-        <ArrowUp className="w-3.5 h-3.5 text-primary" />
+        <ArrowUp className="w-3 h-3 text-text-primary" />
       ) : sorted === "desc" ? (
-        <ArrowDown className="w-3.5 h-3.5 text-primary" />
+        <ArrowDown className="w-3 h-3 text-text-primary" />
       ) : (
-        <ArrowUpDown className="w-3.5 h-3.5 opacity-30 group-hover:opacity-70 transition-opacity" />
+        <ArrowUpDown className="w-3 h-3 text-text-muted/40 group-hover:text-text-muted transition-colors" />
       )}
     </button>
   );
