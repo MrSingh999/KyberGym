@@ -24,7 +24,7 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
           variant="outline"
           size="sm"
           onClick={() =>
-            append({ name: "", sets: undefined, reps: undefined, duration: undefined, notes: "" })
+            append({ name: "", sets: undefined, reps: undefined, restTime: undefined, notes: "", order: fields.length })
           }
         >
           <Plus className="w-3.5 h-3.5 mr-1" />
@@ -46,25 +46,18 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
           >
             <div className="flex items-start justify-between gap-1">
               <div className="min-w-0 flex-1">
-                {/* Name */}
                 <Input
                   placeholder="Exercise name *"
                   {...form.register(`exercises.${index}.name`)}
                   className={form.formState.errors.exercises?.[index]?.name ? "border-destructive" : ""}
                 />
-                {form.formState.errors.exercises?.[index]?.name && (
-                  <p className="text-xs text-destructive mt-1">
-                    {form.formState.errors.exercises[index]?.name?.message}
-                  </p>
-                )}
 
-                {/* Sets, Reps, Duration row */}
-                <div className="grid grid-cols-3 gap-2 mt-2">
+                <div className="grid grid-cols-4 gap-2 mt-2">
                   <div>
                     <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Sets</Label>
                     <Input
                       type="number"
-                      placeholder="e.g. 4"
+                      placeholder="4"
                       className="mt-0.5 text-center font-mono"
                       {...form.register(`exercises.${index}.sets`, { valueAsNumber: true })}
                     />
@@ -73,27 +66,35 @@ export function ExerciseForm({ form }: ExerciseFormProps) {
                     <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Reps</Label>
                     <Input
                       type="number"
-                      placeholder="e.g. 12"
+                      placeholder="10"
                       className="mt-0.5 text-center font-mono"
                       {...form.register(`exercises.${index}.reps`, { valueAsNumber: true })}
                     />
                   </div>
                   <div>
-                    <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Duration</Label>
+                    <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Rest (s)</Label>
                     <Input
                       type="number"
-                      placeholder="e.g. 45"
+                      placeholder="60"
                       className="mt-0.5 text-center font-mono"
-                      {...form.register(`exercises.${index}.duration`, { valueAsNumber: true })}
+                      {...form.register(`exercises.${index}.restTime`, { valueAsNumber: true })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Order</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      className="mt-0.5 text-center font-mono"
+                      {...form.register(`exercises.${index}.order`, { valueAsNumber: true })}
                     />
                   </div>
                 </div>
 
-                {/* Notes */}
                 <div className="mt-2">
                   <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">Notes</Label>
                   <Input
-                    placeholder="e.g. Slow negative, push with chest explosive"
+                    placeholder="Optional notes"
                     className="mt-0.5"
                     {...form.register(`exercises.${index}.notes`)}
                   />

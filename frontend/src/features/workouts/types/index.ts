@@ -1,17 +1,23 @@
+export type WorkoutStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
+
 export interface Exercise {
+  _id?: string;
   name: string;
   sets?: number;
   reps?: number;
   duration?: number;
+  restTime?: number;
   notes?: string;
+  order: number;
+  exerciseId?: string | null;
   image?: string;
   videoUrl?: string;
 }
 
 export interface WorkoutDay {
-  id?: string;
+  _id?: string;
   workoutId: string;
-  dayNumber: number;
+  orderIndex: number;
   dayName: string;
   title?: string;
   exercises: Exercise[];
@@ -20,13 +26,15 @@ export interface WorkoutDay {
 }
 
 export interface Workout {
-  id: string;
+  _id: string;
   gymId: string;
   title: string;
   description?: string;
-  assignmentType: "ALL" | "SELECTED";
-  assignedMembers: string[];
-  isActive: boolean;
+  goal?: string;
+  estimatedDuration?: number;
+  category?: string;
+  status: WorkoutStatus;
+  isDeleted: boolean;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -40,17 +48,17 @@ export interface WorkoutListItem {
   id: string;
   title: string;
   description?: string;
-  assignmentType: "ALL" | "SELECTED";
-  assignedMemberCount: number;
+  goal?: string;
+  category?: string;
+  estimatedDuration?: number;
+  status: WorkoutStatus;
   daysCount: number;
-  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface WorkoutFilters {
-  isActive?: boolean;
-  assignmentType?: "ALL" | "SELECTED";
+  status?: WorkoutStatus;
 }
 
 export type WorkoutSortField = "title" | "createdAt" | "updatedAt";

@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { LayoutGrid, Table as TableIcon, Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useWorkoutStore } from "../store/useWorkoutStore";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { WorkoutStatus } from "../types";
 
 interface WorkoutToolbarProps {
   totalCount: number;
@@ -9,7 +11,7 @@ interface WorkoutToolbarProps {
 
 export function WorkoutToolbar({ totalCount }: WorkoutToolbarProps) {
   const navigate = useNavigate();
-  const { searchQuery, setSearchQuery, viewMode, setViewMode } = useWorkoutStore();
+  const { searchQuery, setSearchQuery, viewMode, setViewMode, filters, setFilters } = useWorkoutStore();
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -18,7 +20,7 @@ export function WorkoutToolbar({ totalCount }: WorkoutToolbarProps) {
           <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-text-muted" />
           <input
             type="text"
-            placeholder="Search workouts..."
+            placeholder="Search by name or goal..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-surface border border-border-default rounded-[6px] pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-border-hover transition-all duration-200 font-mono"
@@ -27,6 +29,21 @@ export function WorkoutToolbar({ totalCount }: WorkoutToolbarProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <Select
+          value={filters.status || "all"}
+          onValueChange={(v) => setFilters({ status: v === "all" ? undefined : v as WorkoutStatus })}
+        >
+          <SelectTrigger className="w-[130px]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="ACTIVE">Active</SelectItem>
+            <SelectItem value="DRAFT">Draft</SelectItem>
+            <SelectItem value="ARCHIVED">Archived</SelectItem>
+          </SelectContent>
+        </Select>
+
         <span className="text-sm text-text-muted tabular-nums whitespace-nowrap font-mono">
           {totalCount} workout{totalCount !== 1 ? "s" : ""}
         </span>

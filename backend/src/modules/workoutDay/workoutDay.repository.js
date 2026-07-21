@@ -7,7 +7,7 @@ export class WorkoutDayRepository {
   }
 
   static async findByWorkoutId(workoutId) {
-    return WorkoutDay.find({ workoutId }).sort({ dayNumber: 1 });
+    return WorkoutDay.find({ workoutId }).sort({ orderIndex: 1 });
   }
 
   static async findById(id, workoutId) {

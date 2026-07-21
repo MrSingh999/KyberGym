@@ -15,6 +15,7 @@ import { Broadcast } from '../modules/broadcast/models/Broadcast.model.js';
 import { MessageTemplate } from '../modules/messageTemplate/models/MessageTemplate.model.js';
 import { Workout } from '../modules/workouts/models/Workout.model.js';
 import { WorkoutDay } from '../modules/workoutDay/models/WorkoutDay.model.js';
+import { WorkoutAssignment } from '../modules/workoutAssignment/models/WorkoutAssignment.model.js';
 import { Notification } from '../modules/notification/models/Notification.model.js';
 import { env } from '../config/env.js';
 
@@ -155,7 +156,7 @@ export const createTestWorkout = async (gymId, userId, overrides = {}) => {
   return Workout.create({
     gymId,
     title: faker.lorem.words(2),
-    assignmentType: 'ALL',
+    status: 'ACTIVE',
     createdBy: userId,
     ...overrides,
   });
@@ -164,8 +165,19 @@ export const createTestWorkout = async (gymId, userId, overrides = {}) => {
 export const createTestWorkoutDay = async (workoutId, overrides = {}) => {
   return WorkoutDay.create({
     workoutId,
-    dayNumber: 1,
+    orderIndex: 0,
     dayName: faker.lorem.word(),
+    ...overrides,
+  });
+};
+
+export const createTestWorkoutAssignment = async (gymId, workoutId, memberId, userId, overrides = {}) => {
+  return WorkoutAssignment.create({
+    gymId,
+    workoutId,
+    memberId,
+    assignedBy: userId,
+    status: 'ACTIVE',
     ...overrides,
   });
 };

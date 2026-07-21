@@ -9,6 +9,7 @@ import { GymService } from '../gyms/gym.service.js';
 import { GymSubscriptionRepository } from '../gymSubscription/gymSubscription.repository.js';
 import { GymSubscriptionPaymentRepository } from '../gymSubscriptionPayment/gymSubscriptionPayment.repository.js';
 import { User } from '../users/models/User.model.js';
+import { ROLES } from '../../shared/constants.js';
 import { Member } from '../member/models/Member.model.js';
 import { MemberSubscription } from '../memberSubscription/models/MemberSubscription.model.js';
 import { logger } from '../../config/logger.js';
@@ -490,6 +491,31 @@ export class SuperAdminService {
     for (const key of allowedFields) {
       if (data[key] !== undefined) {
         update[key] = data[key];
+      }
+    }
+
+    const currentUser = await User.findOne({ _id: userId, gymId, isDeleted: false })
+      .select('role status').lean();
+    if (!currentUser) throw createError.NotFound('User not found');
+
+    const willLeaveAdmin = (
+      currentUser.role === ROLES.GYM_ADMIN &&
+      currentUser.status === 'active' &&
+      (update.status === 'inactive' || (update.role && update.role !== ROLES.GYM_ADMIN))
+    );
+
+    if (willLeaveAdmin) {
+      const activeAdminCount = await User.countDocuments({
+        gymId,
+        role: ROLES.GYM_ADMIN,
+        status: 'active',
+        isDeleted: false,
+        _id: { $ne: currentUser._id },
+      });
+      if (activeAdminCount === 0) {
+        throw createError.BadRequest(
+          'Cannot deactivate or change role of the last active gym administrator. The gym must have at least one active admin.'
+        );
       }
     }
 

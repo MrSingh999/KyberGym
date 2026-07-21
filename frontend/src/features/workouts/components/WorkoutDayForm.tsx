@@ -17,7 +17,7 @@ export function WorkoutDayForm({ defaultValues, onSubmit, isSubmitting, onCancel
   const form = useForm<WorkoutDayFormData>({
     resolver: zodResolver(workoutDaySchema),
     defaultValues: {
-      dayNumber: 1,
+      orderIndex: 0,
       dayName: "",
       title: "",
       exercises: [],
@@ -34,31 +34,28 @@ export function WorkoutDayForm({ defaultValues, onSubmit, isSubmitting, onCancel
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid grid-cols-3 gap-3">
-        {/* Day Number */}
         <div className="space-y-1.5 col-span-1">
           <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
-            Day # <span className="text-destructive">*</span>
+            Order <span className="text-destructive">*</span>
           </Label>
           <Input
             type="number"
-            min={1}
-            max={7}
-            placeholder="e.g. 3"
+            min={0}
+            placeholder="0"
             className="mt-1 text-center font-mono"
-            {...register("dayNumber", { valueAsNumber: true })}
+            {...register("orderIndex", { valueAsNumber: true })}
           />
-          {errors.dayNumber && (
-            <p className="text-xs text-destructive mt-1">{errors.dayNumber.message}</p>
+          {errors.orderIndex && (
+            <p className="text-xs text-destructive mt-1">{errors.orderIndex.message}</p>
           )}
         </div>
 
-        {/* Day Name */}
         <div className="space-y-1.5 col-span-2">
           <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
             Day Name <span className="text-destructive">*</span>
           </Label>
           <Input
-            placeholder="e.g. Monday"
+            placeholder="e.g. Push Day"
             className="mt-1"
             {...register("dayName")}
           />
@@ -68,10 +65,9 @@ export function WorkoutDayForm({ defaultValues, onSubmit, isSubmitting, onCancel
         </div>
       </div>
 
-      {/* Title */}
       <div className="space-y-1.5">
         <Label className="text-[10px] text-text-muted font-bold uppercase tracking-wider font-mono">
-          Workout Focus / Title <span className="text-destructive">*</span>
+          Workout Focus / Title
         </Label>
         <Input
           placeholder="e.g. Chest & Triceps"
@@ -83,10 +79,8 @@ export function WorkoutDayForm({ defaultValues, onSubmit, isSubmitting, onCancel
         )}
       </div>
 
-      {/* Exercises */}
       <ExerciseForm form={form} />
 
-      {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-border-default">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>

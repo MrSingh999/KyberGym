@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import { useWorkouts, useDeleteWorkout } from "../hooks/useWorkouts";
+import { useWorkouts, useDeleteWorkout, useDuplicateWorkout, useArchiveWorkout } from "../hooks/useWorkouts";
 import { useWorkoutStore } from "../store/useWorkoutStore";
 import { WorkoutToolbar } from "../components/WorkoutToolbar";
 import { WorkoutCard } from "../components/WorkoutCard";
@@ -23,10 +23,11 @@ export function WorkoutsPage() {
 
   const { data, isLoading } = useWorkouts({ search: searchQuery, filters, sorting });
   const { mutate: deleteWorkout } = useDeleteWorkout();
+  const { mutate: duplicateWorkout } = useDuplicateWorkout();
+  const { mutate: archiveWorkout } = useArchiveWorkout();
 
   const workouts = data ?? [];
   const totalCount = workouts.length;
-
   const hasSearch = searchQuery !== "";
 
   const handleDelete = (id: string) => {
@@ -37,12 +38,34 @@ export function WorkoutsPage() {
     if (!deleteConfirm) return;
     deleteWorkout(deleteConfirm, {
       onSuccess: () => {
-        toast.success("Workout deactivated");
+        toast.success("Workout deleted");
         setDeleteConfirm(null);
       },
       onError: () => {
-        toast.error("Failed to deactivate workout");
+        toast.error("Failed to delete workout");
         setDeleteConfirm(null);
+      },
+    });
+  };
+
+  const handleDuplicate = (id: string) => {
+    duplicateWorkout(id, {
+      onSuccess: () => {
+        toast.success("Workout duplicated");
+      },
+      onError: () => {
+        toast.error("Failed to duplicate workout");
+      },
+    });
+  };
+
+  const handleArchive = (id: string) => {
+    archiveWorkout(id, {
+      onSuccess: () => {
+        toast.success("Workout archived");
+      },
+      onError: () => {
+        toast.error("Failed to archive workout");
       },
     });
   };
@@ -53,10 +76,10 @@ export function WorkoutsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
         <div>
           <h1 className="font-bold text-xl sm:text-2xl text-text-primary tracking-tight">
-            Workout <span className="text-text-secondary font-normal ml-0.5">Management</span>
+            Workout <span className="text-text-secondary font-normal ml-0.5">Library</span>
           </h1>
           <p className="text-text-secondary mt-1 text-xs font-mono">
-            Create fitness split routines, add exercises, and assign routines to members.
+            Create and manage reusable workout templates.
           </p>
         </div>
         <button
@@ -64,7 +87,7 @@ export function WorkoutsPage() {
           className="flex items-center space-x-2 bg-primary text-primary-foreground hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 cursor-pointer border border-border-hover min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
-          <span>New Program</span>
+          <span>New Workout</span>
         </button>
       </div>
 
@@ -83,12 +106,14 @@ export function WorkoutsPage() {
         />
       ) : (
         <>
-          {/* Desktop View: table or cards layout depending on viewMode */}
+          {/* Desktop View */}
           <div className="hidden lg:block">
             {viewMode === "table" ? (
               <WorkoutsTable
                 data={workouts}
                 onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
+                onArchive={handleArchive}
                 sorting={sorting}
                 onSortingChange={setSorting}
               />
@@ -100,13 +125,20 @@ export function WorkoutsPage() {
                 transition={{ duration: 0.2 }}
               >
                 {workouts.map((workout, i) => (
-                  <WorkoutCard key={workout.id} workout={workout} index={i} />
+                  <WorkoutCard
+                    key={workout.id}
+                    workout={workout}
+                    index={i}
+                    onDuplicate={handleDuplicate}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </motion.div>
             )}
           </div>
 
-          {/* Mobile View: always display cards layout */}
+          {/* Mobile View */}
           <div className="block lg:hidden">
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 gap-4"
@@ -115,7 +147,14 @@ export function WorkoutsPage() {
               transition={{ duration: 0.2 }}
             >
               {workouts.map((workout, i) => (
-                <WorkoutCard key={workout.id} workout={workout} index={i} />
+                <WorkoutCard
+                  key={workout.id}
+                  workout={workout}
+                  index={i}
+                  onDuplicate={handleDuplicate}
+                  onArchive={handleArchive}
+                  onDelete={handleDelete}
+                />
               ))}
             </motion.div>
           </div>
@@ -131,16 +170,16 @@ export function WorkoutsPage() {
           <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-6 h-6 text-destructive" />
           </div>
-          <h3 className="text-lg font-semibold text-primary mb-2">Deactivate Workout?</h3>
+          <h3 className="text-lg font-semibold text-primary mb-2">Delete Workout?</h3>
           <p className="text-sm text-muted mb-6">
-            This will deactivate the workout. Members assigned to it will no longer see it. You can reactivate it later.
+            This will soft-delete the workout. It will no longer appear in the list. You can restore it by updating the status.
           </p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Deactivate
+              Delete
             </Button>
           </div>
         </div>

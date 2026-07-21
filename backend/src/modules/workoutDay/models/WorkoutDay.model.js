@@ -7,8 +7,11 @@ const exerciseSchema = new mongoose.Schema(
     name:     { type: String, required: true, trim: true },
     sets:     { type: Number, min: 1 },
     reps:     { type: Number, min: 1 },
-    duration: { type: Number, min: 1 }, // seconds
+    duration: { type: Number, min: 1 },
+    restTime: { type: Number, min: 1 },
     notes:    { type: String, trim: true },
+    order:    { type: Number, default: 0 },
+    exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise', default: null },
     image:    { type: String, trim: true },
     videoUrl: { type: String, trim: true },
   },
@@ -27,17 +30,17 @@ const workoutDaySchema = new mongoose.Schema(
     },
     workoutId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workout', required: true },
 
-    dayNumber: { type: Number, required: true, min: 1, max: 7 },
+    orderIndex: { type: Number, required: true, min: 0 },
     dayName:   { type: String, required: true, trim: true },
     title:     { type: String, trim: true },
 
-    // Exercises are embedded — no separate Exercise collection
     exercises: [exerciseSchema],
   },
   { timestamps: true }
 );
 
 workoutDaySchema.index({ workoutId: 1 });
-workoutDaySchema.index({ workoutId: 1, dayNumber: 1 }, { unique: true });
+workoutDaySchema.index({ workoutId: 1, orderIndex: 1 }, { unique: true });
 
+export { exerciseSchema };
 export const WorkoutDay = mongoose.model('WorkoutDay', workoutDaySchema);

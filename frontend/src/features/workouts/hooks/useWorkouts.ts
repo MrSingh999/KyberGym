@@ -21,59 +21,41 @@ export function useWorkouts(params: UseWorkoutsParams = {}) {
   const { selectedGymId } = useGymStore();
   const { search = "", filters = {}, sorting } = params;
 
+  const queryParams = new URLSearchParams();
+  if (search) queryParams.set("search", search);
+  if (filters.status) queryParams.set("status", filters.status);
+  if (sorting?.length) {
+    const { id, desc } = sorting[0];
+    queryParams.set("sort", id);
+    queryParams.set("order", desc ? "desc" : "asc");
+  }
+  const qs = queryParams.toString();
+
   return useQuery({
     queryKey: workoutKeys.list(selectedGymId ?? "", { search, filters, sorting }),
     queryFn: async (): Promise<WorkoutListItem[]> => {
-      const response = await apiClient.get("/workouts");
+      const response = await apiClient.get(`/workouts${qs ? `?${qs}` : ""}`);
       const raw = response.data.data || response.data;
 
-      let list: WorkoutListItem[] = raw.map((w: any) => ({
-        id: w.id || w._id,
+      return raw.map((w: any): WorkoutListItem => ({
+        id: w._id || w.id,
         title: w.title,
         description: w.description,
-        assignmentType: w.assignmentType,
-        assignedMemberCount: w.assignedMembers?.length ?? 0,
+        goal: w.goal,
+        category: w.category,
+        estimatedDuration: w.estimatedDuration,
+        status: w.status ?? "ACTIVE",
         daysCount: w.daysCount ?? 0,
-        isActive: w.isActive ?? true,
         createdAt: w.createdAt,
         updatedAt: w.updatedAt,
       }));
-
-      if (search) {
-        const q = search.toLowerCase();
-        list = list.filter((w) => w.title.toLowerCase().includes(q));
-      }
-
-      if (filters.isActive !== undefined) {
-        list = list.filter((w) => w.isActive === filters.isActive);
-      }
-
-      if (filters.assignmentType) {
-        list = list.filter((w) => w.assignmentType === filters.assignmentType);
-      }
-
-      if (sorting?.length) {
-        const { id, desc } = sorting[0];
-        list.sort((a, b) => {
-          let aVal: string | number = "";
-          let bVal: string | number = "";
-          if (id === "title") { aVal = a.title; bVal = b.title; }
-          if (id === "createdAt") { aVal = a.createdAt; bVal = b.createdAt; }
-          if (id === "updatedAt") { aVal = a.updatedAt; bVal = b.updatedAt; }
-          if (id === "assignmentType") { aVal = a.assignmentType; bVal = b.assignmentType; }
-          const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-          return desc ? -cmp : cmp;
-        });
-      }
-
-      return list;
     },
     enabled: !!selectedGymId,
     staleTime: 2 * 60 * 1000,
   });
 }
 
-export function useWorkout(id: string) {
+export function useWorkout(id: string, options: { enabled?: boolean } = {}) {
   const { selectedGymId } = useGymStore();
 
   return useQuery<WorkoutWithDays>({
@@ -82,28 +64,34 @@ export function useWorkout(id: string) {
       const response = await apiClient.get(`/workouts/${id}`);
       const w = response.data.data || response.data;
       return {
-        id: w.id || w._id,
+        _id: w._id || w.id,
         gymId: w.gymId,
         title: w.title,
         description: w.description,
-        assignmentType: w.assignmentType,
-        assignedMembers: w.assignedMembers || [],
-        isActive: w.isActive ?? true,
+        goal: w.goal,
+        estimatedDuration: w.estimatedDuration,
+        category: w.category,
+        status: w.status ?? "ACTIVE",
+        isDeleted: w.isDeleted ?? false,
         createdBy: w.createdBy,
         createdAt: w.createdAt,
         updatedAt: w.updatedAt,
-        days: (w.days || []).map((d: any) => ({
-          id: d.id || d._id,
+        days: (w.days || []).map((d: any): WorkoutDay => ({
+          _id: d._id || d.id,
           workoutId: d.workoutId || id,
-          dayNumber: d.dayNumber,
+          orderIndex: d.orderIndex ?? 0,
           dayName: d.dayName,
           title: d.title,
-          exercises: (d.exercises || []).map((e: any) => ({
+          exercises: (d.exercises || []).map((e: any): Exercise => ({
+            _id: e._id,
             name: e.name,
             sets: e.sets,
             reps: e.reps,
             duration: e.duration,
+            restTime: e.restTime,
             notes: e.notes,
+            order: e.order ?? 0,
+            exerciseId: e.exerciseId ?? null,
             image: e.image,
             videoUrl: e.videoUrl,
           })),
@@ -112,7 +100,6 @@ export function useWorkout(id: string) {
         })),
       };
     },
-    enabled: !!selectedGymId && !!id,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -162,6 +149,52 @@ export function useDeleteWorkout() {
   });
 }
 
+export function useDuplicateWorkout() {
+  const { selectedGymId } = useGymStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post(`/workouts/${id}/duplicate`);
+      return response.data.data || response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workoutKeys.all(selectedGymId ?? "") });
+    },
+  });
+}
+
+export function useArchiveWorkout() {
+  const { selectedGymId } = useGymStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.patch(`/workouts/${id}/archive`);
+      return response.data.data || response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workoutKeys.all(selectedGymId ?? "") });
+    },
+  });
+}
+
+export function useSaveNestedWorkout(id: string) {
+  const { selectedGymId } = useGymStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiClient.put(`/workouts/${id}/nested`, data);
+      return response.data.data || response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workoutKeys.all(selectedGymId ?? "") });
+      queryClient.invalidateQueries({ queryKey: workoutKeys.detail(selectedGymId ?? "", id) });
+    },
+  });
+}
+
 export function useCreateWorkoutDay(workoutId: string) {
   const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
@@ -202,28 +235,34 @@ export function useMemberWorkouts() {
       const response = await apiClient.get("/members/me/workouts");
       const raw = response.data.data || response.data;
       return (Array.isArray(raw) ? raw : []).map((w: any): WorkoutWithDays => ({
-        id: w.id || w._id,
+        _id: w._id || w.id,
         gymId: w.gymId,
         title: w.title,
         description: w.description,
-        assignmentType: w.assignmentType,
-        assignedMembers: w.assignedMembers || [],
-        isActive: w.isActive ?? true,
+        goal: w.goal,
+        estimatedDuration: w.estimatedDuration,
+        category: w.category,
+        status: w.status ?? "ACTIVE",
+        isDeleted: w.isDeleted ?? false,
         createdBy: w.createdBy,
         createdAt: w.createdAt,
         updatedAt: w.updatedAt,
-        days: (w.days || []).map((d: any) => ({
-          id: d.id || d._id,
-          workoutId: d.workoutId || w.id || w._id,
-          dayNumber: d.dayNumber,
+        days: (w.days || []).map((d: any): WorkoutDay => ({
+          _id: d._id || d.id,
+          workoutId: d.workoutId || w._id || w.id,
+          orderIndex: d.orderIndex ?? 0,
           dayName: d.dayName,
           title: d.title,
-          exercises: (d.exercises || []).map((e: any) => ({
+          exercises: (d.exercises || []).map((e: any): Exercise => ({
+            _id: e._id,
             name: e.name,
             sets: e.sets,
             reps: e.reps,
             duration: e.duration,
+            restTime: e.restTime,
             notes: e.notes,
+            order: e.order ?? 0,
+            exerciseId: e.exerciseId ?? null,
             image: e.image,
             videoUrl: e.videoUrl,
           })),

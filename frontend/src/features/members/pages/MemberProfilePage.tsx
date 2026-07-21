@@ -21,6 +21,7 @@ import { MembershipHistory } from "../components/MembershipHistory";
 import { RenewMembershipForm } from "../components/RenewMembershipForm";
 import { SuspendMemberForm, ActivateMemberForm } from "../components/SuspendActivateForms";
 import { EditMemberForm } from "../components/EditMemberForm";
+import { useMemberAssignments } from "../../workoutAssignments/hooks/useWorkoutAssignments";
 import { Skeleton } from "@/components/feedback/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ export function MemberProfilePage() {
   const { data: activities, isLoading: activitiesLoading } = useMemberActivities(memberId);
   const { data: notes, isLoading: notesLoading, isError: notesError, refetch: refetchNotes } = useMemberNotes(memberId);
   const { data: payments, isLoading: paymentsLoading } = useMemberPaymentSummary(memberId);
+  const { data: memberAssignments } = useMemberAssignments(memberId);
 
   const { mutateAsync: updateMember, isPending: isUpdating } = useUpdateMember(memberId);
   const { mutateAsync: deleteMember, isPending: isDeleting } = useDeleteMember();
@@ -235,6 +237,27 @@ export function MemberProfilePage() {
 
           {/* Recent Payments */}
           <PaymentsSummaryCard payments={payments} isLoading={paymentsLoading} />
+
+          {/* Assigned Workouts */}
+          <WidgetContainer>
+            <WidgetHeader title="Assigned Workouts" />
+            <WidgetBody isEmpty={!(memberAssignments?.length)} isLoading={false}>
+              {memberAssignments?.length ? (
+                <div className="space-y-1.5">
+                  {memberAssignments.map((a) => (
+                    <div key={a._id} className="flex items-center gap-2 text-sm font-mono">
+                      <span className="text-emerald-500">✓</span>
+                      <span className="text-text-primary">{a.workoutId?.title ?? "Unknown"}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-text-secondary text-center py-4 font-mono">
+                  No workouts assigned.
+                </p>
+              )}
+            </WidgetBody>
+          </WidgetContainer>
 
           {/* Membership History */}
           <div className="md:col-span-2 xl:col-span-2">

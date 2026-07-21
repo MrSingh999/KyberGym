@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Edit3, Trash2, Plus, Dumbbell, Users, Calendar, Check, X, UserPlus,
+  ArrowLeft, Edit3, Trash2, Plus, Dumbbell, Calendar, Clock, Target, Copy, Archive,
 } from "lucide-react";
-import { useWorkout, useDeleteWorkout, useCreateWorkoutDay, useUpdateWorkoutDay, useDeleteWorkoutDay } from "../hooks/useWorkouts";
+import { useWorkout, useDeleteWorkout, useDuplicateWorkout, useArchiveWorkout, useCreateWorkoutDay, useUpdateWorkoutDay, useDeleteWorkoutDay } from "../hooks/useWorkouts";
 import { WorkoutStatusBadge } from "../components/WorkoutStatusBadge";
 import { WorkoutDayCard } from "../components/WorkoutDayCard";
 import { WorkoutDayForm } from "../components/WorkoutDayForm";
@@ -20,6 +20,8 @@ export function WorkoutDetailPage() {
   const navigate = useNavigate();
   const { data: workout, isLoading, isError } = useWorkout(workoutId!);
   const { mutate: deleteWorkout } = useDeleteWorkout();
+  const { mutate: duplicateWorkout } = useDuplicateWorkout();
+  const { mutate: archiveWorkout } = useArchiveWorkout();
   const { mutate: createDay, isPending: isCreatingDay } = useCreateWorkoutDay(workoutId!);
   const { mutate: updateDay, isPending: isUpdatingDay } = useUpdateWorkoutDay(workoutId!);
   const { mutate: deleteDay } = useDeleteWorkoutDay(workoutId!);
@@ -32,17 +34,38 @@ export function WorkoutDetailPage() {
     if (!workoutId) return;
     deleteWorkout(workoutId, {
       onSuccess: () => {
-        toast.success("Workout deactivated");
+        toast.success("Workout deleted");
         navigate("/admin/workouts");
       },
-      onError: () => toast.error("Failed to deactivate workout"),
+      onError: () => toast.error("Failed to delete workout"),
+    });
+  };
+
+  const handleDuplicate = () => {
+    if (!workoutId) return;
+    duplicateWorkout(workoutId, {
+      onSuccess: (res) => {
+        toast.success("Workout duplicated");
+        navigate(`/admin/workouts/${res._id || res.id}`);
+      },
+      onError: () => toast.error("Failed to duplicate workout"),
+    });
+  };
+
+  const handleArchive = () => {
+    if (!workoutId) return;
+    archiveWorkout(workoutId, {
+      onSuccess: () => {
+        toast.success("Workout archived");
+      },
+      onError: () => toast.error("Failed to archive workout"),
     });
   };
 
   const handleAddDay = (data: WorkoutDayFormData) => {
     createDay(data as any, {
       onSuccess: () => {
-        toast.success("Day added successfully");
+        toast.success("Day added");
         setShowAddDay(false);
       },
       onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to add day"),
@@ -54,12 +77,12 @@ export function WorkoutDetailPage() {
   };
 
   const handleUpdateDay = (data: WorkoutDayFormData) => {
-    if (!editingDay?.id) return;
+    if (!editingDay?._id) return;
     updateDay(
-      { dayId: editingDay.id, data },
+      { dayId: editingDay._id, data },
       {
         onSuccess: () => {
-          toast.success("Day updated successfully");
+          toast.success("Day updated");
           setEditingDay(null);
         },
         onError: (err: any) => toast.error(err?.response?.data?.message || "Failed to update day"),
@@ -114,7 +137,6 @@ export function WorkoutDetailPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full max-w-4xl mx-auto space-y-6">
-      {/* Back navigation */}
       <button
         onClick={() => navigate("/admin/workouts")}
         className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors mb-2"
@@ -123,20 +145,13 @@ export function WorkoutDetailPage() {
         Back to Workouts
       </button>
 
-      {/* Glass-panel detail card */}
       <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-border-hover space-y-4">
-        {/* Header with title and actions */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-border-default/40">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
               <h2 className="font-bold text-lg sm:text-xl text-text-primary font-mono">{workout.title}</h2>
-              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-[4px] font-mono uppercase border ${
-                workout.assignmentType === "ALL"
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/15"
-                  : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 dark:border-indigo-500/15"
-              }`}>
-                {workout.assignmentType === "ALL" ? "Assigned to All Members" : "Personal Assignment"}
-              </span>
+              <WorkoutStatusBadge status={workout.status} />
             </div>
             <p className="text-xs text-text-secondary leading-relaxed">
               {workout.description || "No description provided."}
@@ -152,9 +167,25 @@ export function WorkoutDetailPage() {
               <Edit3 className="h-4 w-4" />
             </button>
             <button
+              onClick={handleDuplicate}
+              className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-hover cursor-pointer"
+              title="Duplicate"
+            >
+              <Copy className="h-4 w-4" />
+            </button>
+            {workout.status !== "ARCHIVED" && (
+              <button
+                onClick={handleArchive}
+                className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-amber-600 hover:bg-amber-500/10 hover:border-amber-500/20 cursor-pointer"
+                title="Archive"
+              >
+                <Archive className="h-4 w-4" />
+              </button>
+            )}
+            <button
               onClick={handleDeleteWorkout}
               className="p-2 border border-border-default rounded-[6px] text-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 cursor-pointer"
-              title="Delete Program"
+              title="Delete"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -162,20 +193,13 @@ export function WorkoutDetailPage() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="rounded-[12px] border border-border-default bg-surface p-4">
             <div className="flex items-center gap-2 text-text-muted mb-1">
               <Calendar className="w-4 h-4" />
               <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Days</span>
             </div>
             <p className="text-2xl font-bold text-text-primary font-mono">{workout.days.length}</p>
-          </div>
-          <div className="rounded-[12px] border border-border-default bg-surface p-4">
-            <div className="flex items-center gap-2 text-text-muted mb-1">
-              <Users className="w-4 h-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Members</span>
-            </div>
-            <p className="text-2xl font-bold text-text-primary font-mono">{workout.assignedMembers.length}</p>
           </div>
           <div className="rounded-[12px] border border-border-default bg-surface p-4">
             <div className="flex items-center gap-2 text-text-muted mb-1">
@@ -186,34 +210,33 @@ export function WorkoutDetailPage() {
               {workout.days.reduce((sum, d) => sum + d.exercises.length, 0)}
             </p>
           </div>
+          <div className="rounded-[12px] border border-border-default bg-surface p-4">
+            <div className="flex items-center gap-2 text-text-muted mb-1">
+              <Target className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Goal</span>
+            </div>
+            <p className="text-sm font-bold text-text-primary font-mono truncate">
+              {workout.goal || "—"}
+            </p>
+          </div>
+          <div className="rounded-[12px] border border-border-default bg-surface p-4">
+            <div className="flex items-center gap-2 text-text-muted mb-1">
+              <Clock className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-wider font-mono">Duration</span>
+            </div>
+            <p className="text-2xl font-bold text-text-primary font-mono">
+              {workout.estimatedDuration ? `${workout.estimatedDuration}m` : "—"}
+            </p>
+          </div>
         </div>
 
-        {/* Assigned Members section (for SELECTED type) */}
-        {workout.assignmentType === "SELECTED" && (
-          <div className="bg-surface/25 border border-border-default rounded-[8px] p-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-text-secondary" />
-                <h4 className="font-bold text-xs text-text-primary font-mono uppercase tracking-wider">
-                  Assigned Members ({workout.assignedMembers.length})
-                </h4>
-              </div>
-            </div>
-
-            {workout.assignedMembers.length === 0 ? (
-              <p className="text-[11px] text-text-muted italic">No members assigned yet. This routine won't be visible to anyone.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2 pt-1 max-h-[120px] overflow-y-auto pr-1">
-                {workout.assignedMembers.map((memberId) => (
-                  <div
-                    key={memberId}
-                    className="flex items-center space-x-1.5 bg-surface/50 border border-border-hover pl-2 pr-1 py-0.5 rounded-[4px] text-[10px] text-text-secondary font-mono"
-                  >
-                    <span>{memberId}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Category */}
+        {workout.category && (
+          <div className="flex items-center gap-2 text-xs text-text-muted font-mono">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Category:</span>
+            <span className="bg-surface/50 px-2 py-0.5 rounded border border-border-default">
+              {workout.category}
+            </span>
           </div>
         )}
 
@@ -234,13 +257,13 @@ export function WorkoutDetailPage() {
 
           {workout.days.length === 0 && !showAddDay ? (
             <div className="border border-dashed border-border-hover p-8 text-center rounded-[8px] text-text-muted text-xs italic">
-              No training days configured. Click "Add Day" to define routines like chest, back, legs split.
+              No training days configured. Click "Add Day" to define routines.
             </div>
           ) : (
             <div className="space-y-2">
               {workout.days.map((day, i) => (
                 <WorkoutDayCard
-                  key={day.id}
+                  key={day._id}
                   day={day}
                   index={i}
                   onEdit={handleEditDay}
@@ -252,12 +275,14 @@ export function WorkoutDetailPage() {
         </div>
       </div>
 
-      {/* Modals */}
       {/* Add Day Modal */}
       <ResponsiveModal open={showAddDay} onClose={() => setShowAddDay(false)}>
         <div className="p-6">
           <h3 className="text-lg font-semibold text-primary mb-6">Add Training Day</h3>
           <WorkoutDayForm
+            defaultValues={{
+              orderIndex: workout?.days?.length || 0,
+            }}
             onSubmit={handleAddDay}
             isSubmitting={isCreatingDay}
             onCancel={() => setShowAddDay(false)}
@@ -272,7 +297,7 @@ export function WorkoutDetailPage() {
           {editingDay && (
             <WorkoutDayForm
               defaultValues={{
-                dayNumber: editingDay.dayNumber,
+                orderIndex: editingDay.orderIndex,
                 dayName: editingDay.dayName,
                 title: editingDay.title,
                 exercises: editingDay.exercises,

@@ -6,6 +6,7 @@ import {
   updateWorkoutSchema,
   createWorkoutDaySchema,
   updateWorkoutDaySchema,
+  nestedSaveSchema,
 } from './workout.validators.js';
 import { asyncHandler } from '../../middleware/asyncHandler.js';
 import { resolveTenant } from '../../middleware/tenant.middleware.js';
@@ -53,6 +54,26 @@ router.delete(
   asyncHandler(WorkoutController.deleteWorkout)
 );
 
+// ── Workout Actions ───────────────────────────────────────────
+router.post(
+  '/:id/duplicate',
+  requireRoles(ROLES.GYM_ADMIN, ROLES.TRAINER),
+  asyncHandler(WorkoutController.duplicateWorkout)
+);
+
+router.patch(
+  '/:id/archive',
+  requireRoles(ROLES.GYM_ADMIN, ROLES.TRAINER),
+  asyncHandler(WorkoutController.archiveWorkout)
+);
+
+router.put(
+  '/:id/nested',
+  requireRoles(ROLES.GYM_ADMIN, ROLES.TRAINER),
+  validateRequest(nestedSaveSchema),
+  asyncHandler(WorkoutController.saveNested)
+);
+
 // ── Workout Day Sub-Routes ────────────────────────────────────
 router.post(
   '/:id/days',
@@ -73,5 +94,9 @@ router.delete(
   requireRoles(ROLES.GYM_ADMIN, ROLES.TRAINER),
   asyncHandler(WorkoutController.deleteDay)
 );
+
+// ── Member Workout Routes (disabled for Phase 2.1) ───────────
+// import { MemberWorkoutController } from '../member/member.controller.js';
+// router.get('/member/me/workouts', authenticate, asyncHandler(MemberWorkoutController.getWorkouts));
 
 export default router;

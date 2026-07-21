@@ -33,6 +33,9 @@ import memberQrRoutes        from '../modules/memberQr/memberQr.routes.js';
 import superAdminRoutes      from '../modules/super-admin/superAdmin.routes.js';
 import attendanceRoutes      from '../modules/attendance/attendance.routes.js';
 import gymSubscriptionPaymentRoutes from '../modules/gymSubscriptionPayment/gymSubscriptionPayment.routes.js';
+import workoutAssignmentRoutes from '../modules/workoutAssignment/workoutAssignment.routes.js';
+import trainerRoutes from '../modules/trainer/trainer.routes.js';
+import memberWorkoutPlanRoutes from '../modules/memberWorkoutPlan/memberWorkoutPlan.routes.js';
 
 // ── Route Registration ─────────────────────────────────────────────────────
 router.use('/super-admin',               superAdminRoutes);
@@ -52,5 +55,8 @@ router.use('/gyms',               gymRoutes);
 router.use('/users',              userRoutes);
 router.use('/members/:id/qr',     memberQrRoutes);
 router.use('/attendance',         attendanceRoutes);
+router.use('/workout-assignments', workoutAssignmentRoutes);
+router.use('/trainers', trainerRoutes);
+router.use('/member-workout-plans', memberWorkoutPlanRoutes);
 
 export default router;

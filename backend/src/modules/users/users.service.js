@@ -70,6 +70,31 @@ export class UserService {
     } else {
       query.publicId = userId;
     }
+
+    const currentUser = await User.findOne(query).select('role status').lean();
+    if (!currentUser) throw createError.NotFound('User not found');
+
+    const willLeaveAdmin = (
+      currentUser.role === ROLES.GYM_ADMIN &&
+      currentUser.status === 'active' &&
+      (update.status === 'inactive' || (update.role && update.role !== ROLES.GYM_ADMIN))
+    );
+
+    if (willLeaveAdmin) {
+      const activeAdminCount = await User.countDocuments({
+        gymId,
+        role: ROLES.GYM_ADMIN,
+        status: 'active',
+        isDeleted: false,
+        _id: { $ne: currentUser._id },
+      });
+      if (activeAdminCount === 0) {
+        throw createError.BadRequest(
+          'Cannot deactivate or change role of the last active gym administrator. The gym must have at least one active admin.'
+        );
+      }
+    }
+
     const user = await User.findOneAndUpdate(
       query,
       { $set: update },

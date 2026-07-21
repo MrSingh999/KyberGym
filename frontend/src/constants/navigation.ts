@@ -14,6 +14,9 @@ import {
   ClipboardCheck,
   Bell,
   Mail,
+  Share2,
+  UserCheck,
+  ClipboardList,
 } from "lucide-react";
 
 export type NavItem = {
@@ -63,6 +66,7 @@ export const OWNER_NAVIGATION: NavGroup[] = [
     items: [
       { name: "Attendance", href: "/admin/attendance", icon: ClipboardCheck },
       { name: "Workouts", href: "/admin/workouts", icon: Dumbbell },
+      { name: "Workout Assignments", href: "/admin/workout-assignments", icon: Share2 },
       { name: "Exercises", href: "/admin/exercises", icon: Activity },
       { name: "QR Entry", href: "/admin/qr", icon: QrCode },
     ],
@@ -73,6 +77,7 @@ export const OWNER_NAVIGATION: NavGroup[] = [
       { name: "Reports", href: "/admin/reports", icon: FileText },
       { name: "Branding", href: "/admin/branding", icon: Palette },
       { name: "Staff", href: "/admin/staff", icon: Users },
+      { name: "Trainers", href: "/admin/trainers", icon: UserCheck },
       { name: "Settings", href: "/admin/settings", icon: Settings },
     ],
   },
@@ -82,6 +87,33 @@ export const OWNER_NAVIGATION: NavGroup[] = [
       { name: "Broadcasts", href: "/admin/broadcasts", icon: Megaphone },
       { name: "Message Templates", href: "/admin/message-templates", icon: Mail },
       { name: "Notifications", href: "/admin/notifications", icon: Bell },
+    ],
+  },
+];
+
+export const TRAINER_NAVIGATION: NavGroup[] = [
+  {
+    title: "Overview",
+    items: [
+      { name: "Dashboard", href: "/trainer", icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: "Members",
+    items: [
+      { name: "My Members", href: "/trainer/members", icon: Users },
+    ],
+  },
+  {
+    title: "Training",
+    items: [
+      { name: "My Workout Plans", href: "/trainer/workout-plans", icon: Dumbbell },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      { name: "My Profile", href: "/trainer/profile", icon: Settings },
     ],
   },
 ];

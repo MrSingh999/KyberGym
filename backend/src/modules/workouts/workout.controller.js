@@ -4,8 +4,6 @@ import { ApiSuccess } from '../../shared/ApiSuccess.js';
 import httpStatus from 'http-status';
 
 export class WorkoutController {
-  // ── Workouts ──────────────────────────────────────────────
-
   static async createWorkout(req, res) {
     const gymId = req.gym._id;
     const userId = req.user._id;
@@ -34,10 +32,26 @@ export class WorkoutController {
   static async deleteWorkout(req, res) {
     const gymId = req.gym._id;
     await WorkoutService.deleteWorkout(req.params.id, gymId);
-    return ApiSuccess.send(res, httpStatus.OK, 'Workout deactivated');
+    return ApiSuccess.send(res, httpStatus.OK, 'Workout deleted');
   }
 
-  // ── Workout Days (sub-resource) ────────────────────────────
+  static async duplicateWorkout(req, res) {
+    const gymId = req.gym._id;
+    const workout = await WorkoutService.duplicateWorkout(req.params.id, gymId);
+    return ApiSuccess.send(res, httpStatus.CREATED, 'Workout duplicated', workout);
+  }
+
+  static async archiveWorkout(req, res) {
+    const gymId = req.gym._id;
+    const workout = await WorkoutService.archiveWorkout(req.params.id, gymId);
+    return ApiSuccess.send(res, httpStatus.OK, 'Workout archived', workout);
+  }
+
+  static async saveNested(req, res) {
+    const gymId = req.gym._id;
+    const workout = await WorkoutService.saveNested(gymId, req.params.id, req.body);
+    return ApiSuccess.send(res, httpStatus.OK, 'Workout saved with days', workout);
+  }
 
   static async createDay(req, res) {
     const gymId = req.gym._id;

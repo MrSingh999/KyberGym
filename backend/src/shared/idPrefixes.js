@@ -19,4 +19,8 @@ export const ENTITY_PREFIXES = {
   TMPL: 'TMPL',
   LOG: 'LOG',
   ATT: 'ATT',
+  WKA: 'WKA',
+  TRN: 'TRN',
+  MWP: 'MWP',
+  MWD: 'MWD',
 };

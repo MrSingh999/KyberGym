@@ -16,7 +16,7 @@ export class WorkoutDayService {
       return await WorkoutDayRepository.create({ workoutId: workout._id, ...data });
     } catch (error) {
       if (error.code === 11000) {
-        throw createError.Conflict(`Day ${data.dayNumber} already exists for this workout`);
+        throw createError.Conflict(`Day with order index ${data.orderIndex} already exists for this workout`);
       }
       throw error;
     }
@@ -48,7 +48,7 @@ export class WorkoutDayService {
       return day;
     } catch (error) {
       if (error.code === 11000) {
-        throw createError.Conflict(`Day ${data.dayNumber} already exists for this workout`);
+        throw createError.Conflict(`Day with order index ${data.orderIndex} already exists for this workout`);
       }
       throw error;
     }
