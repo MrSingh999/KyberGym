@@ -273,7 +273,7 @@ export function DashboardPage() {
                         </div>
                         <Button
                           size="xs"
-                          onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
+                          onClick={() => navigate(`/admin/member-payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
                           className="text-[10px] sm:text-[9px] font-bold h-7 sm:h-6 cursor-pointer rounded-[4px] px-2 active:scale-95 transition-transform"
                         >
                           Collect Payment

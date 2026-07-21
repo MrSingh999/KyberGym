@@ -30,7 +30,14 @@ const memberSubscriptionSchema = new mongoose.Schema(
     },
     
     assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    notes: { type: String }
+    notes: { type: String },
+
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'paid'],
+      default: 'unpaid',
+    },
+    lastPaymentDate: { type: Date },
   },
   { timestamps: true }
 );

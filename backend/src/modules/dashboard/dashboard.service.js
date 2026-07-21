@@ -1,5 +1,5 @@
 import { Member } from '../member/models/Member.model.js';
-import { Payment } from '../payment/models/Payment.model.js';
+import { MemberPayment } from '../memberPayment/models/MemberPayment.model.js';
 import { MemberSubscription } from '../memberSubscription/models/MemberSubscription.model.js';
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, addDays } from 'date-fns';
 
@@ -22,7 +22,7 @@ export class DashboardService {
       Member.countDocuments({ gymId, isDeleted: false, status: 'expired' }),
       
       // Aggregate monthly payments
-      Payment.aggregate([
+      MemberPayment.aggregate([
         { 
           $match: { 
             gymId, 

@@ -1,0 +1,127 @@
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+import { usePaymentStore } from '../store/usePaymentStore';
+import { PaymentStatus, PaymentMethod, PAYMENT_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '../types';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+
+const STATUS_OPTIONS = Object.keys(PAYMENT_STATUS_LABELS) as PaymentStatus[];
+const METHOD_OPTIONS = Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[];
+
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
+        active
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-surface border-border-default text-text-secondary hover:border-border-hover hover:text-text-primary',
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2.5">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted">{title}</h4>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
+
+export function FiltersContent() {
+  const { filters, setFilters, clearFilters } = usePaymentStore();
+
+  const toggleStatus = (v: PaymentStatus) => {
+    setFilters({
+      status: filters.status.includes(v) ? filters.status.filter((s) => s !== v) : [...filters.status, v],
+    });
+  };
+
+  const toggleMethod = (v: PaymentMethod) => {
+    setFilters({
+      method: filters.method.includes(v) ? filters.method.filter((m) => m !== v) : [...filters.method, v],
+    });
+  };
+
+  const hasFilters = filters.status.length > 0 || filters.method.length > 0 || filters.dateFrom || filters.dateTo;
+
+  return (
+    <div className="space-y-6">
+      <FilterSection title="Status">
+        {STATUS_OPTIONS.map((s) => (
+          <FilterChip key={s} label={PAYMENT_STATUS_LABELS[s]} active={filters.status.includes(s)} onClick={() => toggleStatus(s)} />
+        ))}
+      </FilterSection>
+
+      <FilterSection title="Payment Method">
+        {METHOD_OPTIONS.map((m) => (
+          <FilterChip key={m} label={PAYMENT_METHOD_LABELS[m]} active={filters.method.includes(m)} onClick={() => toggleMethod(m)} />
+        ))}
+      </FilterSection>
+
+      <FilterSection title="Date Range">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] text-text-muted uppercase font-semibold mb-1 block">From</label>
+            <Input type="date" value={filters.dateFrom || ''} onChange={(e) => setFilters({ dateFrom: e.target.value || undefined })} className="h-9 text-xs" />
+          </div>
+          <div>
+            <label className="text-[10px] text-text-muted uppercase font-semibold mb-1 block">To</label>
+            <Input type="date" value={filters.dateTo || ''} onChange={(e) => setFilters({ dateTo: e.target.value || undefined })} className="h-9 text-xs" />
+          </div>
+        </div>
+      </FilterSection>
+
+        {hasFilters && (
+        <button onClick={clearFilters} className="text-xs text-error hover:underline flex items-center gap-1">
+          <X className="w-3 h-3" /> Clear all filters
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function PaymentsFiltersSheet() {
+  const { isFilterSheetOpen, setFilterSheetOpen } = usePaymentStore();
+
+  return (
+    <AnimatePresence>
+      {isFilterSheetOpen && (
+        <>
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[59] bg-black/40 backdrop-blur-sm lg:hidden"
+            onClick={() => setFilterSheetOpen(false)}
+          />
+          <motion.div
+            key="sheet"
+            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            className="fixed inset-0 z-[60] bg-surface flex flex-col lg:hidden"
+          >
+            <div className="flex items-center justify-between px-5 pt-5 pb-0">
+              <h3 className="font-heading font-semibold text-base text-text-primary">Filters</h3>
+              <button onClick={() => setFilterSheetOpen(false)} className="p-1.5 rounded-full hover:bg-surface-hover text-text-muted">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-2">
+              <FiltersContent />
+            </div>
+            <div className="px-5 pb-5 pt-3 bg-surface border-t border-border-default">
+              <button onClick={() => setFilterSheetOpen(false)} className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm">
+                Apply Filters
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}

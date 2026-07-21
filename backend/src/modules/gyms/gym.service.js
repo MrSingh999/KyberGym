@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import createError from 'http-errors';
 import { Gym } from './models/Gym.model.js';
 import { User } from '../users/models/User.model.js';
+import { GymSubscriptionRepository } from '../gymSubscription/gymSubscription.repository.js';
 import { ROLES } from '../../shared/constants.js';
 import { hashData } from '../auth/auth.utils.js';
 
@@ -137,6 +138,11 @@ export class GymService {
       });
 
       await user.save(useTransaction ? { session } : undefined);
+
+      await GymSubscriptionRepository.upsert(gym._id, {
+        status: 'trial',
+        startDate: new Date(),
+      }, useTransaction && session ? { session } : {});
 
       if (useTransaction && session) {
         await session.commitTransaction();

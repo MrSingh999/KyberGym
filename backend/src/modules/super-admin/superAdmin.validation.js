@@ -73,6 +73,9 @@ export const renewSubscriptionSchema = {
     expiresAt: z.string().datetime(),
     amountPaid: z.number().min(0, 'Amount paid must be at least 0'),
     duration: z.number().optional(),
+    paymentMethod: z.enum(['cash', 'upi', 'card', 'bank_transfer']).optional(),
+    paymentReference: z.string().optional(),
+    notes: z.string().optional(),
   }),
   params: z.object({
     id: z.string(),

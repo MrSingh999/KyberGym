@@ -94,7 +94,7 @@ export class SuperAdminController {
   }
 
   static async renewSubscription(req, res) {
-    const gym = await SuperAdminService.renewSubscription(req.params.id, req.body);
+    const gym = await SuperAdminService.renewSubscription(req.params.id, req.body, req.superAdmin._id);
     return ApiSuccess.send(res, httpStatus.OK, 'Subscription renewed successfully', gym);
   }
 

@@ -1,16 +1,35 @@
 import createError from 'http-errors';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 import mongoose from 'mongoose';
 import { authConfig } from '../../config/env.js';
 import { SuperAdmin } from './superAdmin.model.js';
 import { compareData, hashData } from '../auth/auth.utils.js';
 import { Gym } from '../gyms/models/Gym.model.js';
 import { GymService } from '../gyms/gym.service.js';
+import { GymSubscriptionRepository } from '../gymSubscription/gymSubscription.repository.js';
+import { GymSubscriptionPaymentRepository } from '../gymSubscriptionPayment/gymSubscriptionPayment.repository.js';
 import { User } from '../users/models/User.model.js';
 import { Member } from '../member/models/Member.model.js';
 import { MemberSubscription } from '../memberSubscription/models/MemberSubscription.model.js';
 import { logger } from '../../config/logger.js';
+
+const VALID_TRANSITIONS = {
+  trial: ['active', 'suspended'],
+  active: ['expired', 'suspended'],
+  expired: ['suspended'],
+  suspended: ['active', 'expired'],
+};
+
+function validateTransition(currentStatus, newStatus) {
+  if (currentStatus === newStatus) return;
+  const allowed = VALID_TRANSITIONS[currentStatus];
+  if (!allowed || !allowed.includes(newStatus)) {
+    throw createError.BadRequest(
+      `Invalid subscription status transition: ${currentStatus} → ${newStatus}. ` +
+      `Allowed transitions from ${currentStatus}: ${(allowed || []).join(', ')}`
+    );
+  }
+}
 
 const resolveGymId = async (id) => {
   if (!id) return id;
@@ -68,7 +87,7 @@ export class SuperAdminService {
       Gym.countDocuments({ isDeleted: false }),
       Gym.countDocuments({ isDeleted: false, isActive: true }),
       Gym.countDocuments({ isDeleted: false, isActive: false }),
-      Gym.countDocuments({ isDeleted: false, 'subscription.status': 'trial' }),
+      GymSubscriptionRepository.countByStatus('trial'),
       Member.countDocuments({ isDeleted: false }),
       MemberSubscription.countDocuments({ status: 'active' }),
       MemberSubscription.countDocuments({ status: 'expired' }),
@@ -89,35 +108,48 @@ export class SuperAdminService {
     const { page = 1, limit = 10, search, status, isActive } = query;
     const skip = (page - 1) * limit;
 
-    const filter = {};
-    if (status === 'deleted') {
-      filter.isDeleted = true;
-    } else {
-      filter.isDeleted = false;
-      if (status) {
-        filter['subscription.status'] = status;
+    let gymFilter = { isDeleted: false };
+
+    if (status) {
+      if (status === 'deleted') {
+        gymFilter.isDeleted = true;
+      } else {
+        const gymIds = await GymSubscriptionRepository.findGymIdsByStatus(status);
+        gymFilter._id = { $in: gymIds };
       }
     }
 
     if (search) {
-      filter.name = { $regex: search, $options: 'i' };
+      gymFilter.name = { $regex: search, $options: 'i' };
     }
 
     if (isActive !== undefined) {
-      filter.isActive = isActive === 'true';
+      gymFilter.isActive = isActive === 'true';
     }
 
     const [gyms, total] = await Promise.all([
-      Gym.find(filter)
+      Gym.find(gymFilter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Gym.countDocuments(filter),
+      Gym.countDocuments(gymFilter),
     ]);
 
+    const gymIds = gyms.map(g => g._id);
+    const subscriptions = await GymSubscriptionRepository.findByGymIds(gymIds);
+    const subMap = {};
+    for (const sub of subscriptions) {
+      subMap[sub.gymId.toString()] = sub;
+    }
+
+    const gymsWithSubscription = gyms.map(g => ({
+      ...g,
+      subscription: subMap[g._id.toString()] || null,
+    }));
+
     return {
-      gyms,
+      gyms: gymsWithSubscription,
       meta: {
         page,
         limit,
@@ -133,7 +165,8 @@ export class SuperAdminService {
     if (!gym || gym.isDeleted) {
       throw createError.NotFound('Gym not found');
     }
-    return gym;
+    const subscription = await GymSubscriptionRepository.findOrCreate(id);
+    return { ...gym, subscription };
   }
 
   static async createGym(data) {
@@ -187,7 +220,6 @@ export class SuperAdminService {
     gym.isDeleted = true;
     gym.deletedAt = new Date(timestamp);
     
-    // Release subdomain and slug so they can be reused
     if (gym.subdomain) {
       gym.subdomain = `${gym.subdomain}-deleted-${timestamp}`;
     }
@@ -206,10 +238,6 @@ export class SuperAdminService {
     if (!gym) {
       throw createError.NotFound('Gym not found');
     }
-    if (gym.isDeleted) { // wait, wait! original had: if (!gym.isDeleted)
-      // wait, let's keep original condition intact
-    }
-    // Let's just resolve the id at start
     return SuperAdminService._restoreGymInner(id);
   }
 
@@ -222,13 +250,11 @@ export class SuperAdminService {
       throw createError.BadRequest('Gym is not deleted');
     }
 
-    // Strip the deleted suffix to find the original subdomain
     let originalSubdomain = gym.subdomain || '';
     if (originalSubdomain.includes('-deleted-')) {
       originalSubdomain = originalSubdomain.split('-deleted-')[0];
     }
 
-    // Check if another active gym is using this subdomain
     const conflictingGym = await Gym.findOne({
       subdomain: originalSubdomain,
       isDeleted: false,
@@ -237,7 +263,6 @@ export class SuperAdminService {
       throw createError.Conflict('Original subdomain is already taken by another active gym');
     }
 
-    // Restore the gym
     gym.isDeleted = false;
     gym.deletedAt = null;
     gym.subdomain = originalSubdomain;
@@ -255,9 +280,9 @@ export class SuperAdminService {
       throw createError.NotFound('Gym not found');
     }
 
-    // Cascading delete
     await Promise.all([
       Gym.findByIdAndDelete(id),
+      GymSubscriptionRepository.deleteByGymId(id),
       User.deleteMany({ gymId: id }),
       Member.deleteMany({ gymId: id }),
       MemberSubscription.deleteMany({ gymId: id }),
@@ -320,34 +345,28 @@ export class SuperAdminService {
 
   static async getSubscription(id) {
     id = await resolveGymId(id);
-    const gym = await Gym.findById(id).select('subscription').lean();
-    if (!gym || gym.isDeleted) {
-      throw createError.NotFound('Gym not found');
-    }
-    return gym.subscription;
+    const subscription = await GymSubscriptionRepository.findOrCreate(id);
+    return subscription;
   }
 
   static async updateSubscription(id, data) {
     id = await resolveGymId(id);
-    const update = {};
-    if (data.status !== undefined) update['subscription.status'] = data.status;
-    if (data.expiresAt !== undefined) update['subscription.expiresAt'] = data.expiresAt ? new Date(data.expiresAt) : null;
-    if (data.trialEndsAt !== undefined) update['subscription.trialEndsAt'] = data.trialEndsAt ? new Date(data.trialEndsAt) : null;
-
-    const gym = await Gym.findByIdAndUpdate(
-      id,
-      { $set: update },
-      { new: true, runValidators: true }
-    );
-
-    if (!gym || gym.isDeleted) {
-      throw createError.NotFound('Gym not found');
+    const updateData = {};
+    if (data.status !== undefined) {
+      const current = await GymSubscriptionRepository.findByGymId(id);
+      if (current) validateTransition(current.status, data.status);
+      updateData.status = data.status;
     }
+    if (data.expiresAt !== undefined) updateData.expiresAt = data.expiresAt ? new Date(data.expiresAt) : null;
+    if (data.trialEndsAt !== undefined) updateData.trialEndsAt = data.trialEndsAt ? new Date(data.trialEndsAt) : null;
 
-    return gym;
+    const subscription = await GymSubscriptionRepository.upsert(id, updateData);
+    if (!subscription) throw createError.NotFound('Gym subscription not found');
+
+    return subscription;
   }
 
-  static async renewSubscription(id, data) {
+  static async renewSubscription(id, data, performedBy = null) {
     id = await resolveGymId(id);
     const gym = await Gym.findById(id);
     if (!gym || gym.isDeleted) {
@@ -359,60 +378,58 @@ export class SuperAdminService {
     const amountPaid = Number(data.amountPaid) || 0;
     const duration = Number(data.duration) || 0;
 
-    gym.subscription.startDate = startDate;
-    gym.subscription.expiresAt = expiresAt;
-    gym.subscription.status = 'active';
-
-    if (!gym.subscriptionHistory) {
-      gym.subscriptionHistory = [];
-    }
-
-    gym.subscriptionHistory.push({
+    const subscription = await GymSubscriptionRepository.upsert(id, {
       startDate,
       expiresAt,
-      amountPaid,
-      duration,
-      paymentDate: new Date(),
-      renewedAt: new Date(),
+      status: 'active',
     });
 
-    await gym.save();
+    const notes = data.notes || `Renewal: ${duration} days`;
 
-    return gym;
+    await GymSubscriptionPaymentRepository.create({
+      gymId: id,
+      subscriptionId: `GSUB-${subscription.publicId.split('-')[1] || id}`,
+      amount: amountPaid,
+      paymentMethod: data.paymentMethod || 'cash',
+      paymentReference: data.paymentReference,
+      paymentDate: new Date(),
+      status: 'completed',
+      paymentProvider: 'manual',
+      receivedBy: performedBy,
+      notes,
+    });
+
+    return subscription;
   }
 
   static async updateSubscriptionStatus(id, status) {
     id = await resolveGymId(id);
-    const gym = await Gym.findByIdAndUpdate(
-      id,
-      { $set: { 'subscription.status': status } },
-      { new: true, runValidators: true }
-    );
-
-    if (!gym || gym.isDeleted) {
-      throw createError.NotFound('Gym not found');
-    }
-
-    return gym;
+    const current = await GymSubscriptionRepository.findByGymId(id);
+    if (current) validateTransition(current.status, status);
+    const subscription = await GymSubscriptionRepository.updateByGymId(id, { status });
+    if (!subscription) throw createError.NotFound('Gym not found');
+    return subscription;
   }
 
   static async manageTrial(id, data) {
     id = await resolveGymId(id);
-    const gym = await Gym.findById(id);
-    if (!gym || gym.isDeleted) {
-      throw createError.NotFound('Gym not found');
-    }
+    const current = await GymSubscriptionRepository.findByGymId(id);
+    const updateData = {};
 
     if (data.action === 'start' || data.action === 'extend') {
-      gym.subscription.trialEndsAt = data.trialEndsAt ? new Date(data.trialEndsAt) : null;
-      gym.subscription.status = 'trial';
+      validateTransition(current?.status || 'trial', 'trial');
+      updateData.trialEndsAt = data.trialEndsAt ? new Date(data.trialEndsAt) : null;
+      updateData.status = 'trial';
     } else if (data.action === 'end') {
-      gym.subscription.trialEndsAt = null;
-      gym.subscription.status = 'expired';
+      if (current && current.status !== 'trial') {
+        throw createError.BadRequest('Can only end trial when status is trial');
+      }
+      updateData.trialEndsAt = null;
+      updateData.status = 'expired';
     }
 
-    await gym.save();
-    return gym;
+    const subscription = await GymSubscriptionRepository.upsert(id, updateData);
+    return subscription;
   }
 
   // ── User Management per Gym ──────────────────────────────────────────────

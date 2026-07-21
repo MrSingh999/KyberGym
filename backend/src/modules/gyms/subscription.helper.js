@@ -1,20 +1,15 @@
-import { Gym } from './models/Gym.model.js';
+import { GymSubscriptionRepository } from '../gymSubscription/gymSubscription.repository.js';
 
-export const checkSubscriptionStatus = async (gym) => {
-  if (!gym || !gym.subscription) return gym;
+export const checkAndUpdateExpiry = async (gymId) => {
+  const sub = await GymSubscriptionRepository.findOrCreate(gymId);
+  if (!sub) return null;
 
-  if (gym.subscription.expiresAt && new Date(gym.subscription.expiresAt) < new Date()) {
-    if (gym.subscription.status !== 'expired') {
-      gym.subscription.status = 'expired';
-      await gym.save();
+  if (sub.expiresAt && new Date(sub.expiresAt) < new Date()) {
+    if (sub.status !== 'expired') {
+      await GymSubscriptionRepository.updateByGymId(gymId, { status: 'expired' });
+      sub.status = 'expired';
     }
   }
 
-  return gym;
-};
-
-export const checkGymSubscription = async (gymId) => {
-  const gym = await Gym.findById(gymId);
-  if (!gym) return null;
-  return checkSubscriptionStatus(gym);
+  return sub;
 };

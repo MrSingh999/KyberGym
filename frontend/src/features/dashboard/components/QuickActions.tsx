@@ -12,7 +12,7 @@ import { useNavigate } from "react-router";
 
 const actions = [
   { label: "Add Member", icon: UserPlus, href: "/admin/members" },
-  { label: "Record Payment", icon: CreditCard, href: "/admin/payments/collect" },
+  { label: "Record Payment", icon: CreditCard, href: "/admin/member-payments/collect" },
   { label: "Renew Membership", icon: RefreshCw, href: "/admin/plans" },
   { label: "Manage Workouts", icon: Dumbbell, href: "/admin/workouts" },
   { label: "Record Attendance", icon: ClipboardCheck, href: "/admin/qr" },

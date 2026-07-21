@@ -89,7 +89,7 @@ export function useMemberActivities(memberId: string) {
         })(),
         (async () => {
           try {
-            const res = await apiClient.get('/payments', { params: { memberId, limit: 50 } });
+            const res = await apiClient.get('/member-payments', { params: { memberId, limit: 50 } });
             return res.data.data ?? [];
           } catch { return []; }
         })(),
@@ -159,7 +159,7 @@ export function useMemberPaymentSummary(memberId: string) {
     queryFn: async () => {
       let rawPayments: any[] = [];
       try {
-        const response = await apiClient.get('/payments', {
+        const response = await apiClient.get('/member-payments', {
           params: { memberId, limit: 50 }
         });
         rawPayments = response.data.data ?? [];
@@ -167,23 +167,12 @@ export function useMemberPaymentSummary(memberId: string) {
         return [];
       }
 
-      const planIds = [...new Set(rawPayments.map((p: any) => p.planId).filter(Boolean))];
-      let planNames = new Map<string, string>();
-      if (planIds.length > 0) {
-        try {
-          const plansRes = await apiClient.get('/membership-plans', { params: { limit: 200 } });
-          (plansRes.data.data || []).forEach((pl: any) => {
-            planNames.set(pl.id || pl._id, pl.name);
-          });
-        } catch { /* fallback */ }
-      }
-
       const paymentsWithPlans = rawPayments.map((p: any) => ({
         id: p.id || p._id,
-        amount: p.finalAmount || p.amount,
+        amount: p.finalAmount ?? p.amount,
         date: p.paymentDate ? new Date(p.paymentDate).toISOString().split('T')[0] : "",
         status: p.status || "paid",
-        description: `${planNames.get(p.planId) || "Gym Membership"} – payment`,
+        description: `${p.paymentFor?.planName || "Gym Membership"} – payment`,
       }));
       return paymentsWithPlans;
     },

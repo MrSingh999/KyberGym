@@ -1,0 +1,42 @@
+import { useEffect, useState } from 'react';
+import { Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface PaymentsSearchProps {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export function PaymentsSearch({
+  value, onChange,
+  placeholder = 'Search by name, phone, reference…',
+  className,
+}: PaymentsSearchProps) {
+  const [local, setLocal] = useState(value);
+
+  useEffect(() => {
+    const id = setTimeout(() => onChange(local), 300);
+    return () => clearTimeout(id);
+  }, [local, onChange]);
+
+  useEffect(() => { setLocal(value); }, [value]);
+
+  return (
+    <div className={cn('relative flex-1 max-w-sm', className)}>
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+      <input
+        type="search" value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pl-9 pr-9 py-2.5 text-sm bg-surface border border-border-default rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary focus:border-border-hover transition-colors"
+      />
+      {local && (
+        <button onClick={() => { setLocal(''); onChange(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}

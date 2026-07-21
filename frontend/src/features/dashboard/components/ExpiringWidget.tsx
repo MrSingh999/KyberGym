@@ -102,7 +102,7 @@ export function ExpiringWidget() {
                     ? "border-error/20 hover:border-error/35 border-l-[3px] border-l-error"
                     : "border-border-default hover:border-border-hover border-l-[3px] border-l-warning",
                 )}
-                  onClick={() => navigate(`/admin/payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
+                  onClick={() => navigate(`/admin/member-payments/collect?memberId=${member.memberId?.id || member.memberId?._id || member.memberId}`)}
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <Avatar className="h-9 w-9 shrink-0">

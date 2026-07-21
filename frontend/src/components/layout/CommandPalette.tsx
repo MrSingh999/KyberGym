@@ -59,7 +59,7 @@ export function CommandPalette() {
               Add New Member
             </Command.Item>
             <Command.Item 
-              onSelect={() => runCommand(() => navigate('/admin/payments/new'))}
+              onSelect={() => runCommand(() => navigate('/admin/member-payments/collect'))}
               className="flex items-center px-3 py-3 sm:py-2.5 rounded-md cursor-pointer text-sm text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors aria-selected:bg-surface-hover aria-selected:text-text-primary"
             >
               <CreditCard className="mr-3 h-5 w-5 sm:h-4 sm:w-4" />

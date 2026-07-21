@@ -23,7 +23,7 @@ interface PaymentRecord {
 }
 
 export async function fetchRevenueData(days: number = 7): Promise<RevenueDataPoint[]> {
-  const response = await apiClient.get("/payments", {
+  const response = await apiClient.get("/member-payments", {
     params: { limit: 100, page: 1 },
   });
 

@@ -9,7 +9,8 @@ import { User } from '../modules/users/models/User.model.js';
 import { Member } from '../modules/member/models/Member.model.js';
 import { MembershipPlan } from '../modules/membershipPlan/models/MembershipPlan.model.js';
 import { MemberSubscription } from '../modules/memberSubscription/models/MemberSubscription.model.js';
-import { Payment } from '../modules/payment/models/Payment.model.js';
+import { MemberPayment } from '../modules/memberPayment/models/MemberPayment.model.js';
+import { GymSubscription } from '../modules/gymSubscription/models/GymSubscription.model.js';
 import { Broadcast } from '../modules/broadcast/models/Broadcast.model.js';
 import { MessageTemplate } from '../modules/messageTemplate/models/MessageTemplate.model.js';
 import { Workout } from '../modules/workouts/models/Workout.model.js';
@@ -20,14 +21,16 @@ import { env } from '../config/env.js';
 export const generateObjectId = () => crypto.randomBytes(12).toString('hex');
 
 export const createTestGym = async (overrides = {}) => {
-  return Gym.create({
+  const gym = await Gym.create({
     name: faker.company.name(),
     slug: faker.lorem.slug(),
     subdomain: faker.lorem.slug().toLowerCase(),
     ownerId: generateObjectId(),
-    features: { members: true, workouts: true, notifications: true, payments: true, whatsappBroadcast: true, qrEntry: true, branding: true, attendance: false },
+    features: { workouts: true, notifications: true, whatsappBroadcast: true, qrEntry: true, branding: true, attendance: false },
     ...overrides,
   });
+  await GymSubscription.create({ gymId: gym._id, status: 'trial', startDate: new Date() });
+  return gym;
 };
 
 export const createTestUser = async (gymId, overrides = {}) => {
@@ -114,7 +117,7 @@ export const createTestSubscription = async (gymId, memberId, planId, userId, ov
 };
 
 export const createTestPayment = async (gymId, memberId, userId, overrides = {}) => {
-  return Payment.create({
+  return MemberPayment.create({
     gymId,
     memberId,
     amount: 500,
@@ -174,6 +177,15 @@ export const createTestNotification = async (gymId, userId, overrides = {}) => {
     title: faker.lorem.sentence(),
     message: faker.lorem.paragraph(),
     type: 'info',
+    ...overrides,
+  });
+};
+
+export const createTestGymSubscription = async (gymId, overrides = {}) => {
+  return GymSubscription.create({
+    gymId,
+    status: 'trial',
+    startDate: new Date(),
     ...overrides,
   });
 };

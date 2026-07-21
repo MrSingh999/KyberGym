@@ -94,7 +94,6 @@ export function useSAGym(id: string) {
           expiresAt: g.subscription.expiresAt,
           trialEndsAt: g.subscription.trialEndsAt,
         } : { status: "trial", plan: "" },
-        subscriptionHistory: g.subscriptionHistory || [],
         timezone: g.timezone || "Asia/Kolkata",
         currency: g.currency || "INR",
         language: g.language || "en",
@@ -105,6 +104,41 @@ export function useSAGym(id: string) {
       };
     },
     enabled: !!id,
+    staleTime: 30 * 1000,
+  });
+}
+
+interface SubscriptionPaymentRecord {
+  id: string;
+  subscriptionId: string;
+  amount: number;
+  paymentMethod: string;
+  paymentReference: string;
+  paymentDate: string;
+  status: string;
+  notes: string;
+}
+
+export function useSASubscriptionPayments(gymId: string | undefined) {
+  return useQuery<SubscriptionPaymentRecord[]>({
+    queryKey: ["sa-subscription-payments", gymId],
+    queryFn: async () => {
+      if (!gymId) return [];
+      const response = await apiClient.get(`/gym-subscription-payments`, {
+        params: { gymId },
+      });
+      return (response.data.data || []).map((p: any) => ({
+        id: p.publicId || p._id,
+        subscriptionId: p.subscriptionId,
+        amount: p.amount,
+        paymentMethod: p.paymentMethod,
+        paymentReference: p.paymentReference || "",
+        paymentDate: p.paymentDate,
+        status: p.status,
+        notes: p.notes || "",
+      }));
+    },
+    enabled: !!gymId,
     staleTime: 30 * 1000,
   });
 }

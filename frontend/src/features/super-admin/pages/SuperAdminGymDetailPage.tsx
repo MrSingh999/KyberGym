@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { ArrowLeft, Building2, Shield, CreditCard, Calendar, Globe, Clock, Users, Activity } from "lucide-react";
-import { useSAGym, useSAUpdateFeatures, useSAUpdateSubscription, useSARenewSubscription, useSAActivateGym, useSASuspendGym } from "../hooks/useSuperAdmin";
+import { useSAGym, useSAUpdateFeatures, useSAUpdateSubscription, useSARenewSubscription, useSAActivateGym, useSASuspendGym, useSASubscriptionPayments } from "../hooks/useSuperAdmin";
 import { FEATURE_FLAGS } from "../types";
 import { Button, LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ export function SuperAdminGymDetailPage() {
   const { gymId } = useParams();
   const navigate = useNavigate();
   const { data: gym, isLoading, isError, error, refetch } = useSAGym(gymId!);
+  const { data: payments = [], isLoading: isLoadingPayments } = useSASubscriptionPayments(gymId);
   const { mutate: updateFeatures, isPending: isUpdatingFeatures } = useSAUpdateFeatures(gymId!);
   const { mutate: updateSubscription } = useSAUpdateSubscription(gymId!);
   const { mutate: renewSubscription, isPending: isRenewing } = useSARenewSubscription(gymId!);
@@ -337,40 +338,44 @@ export function SuperAdminGymDetailPage() {
           <Calendar className="h-4 w-4 text-text-muted" />
           Subscription Renewal & Payment History
         </h3>
-        {gym.subscriptionHistory && gym.subscriptionHistory.length > 0 ? (
+        {isLoadingPayments ? (
+          <div className="py-6 text-center text-xs text-text-muted font-mono">
+            Loading payment history...
+          </div>
+        ) : payments.length > 0 ? (
           <>
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto font-sans">
               <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
                   <tr className="border-b border-border-default/60 text-[10px] uppercase font-mono text-text-muted font-bold">
-                    <th className="py-2.5 px-3">Renewed Date</th>
-                    <th className="py-2.5 px-3">Start Date</th>
-                    <th className="py-2.5 px-3">Expiry Date</th>
-                    <th className="py-2.5 px-3">Duration (Days)</th>
+                    <th className="py-2.5 px-3">Payment Date</th>
+                    <th className="py-2.5 px-3">Payment Method</th>
+                    <th className="py-2.5 px-3">Reference</th>
                     <th className="py-2.5 px-3 text-right">Amount Paid</th>
+                    <th className="py-2.5 px-3">Notes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-default/30 text-xs text-text-primary">
-                  {gym.subscriptionHistory.map((history, idx) => (
+                  {payments.map((payment, idx) => (
                     <tr key={idx} className="hover:bg-surface-hover/30 transition-colors">
                       <td className="py-2.5 px-3 font-mono">
-                        {format(parseISO(history.renewedAt), "MMM d, yyyy h:mm a")}
+                        {format(parseISO(payment.paymentDate), "MMM d, yyyy h:mm a")}
                       </td>
-                      <td className="py-2.5 px-3 font-mono">
-                        {format(parseISO(history.startDate), "MMM d, yyyy")}
+                      <td className="py-2.5 px-3 font-mono capitalize">
+                        {payment.paymentMethod}
                       </td>
-                      <td className="py-2.5 px-3 font-mono">
-                        {format(parseISO(history.expiresAt), "MMM d, yyyy")}
-                      </td>
-                      <td className="py-2.5 px-3 font-mono">
-                        {history.duration ? `${history.duration} Days` : "Custom"}
+                      <td className="py-2.5 px-3 font-mono text-text-muted">
+                        {payment.paymentReference || "-"}
                       </td>
                       <td className="py-2.5 px-3 font-mono text-right font-semibold text-primary">
                         {new Intl.NumberFormat("en-US", {
                           style: "currency",
                           currency: gym.currency || "INR",
-                        }).format(history.amountPaid)}
+                        }).format(payment.amount)}
+                      </td>
+                      <td className="py-2.5 px-3 text-text-muted max-w-[200px] truncate">
+                        {payment.notes || "-"}
                       </td>
                     </tr>
                   ))}
@@ -380,23 +385,23 @@ export function SuperAdminGymDetailPage() {
 
             {/* Mobile Card List View */}
             <div className="block sm:hidden space-y-3 font-sans">
-              {gym.subscriptionHistory.map((history, idx) => (
+              {payments.map((payment, idx) => (
                 <div key={idx} className="p-4 rounded-xl border border-border-default bg-surface/30 space-y-2">
                   <div className="flex justify-between items-center text-xs text-text-muted font-mono">
-                    <span>{format(parseISO(history.renewedAt), "MMM d, yyyy h:mm a")}</span>
-                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
-                      {history.duration ? `${history.duration} Days` : "Custom"}
+                    <span>{format(parseISO(payment.paymentDate), "MMM d, yyyy h:mm a")}</span>
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 capitalize">
+                      {payment.paymentMethod}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-semibold text-text-primary">
-                      {format(parseISO(history.startDate), "MMM d, yyyy")} - {format(parseISO(history.expiresAt), "MMM d, yyyy")}
+                      {payment.notes || payment.paymentReference || "-"}
                     </span>
                     <span className="font-bold text-primary">
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: gym.currency || "INR",
-                      }).format(history.amountPaid)}
+                      }).format(payment.amount)}
                     </span>
                   </div>
                 </div>
@@ -404,8 +409,8 @@ export function SuperAdminGymDetailPage() {
             </div>
           </>
         ) : (
-          <div className="py-6 text-center text-xs text-text-muted font-mono bg-surface-hover/10 rounded-lg border border-dashed border-border-default">
-            No subscription renewal logs found.
+          <div className="py-6 text-center text-xs text-text-muted font-mono bg-surface-hover/30 rounded-lg border border-dashed border-border-default">
+            No payment records found.
           </div>
         )}
       </div>

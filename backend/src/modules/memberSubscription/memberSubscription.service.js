@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { MemberSubscriptionRepository } from './memberSubscription.repository.js';
 import { MembershipPlanRepository } from '../membershipPlan/membershipPlan.repository.js';
 import { MemberRepository } from '../member/member.repository.js';
-import { PaymentRepository } from '../payment/payment.repository.js';
+import { MemberPaymentRepository } from '../memberPayment/memberPayment.repository.js';
 import createError from 'http-errors';
 import { addDays } from 'date-fns';
 
@@ -55,18 +55,30 @@ export class MemberSubscriptionService {
 
     // 6. Auto-create Payment if paymentMethod is provided
     if (data.paymentMethod) {
-      const pmNormalized = data.paymentMethod === 'bank_transfer' ? 'bankTransfer' : data.paymentMethod;
       try {
-        await PaymentRepository.create({
+        await MemberPaymentRepository.create({
           gymId,
           memberId: resolvedMemberId,
           subscriptionId: subscription._id,
-          amount: finalAmount,
-          paymentMethod: pmNormalized,
+          amount: plan.price,
+          discount: data.discount || 0,
+          finalAmount,
+          paymentMethod: data.paymentMethod,
           paymentDate: new Date(),
-          status: 'completed',
+          status: 'paid',
           receivedBy: userId,
-          notes: data.notes
+          notes: data.notes,
+          paymentFor: {
+            planId: resolvedPlanId,
+            planName: plan.name,
+            startDate,
+            endDate,
+          },
+        });
+
+        await MemberSubscriptionRepository.update(subscription._id, gymId, {
+          paymentStatus: 'paid',
+          lastPaymentDate: new Date(),
         });
       } catch (err) {
         console.error('Failed to auto-create payment for subscription:', err.message);

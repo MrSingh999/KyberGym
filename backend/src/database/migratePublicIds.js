@@ -4,7 +4,7 @@ import { User } from '../modules/users/models/User.model.js';
 import { Member } from '../modules/member/models/Member.model.js';
 import { MembershipPlan } from '../modules/membershipPlan/models/MembershipPlan.model.js';
 import { MemberSubscription } from '../modules/memberSubscription/models/MemberSubscription.model.js';
-import { Payment } from '../modules/payment/models/Payment.model.js';
+import { MemberPayment } from '../modules/memberPayment/models/MemberPayment.model.js';
 import { Workout } from '../modules/workouts/models/Workout.model.js';
 import { WorkoutDay } from '../modules/workoutDay/models/WorkoutDay.model.js';
 import { Notification } from '../modules/notification/models/Notification.model.js';
@@ -13,6 +13,8 @@ import { MessageTemplate } from '../modules/messageTemplate/models/MessageTempla
 import { DeliveryLog } from '../modules/deliveryLog/models/DeliveryLog.model.js';
 import { MemberQr } from '../modules/memberQr/models/MemberQr.model.js';
 import { Attendance } from '../modules/attendance/models/Attendance.model.js';
+import { GymSubscriptionPayment } from '../modules/gymSubscriptionPayment/models/GymSubscriptionPayment.model.js';
+import { GymSubscription } from '../modules/gymSubscription/models/GymSubscription.model.js';
 
 import { generatePublicId } from '../shared/publicId.js';
 import { ENTITY_PREFIXES } from '../shared/idPrefixes.js';
@@ -27,7 +29,7 @@ const MIGRATION_TARGETS = [
   { model: Member, prefixKey: 'MEM', name: 'Member' },
   { model: MembershipPlan, prefixKey: 'PLAN', name: 'MembershipPlan' },
   { model: MemberSubscription, prefixKey: 'SUB', name: 'MemberSubscription' },
-  { model: Payment, prefixKey: 'PAY', name: 'Payment' },
+  { model: MemberPayment, prefixKey: 'MPAY', name: 'MemberPayment' },
   { model: Workout, prefixKey: 'WRK', name: 'Workout' },
   { model: WorkoutDay, prefixKey: 'WD', name: 'WorkoutDay' },
   { model: Notification, prefixKey: 'NOTIF', name: 'Notification' },
@@ -36,6 +38,8 @@ const MIGRATION_TARGETS = [
   { model: DeliveryLog, prefixKey: 'LOG', name: 'DeliveryLog' },
   { model: MemberQr, prefixKey: 'QR', name: 'MemberQr' },
   { model: Attendance, prefixKey: 'ATT', name: 'Attendance' },
+  { model: GymSubscriptionPayment, prefixKey: 'GPAY', name: 'GymSubscriptionPayment' },
+  { model: GymSubscription, prefixKey: 'GSUB', name: 'GymSubscription' },
 ];
 
 /**

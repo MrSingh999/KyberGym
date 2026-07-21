@@ -1,7 +1,7 @@
 import createError from 'http-errors';
 import { GymService } from '../gyms/gym.service.js';
 import { Gym } from '../gyms/models/Gym.model.js';
-import { checkSubscriptionStatus } from '../gyms/subscription.helper.js';
+import { checkAndUpdateExpiry } from '../gyms/subscription.helper.js';
 import { compareData, generateOTP, hashData, generateAccessToken, generateRefreshToken, verifyRefreshToken } from './auth.utils.js';
 import { User } from '../users/models/User.model.js';
 import { logger } from '../../config/logger.js';
@@ -73,12 +73,17 @@ export class AuthService {
       throw createError.Forbidden(`User account is ${user.status}`);
     }
 
-    const gym = await checkSubscriptionStatus(await Gym.findById(gymId));
-    if (gym && gym.subscription) {
-      if (gym.subscription.status === 'expired') {
+    const gym = await Gym.findById(gymId);
+    if (!gym) {
+      throw createError.NotFound('Gym not found');
+    }
+
+    const subscription = await checkAndUpdateExpiry(gymId);
+    if (subscription) {
+      if (subscription.status === 'expired') {
         throw createError.Forbidden('Gym subscription has expired. Please contact the Super Admin.');
       }
-      if (gym.subscription.status === 'suspended') {
+      if (subscription.status === 'suspended') {
         throw createError.Forbidden('Gym subscription is suspended. Please contact the Super Admin.');
       }
     }
@@ -103,8 +108,8 @@ export class AuthService {
       accessToken,
       refreshToken,
       enabledFeatures: gym.features,
-      subscriptionStatus: gym.subscription?.status || 'trial',
-      subscriptionExpiry: gym.subscription?.expiresAt || null,
+      subscriptionStatus: subscription?.status || 'trial',
+      subscriptionExpiry: subscription?.expiresAt || null,
     };
   }
 

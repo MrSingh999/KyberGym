@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingButton } from "@/components/ui/button";
 import { addDays, format } from "date-fns";
 import { usePlans } from "@/features/plans/hooks/usePlans";
-import { PAYMENT_METHOD_LABELS } from "@/features/payments/types";
+import { PAYMENT_METHOD_LABELS } from "@/features/member-payments/types";
 import { renewMembershipSchema, RenewMembershipData } from "../schemas/member.schema";
 import { useRenewMembership } from "../hooks/useMemberProfile";
 

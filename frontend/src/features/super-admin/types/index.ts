@@ -35,14 +35,6 @@ export interface GymTenant {
     expiresAt?: string;
     trialEndsAt?: string;
   };
-  subscriptionHistory?: Array<{
-    startDate: string;
-    expiresAt: string;
-    amountPaid: number;
-    paymentDate: string;
-    duration?: number;
-    renewedAt: string;
-  }>;
   timezone: string;
   currency: string;
   language: string;
@@ -64,7 +56,6 @@ export interface GymTenantListItem {
 }
 
 export const FEATURE_FLAGS = [
-  { key: "members", label: "Members" },
   { key: "workouts", label: "Workouts" },
   { key: "notifications", label: "Notifications" },
   { key: "attendance", label: "Attendance" },
@@ -74,7 +65,6 @@ export const FEATURE_FLAGS = [
   { key: "dietPlans", label: "Diet Plans" },
   { key: "qrEntry", label: "QR Entry" },
   { key: "whatsappBroadcast", label: "WhatsApp Broadcast" },
-  { key: "payments", label: "Payments" },
   { key: "analytics", label: "Analytics" },
 ] as const;
 

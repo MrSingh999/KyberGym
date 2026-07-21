@@ -20,7 +20,7 @@ import authRoutes            from '../modules/auth/auth.routes.js';
 import memberRoutes          from '../modules/member/member.routes.js';
 import membershipPlanRoutes  from '../modules/membershipPlan/membershipPlan.routes.js';
 import memberSubscriptionRoutes from '../modules/memberSubscription/memberSubscription.routes.js';
-import paymentRoutes         from '../modules/payment/payment.routes.js';
+import memberPaymentRoutes  from '../modules/memberPayment/memberPayment.routes.js';
 import dashboardRoutes       from '../modules/dashboard/dashboard.routes.js';
 import workoutRoutes         from '../modules/workouts/workout.routes.js';
 import messageTemplateRoutes from '../modules/messageTemplate/messageTemplate.routes.js';
@@ -32,14 +32,16 @@ import userRoutes            from '../modules/users/users.routes.js';
 import memberQrRoutes        from '../modules/memberQr/memberQr.routes.js';
 import superAdminRoutes      from '../modules/super-admin/superAdmin.routes.js';
 import attendanceRoutes      from '../modules/attendance/attendance.routes.js';
+import gymSubscriptionPaymentRoutes from '../modules/gymSubscriptionPayment/gymSubscriptionPayment.routes.js';
 
 // ── Route Registration ─────────────────────────────────────────────────────
-router.use('/super-admin',         superAdminRoutes);
+router.use('/super-admin',               superAdminRoutes);
+router.use('/gym-subscription-payments', gymSubscriptionPaymentRoutes);
 router.use('/auth',               authRoutes);
 router.use('/members',            memberRoutes);
 router.use('/membership-plans',   membershipPlanRoutes);
 router.use('/member-subscriptions', memberSubscriptionRoutes);
-router.use('/payments',           paymentRoutes);
+router.use('/member-payments',    memberPaymentRoutes);
 router.use('/dashboard',          dashboardRoutes);
 router.use('/workouts',           workoutRoutes);
 router.use('/message-templates',  messageTemplateRoutes);

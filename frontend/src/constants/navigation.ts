@@ -55,7 +55,7 @@ export const OWNER_NAVIGATION: NavGroup[] = [
       { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
       { name: "Members", href: "/admin/members", icon: Users },
       { name: "Membership Plans", href: "/admin/plans", icon: FileText },
-      { name: "Payments", href: "/admin/payments", icon: CreditCard },
+      { name: "Member Payments", href: "/admin/member-payments", icon: CreditCard },
     ],
   },
   {
@@ -100,7 +100,7 @@ export const MEMBER_NAVIGATION: NavGroup[] = [
     items: [
       { name: "Attendance", href: "/member/attendance", icon: ClipboardCheck },
       { name: "QR Pass", href: "/member/qr", icon: QrCode },
-      { name: "Payment History", href: "/member/payments", icon: CreditCard },
+      { name: "Payment History", href: "/member/member-payments", icon: CreditCard },
     ],
   },
   {

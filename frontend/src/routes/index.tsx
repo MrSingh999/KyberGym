@@ -9,9 +9,9 @@ import { PlanDetailPage } from "../features/plans/pages/PlanDetailPage";
 import { CreatePlanPage } from "../features/plans/pages/CreatePlanPage";
 import { EditPlanPage } from "../features/plans/pages/EditPlanPage";
 
-import { PaymentsPage } from "../features/payments/pages/PaymentsPage";
-import { PaymentDetailPage } from "../features/payments/pages/PaymentDetailPage";
-import { CollectPaymentPage } from "../features/payments/pages/CollectPaymentPage";
+import { MemberPaymentsPage } from "../features/member-payments/pages/MemberPaymentsPage";
+import { MemberPaymentDetailPage } from "../features/member-payments/pages/MemberPaymentDetailPage";
+import { CollectMemberPaymentPage } from "../features/member-payments/pages/CollectMemberPaymentPage";
 
 import { DashboardPage } from "../features/dashboard/pages/DashboardPage";
 import { MembersPage } from "../features/members/pages/MembersPage";
@@ -135,9 +135,9 @@ export const router = createBrowserRouter([
           { path: "plans/new", element: <CreatePlanPage /> },
           { path: "plans/:planId", element: <PlanDetailPage /> },
           { path: "plans/:planId/edit", element: <EditPlanPage /> },
-          { path: "payments", element: <PaymentsPage /> },
-          { path: "payments/collect", element: <CollectPaymentPage /> },
-          { path: "payments/:paymentId", element: <PaymentDetailPage /> },
+          { path: "member-payments", element: <MemberPaymentsPage /> },
+          { path: "member-payments/collect", element: <CollectMemberPaymentPage /> },
+          { path: "member-payments/:paymentId", element: <MemberPaymentDetailPage /> },
           { path: "workouts", element: <WorkoutsPage /> },
           { path: "workouts/new", element: <CreateWorkoutPage /> },
           { path: "workouts/:workoutId", element: <WorkoutDetailPage /> },
