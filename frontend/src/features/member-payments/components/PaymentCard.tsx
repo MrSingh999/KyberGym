@@ -17,9 +17,11 @@ function getInitials(name: string) {
 export function PaymentCard({ payment, index = 0 }: PaymentCardProps) {
   const navigate = useNavigate();
 
-  const formattedDate = new Date(payment.paymentDate).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+  const formattedDate = payment.paymentDate
+    ? new Date(payment.paymentDate).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+      })
+    : '—';
 
   return (
     <motion.div
@@ -27,50 +29,51 @@ export function PaymentCard({ payment, index = 0 }: PaymentCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: index * 0.035 }}
       onClick={() => navigate(`/admin/member-payments/${payment.id}`)}
-      className="bg-surface border border-border-default rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm hover:shadow-md hover:border-border-hover transition-all cursor-pointer group"
+      className="bg-surface/80 backdrop-blur-xs border border-border-default/80 rounded-2xl p-4 shadow-xs hover:shadow-md hover:border-border-hover/80 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group flex flex-col justify-between gap-3 font-mono"
     >
-      <div className="flex items-start gap-2 sm:gap-3">
-        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
-          {getInitials(payment.memberName)}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 transition-transform duration-300 group-hover:scale-105">
+            {getInitials(payment.memberName)}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h4 className="font-extrabold text-sm text-text-primary truncate group-hover:text-primary transition-colors font-sans">
+              {payment.memberName}
+            </h4>
+            <p className="text-xs text-text-muted truncate mt-0.5">{payment.planName}</p>
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="font-semibold text-xs sm:text-sm text-text-primary truncate">{payment.memberName}</p>
-              <p className="text-[11px] sm:text-xs text-text-muted truncate">{payment.planName}</p>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-base sm:text-lg font-bold font-heading text-text-primary tabular-nums">
-                ₹{payment.finalAmount}
-              </p>
-              <PaymentStatusBadge status={payment.paymentStatus} />
-            </div>
-          </div>
+        <div className="text-right shrink-0">
+          <p className="text-base sm:text-lg font-extrabold text-text-primary tabular-nums">
+            ₹{payment.finalAmount.toLocaleString()}
+          </p>
+          <PaymentStatusBadge status={payment.paymentStatus} />
+        </div>
+      </div>
 
-          <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border-default">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <PaymentMethodIcon method={payment.paymentMethod} />
-              <span className="text-[11px] sm:text-xs text-text-muted truncate">{formattedDate}</span>
-            </div>
+      <div className="flex items-center justify-between pt-3 border-t border-border-default/60 text-xs">
+        <div className="flex items-center gap-2 min-w-0">
+          <PaymentMethodIcon method={payment.paymentMethod} />
+          <span className="text-text-muted text-[11px] truncate">{formattedDate}</span>
+        </div>
 
-            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={() => navigate(`/admin/member-payments/${payment.id}`)}
-                className="p-1 sm:p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                title="View Details"
-              >
-                <Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="p-1 sm:p-1.5 rounded-lg hover:bg-surface-hover text-text-muted hover:text-text-primary transition-colors"
-                title="Print Receipt"
-              >
-                <Printer className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
-              </button>
-            </div>
-          </div>
+        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => navigate(`/admin/member-payments/${payment.id}`)}
+            className="w-9 h-9 rounded-xl hover:bg-surface-hover/80 text-text-muted hover:text-text-primary transition-colors flex items-center justify-center touch-target"
+            title="View Receipt Details"
+          >
+            <Eye className="w-4 h-4 text-primary" />
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="w-9 h-9 rounded-xl hover:bg-surface-hover/80 text-text-muted hover:text-text-primary transition-colors flex items-center justify-center touch-target"
+            title="Print Receipt"
+          >
+            <Printer className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </motion.div>

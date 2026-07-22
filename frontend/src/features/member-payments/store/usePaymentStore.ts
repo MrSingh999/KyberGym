@@ -19,9 +19,11 @@ interface PaymentsState {
   sortDir: SortDir;
   setSort: (field: PaymentSortField, dir: SortDir) => void;
 
-  // ─── View Mode (persisted) ────────────────────────────────────────────────
+  // ─── View & Grouping Mode (persisted) ──────────────────────────────────
   viewMode: 'card' | 'table';
   setViewMode: (mode: 'card' | 'table') => void;
+  groupMode: 'grouped' | 'transactions';
+  setGroupMode: (mode: 'grouped' | 'transactions') => void;
 
   // ─── Row Selection ────────────────────────────────────────────────────────
   selectedRows: Record<string, boolean>;
@@ -57,9 +59,11 @@ export const usePaymentStore = create<PaymentsState>()(
       sortDir: 'desc',
       setSort: (sortField, sortDir) => set({ sortField, sortDir }),
 
-      // View Mode
+      // View & Group Mode
       viewMode: 'card',
       setViewMode: (viewMode) => set({ viewMode }),
+      groupMode: 'grouped',
+      setGroupMode: (groupMode) => set({ groupMode }),
 
       // Selection
       selectedRows: {},
@@ -73,6 +77,7 @@ export const usePaymentStore = create<PaymentsState>()(
         sortField: state.sortField,
         sortDir: state.sortDir,
         viewMode: state.viewMode,
+        groupMode: state.groupMode,
       }),
     },
   ),

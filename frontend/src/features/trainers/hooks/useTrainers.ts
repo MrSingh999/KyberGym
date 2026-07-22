@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useGymStore } from "@/store/gym.store";
+import { useAuthStore } from "@/store/auth.store";
 import { apiClient } from "@/lib/apiClient";
 import { Trainer, TrainerListItem, TrainerMember, CreateTrainerData, UpdateTrainerData, TrainerQueryParams } from "../types";
 
@@ -12,12 +13,19 @@ export const trainerKeys = {
   myMembers: (gymId: string, params: object) => ["trainers", gymId, "myMembers", params] as const,
 };
 
+function getActiveGymId(selectedGymId: string | null) {
+  return selectedGymId || useAuthStore.getState().user?.gymId || "default";
+}
+
 export function useTrainers(params: TrainerQueryParams = {}) {
   const { selectedGymId } = useGymStore();
+  const activeGymId = getActiveGymId(selectedGymId);
 
   const queryParams = new URLSearchParams();
   if (params.search) queryParams.set("search", params.search);
-  if (params.status) queryParams.set("status", params.status);
+  if (params.status && params.status.trim() && params.status.trim() !== "all") {
+    queryParams.set("status", params.status.trim());
+  }
   if (params.sort) queryParams.set("sort", params.sort);
   if (params.order) queryParams.set("order", params.order);
   queryParams.set("page", String(params.page ?? 1));
@@ -25,7 +33,7 @@ export function useTrainers(params: TrainerQueryParams = {}) {
   const qs = queryParams.toString();
 
   return useQuery({
-    queryKey: trainerKeys.list(selectedGymId ?? "", params),
+    queryKey: trainerKeys.list(activeGymId, params),
     queryFn: async () => {
       const response = await apiClient.get(`/trainers${qs ? `?${qs}` : ""}`);
       const raw = response.data.data || [];
@@ -43,26 +51,27 @@ export function useTrainers(params: TrainerQueryParams = {}) {
       }));
       return { data: items, ...meta };
     },
-    enabled: !!selectedGymId,
   });
 }
 
 export function useTrainer(id: string) {
   const { selectedGymId } = useGymStore();
+  const activeGymId = getActiveGymId(selectedGymId);
 
   return useQuery<Trainer>({
-    queryKey: trainerKeys.detail(selectedGymId ?? "", id),
+    queryKey: trainerKeys.detail(activeGymId, id),
     queryFn: async () => {
       const response = await apiClient.get(`/trainers/${id}`);
       const t = response.data.data || response.data;
       return { ...t, _id: t._id || t.id };
     },
-    enabled: !!selectedGymId && !!id,
+    enabled: !!id,
   });
 }
 
 export function useTrainerMembers(id: string, params = {}) {
   const { selectedGymId } = useGymStore();
+  const activeGymId = getActiveGymId(selectedGymId);
 
   const queryParams = new URLSearchParams();
   queryParams.set("page", String((params as any).page ?? 1));
@@ -70,19 +79,18 @@ export function useTrainerMembers(id: string, params = {}) {
   const qs = queryParams.toString();
 
   return useQuery({
-    queryKey: trainerKeys.members(selectedGymId ?? "", id, params),
+    queryKey: trainerKeys.members(activeGymId, id, params),
     queryFn: async () => {
       const response = await apiClient.get(`/trainers/${id}/members${qs ? `?${qs}` : ""}`);
       const raw = response.data.data || [];
       const meta = response.data.meta || { page: 1, limit: 20, total: 0, totalPages: 1 };
       return { data: raw, ...meta };
     },
-    enabled: !!selectedGymId && !!id,
+    enabled: !!id,
   });
 }
 
 export function useCreateTrainer() {
-  const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -91,13 +99,12 @@ export function useCreateTrainer() {
       return response.data.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trainerKeys.all(selectedGymId ?? "") });
+      queryClient.invalidateQueries({ queryKey: ["trainers"] });
     },
   });
 }
 
 export function useUpdateTrainer(id: string) {
-  const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -106,14 +113,12 @@ export function useUpdateTrainer(id: string) {
       return response.data.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trainerKeys.all(selectedGymId ?? "") });
-      queryClient.invalidateQueries({ queryKey: trainerKeys.detail(selectedGymId ?? "", id) });
+      queryClient.invalidateQueries({ queryKey: ["trainers"] });
     },
   });
 }
 
 export function useDeactivateTrainer() {
-  const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -122,13 +127,12 @@ export function useDeactivateTrainer() {
       return response.data.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trainerKeys.all(selectedGymId ?? "") });
+      queryClient.invalidateQueries({ queryKey: ["trainers"] });
     },
   });
 }
 
 export function useActivateTrainer() {
-  const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -137,13 +141,12 @@ export function useActivateTrainer() {
       return response.data.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trainerKeys.all(selectedGymId ?? "") });
+      queryClient.invalidateQueries({ queryKey: ["trainers"] });
     },
   });
 }
 
 export function useAssignMembers(trainerId: string) {
-  const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -152,14 +155,12 @@ export function useAssignMembers(trainerId: string) {
       return response.data.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trainerKeys.all(selectedGymId ?? "") });
-      queryClient.invalidateQueries({ queryKey: trainerKeys.members(selectedGymId ?? "", trainerId, {}) });
+      queryClient.invalidateQueries({ queryKey: ["trainers"] });
     },
   });
 }
 
 export function useRemoveMemberAssignment(trainerId: string) {
-  const { selectedGymId } = useGymStore();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -168,28 +169,28 @@ export function useRemoveMemberAssignment(trainerId: string) {
       return response.data.data || response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trainerKeys.all(selectedGymId ?? "") });
-      queryClient.invalidateQueries({ queryKey: trainerKeys.members(selectedGymId ?? "", trainerId, {}) });
+      queryClient.invalidateQueries({ queryKey: ["trainers"] });
     },
   });
 }
 
 export function useMyProfile() {
   const { selectedGymId } = useGymStore();
+  const activeGymId = getActiveGymId(selectedGymId);
 
   return useQuery({
-    queryKey: trainerKeys.myProfile(selectedGymId ?? ""),
+    queryKey: trainerKeys.myProfile(activeGymId),
     queryFn: async () => {
       const response = await apiClient.get("/trainers/me/profile");
       const p = response.data.data || response.data;
       return { ...p, _id: p._id || p.id };
     },
-    enabled: !!selectedGymId,
   });
 }
 
 export function useMyMembers(params = {}) {
   const { selectedGymId } = useGymStore();
+  const activeGymId = getActiveGymId(selectedGymId);
 
   const queryParams = new URLSearchParams();
   queryParams.set("page", String((params as any).page ?? 1));
@@ -197,13 +198,13 @@ export function useMyMembers(params = {}) {
   const qs = queryParams.toString();
 
   return useQuery({
-    queryKey: trainerKeys.myMembers(selectedGymId ?? "", params),
+    queryKey: trainerKeys.myMembers(activeGymId, params),
     queryFn: async () => {
       const response = await apiClient.get(`/trainers/me/members${qs ? `?${qs}` : ""}`);
       const raw = response.data.data || [];
       const meta = response.data.meta || { page: 1, limit: 20, total: 0, totalPages: 1 };
       return { data: raw, ...meta };
     },
-    enabled: !!selectedGymId,
   });
 }
+
