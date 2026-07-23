@@ -3,7 +3,7 @@ import request from 'supertest';
 import app from '../app.js';
 import { Workout } from '../modules/workouts/models/Workout.model.js';
 import { WorkoutDay } from '../modules/workoutDay/models/WorkoutDay.model.js';
-import { setupAuth } from './helpers.js';
+import { setupAuth, createTestGym, createTestUser, createAuthToken } from './helpers.js';
 
 describe('Workout Routes', () => {
   let gym, token, userId;
@@ -211,7 +211,7 @@ describe('Workout Routes', () => {
       .set('x-tenant-id', gym._id.toString());
     expect(res.status).toBe(201);
     expect(res.body.data.title).toBe('Original (Copy)');
-    expect(res.body.data.status).toBe('DRAFT');
+    expect(res.body.data.status).toBe('ACTIVE');
     expect(res.body.data.days).toHaveLength(1);
     expect(res.body.data.days[0].exercises[0].name).toBe('Bench');
   });
@@ -387,5 +387,293 @@ describe('Workout Routes', () => {
       .send({ title: 'Custom Goal', goal: 'Senior Citizen Flexibility' });
     expect(res.status).toBe(201);
     expect(res.body.data.goal).toBe('Senior Citizen Flexibility');
+  });
+
+  // ── Authorization: Shared Gym Workout Library ───────────
+
+  describe('Workout Authorization', () => {
+    let sharedGym, adminToken, trainerAToken, trainerBToken, adminUser, trainerAUser, trainerBUser;
+
+    beforeEach(async () => {
+      sharedGym = await createTestGym();
+      adminUser = await createTestUser(sharedGym._id, { role: 'gym_admin' });
+      adminToken = createAuthToken(adminUser);
+      trainerAUser = await createTestUser(sharedGym._id, { role: 'trainer' });
+      trainerAToken = createAuthToken(trainerAUser);
+      trainerBUser = await createTestUser(sharedGym._id, { role: 'trainer' });
+      trainerBToken = createAuthToken(trainerBUser);
+    });
+
+    it('trainer sees every workout in the gym', async () => {
+      const gymId = sharedGym._id.toString();
+
+      await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Admin Workout' });
+
+      await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+
+      await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerBToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer B Workout' });
+
+      const res = await request(app)
+        .get('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId);
+
+      expect(res.status).toBe(200);
+      const titles = res.body.data.map(w => w.title);
+      expect(titles).toContain('Admin Workout');
+      expect(titles).toContain('Trainer A Workout');
+      expect(titles).toContain('Trainer B Workout');
+    });
+
+    it('admin sees every workout in the gym', async () => {
+      const gymId = sharedGym._id.toString();
+
+      await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Admin Workout' });
+
+      await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+
+      await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerBToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer B Workout' });
+
+      const res = await request(app)
+        .get('/api/v1/workouts')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId);
+
+      expect(res.status).toBe(200);
+      const titles = res.body.data.map(w => w.title);
+      expect(titles).toContain('Admin Workout');
+      expect(titles).toContain('Trainer A Workout');
+      expect(titles).toContain('Trainer B Workout');
+    });
+
+    it('trainer edits own workout → 200', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .patch(`/api/v1/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Updated' });
+      expect(res.status).toBe(200);
+      expect(res.body.data.title).toBe('Trainer A Updated');
+    });
+
+    it('trainer edits another trainer workout → 403', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .patch(`/api/v1/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${trainerBToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Hacked Title' });
+      expect(res.status).toBe(403);
+    });
+
+    it('trainer deletes own workout → 200', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .delete(`/api/v1/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId);
+      expect(res.status).toBe(200);
+    });
+
+    it('trainer deletes another trainer workout → 403', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .delete(`/api/v1/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${trainerBToken}`)
+        .set('x-tenant-id', gymId);
+      expect(res.status).toBe(403);
+    });
+
+    it('admin edits any workout → 200', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .patch(`/api/v1/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Admin Edited' });
+      expect(res.status).toBe(200);
+      expect(res.body.data.title).toBe('Admin Edited');
+    });
+
+    it('admin deletes any workout → 200', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Trainer A Workout' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .delete(`/api/v1/workouts/${workoutId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId);
+      expect(res.status).toBe(200);
+    });
+
+    it('duplicate transfers ownership to the duplicator', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Original' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      // Trainer B duplicates Trainer A's workout
+      const res = await request(app)
+        .post(`/api/v1/workouts/${workoutId}/duplicate`)
+        .set('Authorization', `Bearer ${trainerBToken}`)
+        .set('x-tenant-id', gymId);
+      expect(res.status).toBe(201);
+      expect(res.body.data.title).toBe('Original (Copy)');
+      expect(res.body.data.createdBy).toBe(trainerBUser._id.toString());
+    });
+
+    it('duplicate preserves workout status', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId)
+        .send({ title: 'Draft Program', status: 'DRAFT' });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .post(`/api/v1/workouts/${workoutId}/duplicate`)
+        .set('Authorization', `Bearer ${trainerAToken}`)
+        .set('x-tenant-id', gymId);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.status).toBe('DRAFT');
+    });
+
+    it('duplicate copies nested workout data correctly', async () => {
+      const gymId = sharedGym._id.toString();
+
+      const createRes = await request(app)
+        .post('/api/v1/workouts')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', gymId)
+        .send({
+          title: 'Full Program',
+          description: 'A complete program',
+          goal: 'Strength',
+          estimatedDuration: 60,
+          category: 'Full Body',
+          days: [
+            {
+              orderIndex: 0,
+              dayName: 'Push Day',
+              title: 'Upper Body Push',
+              exercises: [
+                { name: 'Bench Press', sets: 4, reps: 8, restTime: 90, notes: 'Slow negatives', order: 0 },
+                { name: 'Overhead Press', sets: 3, reps: 10, order: 1 },
+              ],
+            },
+            {
+              orderIndex: 1,
+              dayName: 'Pull Day',
+              title: 'Upper Body Pull',
+              exercises: [
+                { name: 'Deadlift', sets: 3, reps: 5, restTime: 120, order: 0 },
+              ],
+            },
+          ],
+        });
+      const workoutId = createRes.body.data._id || createRes.body.data.id;
+
+      const res = await request(app)
+        .post(`/api/v1/workouts/${workoutId}/duplicate`)
+        .set('Authorization', `Bearer ${trainerBToken}`)
+        .set('x-tenant-id', gymId);
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.description).toBe('A complete program');
+      expect(res.body.data.goal).toBe('Strength');
+      expect(res.body.data.estimatedDuration).toBe(60);
+      expect(res.body.data.category).toBe('Full Body');
+      expect(res.body.data.days).toHaveLength(2);
+      expect(res.body.data.days[0].dayName).toBe('Push Day');
+      expect(res.body.data.days[0].title).toBe('Upper Body Push');
+      expect(res.body.data.days[0].exercises).toHaveLength(2);
+      expect(res.body.data.days[0].exercises[0].name).toBe('Bench Press');
+      expect(res.body.data.days[0].exercises[0].sets).toBe(4);
+      expect(res.body.data.days[0].exercises[0].reps).toBe(8);
+      expect(res.body.data.days[0].exercises[0].restTime).toBe(90);
+      expect(res.body.data.days[0].exercises[0].notes).toBe('Slow negatives');
+      expect(res.body.data.days[1].dayName).toBe('Pull Day');
+      expect(res.body.data.days[1].title).toBe('Upper Body Pull');
+      expect(res.body.data.days[1].exercises).toHaveLength(1);
+      expect(res.body.data.days[1].exercises[0].name).toBe('Deadlift');
+    });
   });
 });

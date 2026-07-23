@@ -2,15 +2,18 @@ import createError from 'http-errors';
 import mongoose from 'mongoose';
 import { WorkoutDayRepository } from './workoutDay.repository.js';
 import { WorkoutRepository } from '../workouts/workout.repository.js';
+import { assertWorkoutOwnership } from '../workouts/workout.auth.js';
 
 export class WorkoutDayService {
   /**
    * Create a day inside a workout.
    * Validates that the parent workout exists and belongs to the gym.
    */
-  static async createDay(gymId, workoutId, data) {
+  static async createDay(gymId, workoutId, data, user) {
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
+
+    assertWorkoutOwnership(workout, user);
 
     try {
       return await WorkoutDayRepository.create({ workoutId: workout._id, ...data });
@@ -22,8 +25,7 @@ export class WorkoutDayService {
     }
   }
 
-  static async getDaysByWorkout(workoutId, gymId) {
-    // Validate workout belongs to gym
+  static async getDaysByWorkout(workoutId, gymId, _user) {
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
     return WorkoutDayRepository.findByWorkoutId(workout._id);
@@ -38,9 +40,11 @@ export class WorkoutDayService {
     return day;
   }
 
-  static async updateDay(id, workoutId, gymId, data) {
+  static async updateDay(id, workoutId, gymId, data, user) {
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
+
+    assertWorkoutOwnership(workout, user);
 
     try {
       const day = await WorkoutDayRepository.update(id, workout._id, data);
@@ -54,9 +58,11 @@ export class WorkoutDayService {
     }
   }
 
-  static async deleteDay(id, workoutId, gymId) {
+  static async deleteDay(id, workoutId, gymId, user) {
     const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
+
+    assertWorkoutOwnership(workout, user);
 
     const day = await WorkoutDayRepository.delete(id, workout._id);
     if (!day) throw createError.NotFound('Workout day not found');

@@ -223,13 +223,13 @@ export function TrainerManagementPage() {
         <div className="space-y-2 max-h-80 overflow-y-auto">
           {membersData?.data?.length ? (
             membersData.data.map((a: any) => (
-              <div key={a._id} className="flex items-center justify-between p-3 rounded-lg border border-border-default">
+              <div key={a.id || a._id} className="flex items-center justify-between p-3 rounded-lg border border-border-default">
                 <div>
                   <p className="text-sm font-mono text-text-primary">{a.memberId?.fullName}</p>
                   <p className="text-xs text-text-muted font-mono">{a.memberId?.email}</p>
                 </div>
                 <button
-                  onClick={() => setRemoveConfirm(a._id)}
+                  onClick={() => setRemoveConfirm(a.id || a._id)}
                   className="p-1.5 rounded-lg text-text-muted hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                 >
                   <XCircle className="w-4 h-4" />

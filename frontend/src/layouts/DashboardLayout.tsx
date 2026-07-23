@@ -5,14 +5,17 @@ import { BottomNav } from "../components/layout/BottomNav";
 import { CommandPalette } from "../components/layout/CommandPalette";
 import { FeatureInitializer } from "../features/auth/providers/FeatureInitializer";
 import { TenantInitializer } from "../features/auth/providers/TenantInitializer";
-import { SUPERADMIN_NAVIGATION, OWNER_NAVIGATION } from "../constants/navigation";
+import { SUPERADMIN_NAVIGATION, OWNER_NAVIGATION, TRAINER_NAVIGATION } from "../constants/navigation";
 
 interface DashboardLayoutProps {
-  role: "superadmin" | "owner" | "staff";
+  role: "superadmin" | "owner" | "staff" | "trainer";
 }
 
 export function DashboardLayout({ role }: DashboardLayoutProps) {
-  const groups = role === "superadmin" ? SUPERADMIN_NAVIGATION : OWNER_NAVIGATION;
+  const groups =
+    role === "superadmin" ? SUPERADMIN_NAVIGATION :
+    role === "trainer" ? TRAINER_NAVIGATION :
+    OWNER_NAVIGATION;
 
   return (
     <div className="flex h-screen w-full bg-canvas overflow-hidden">

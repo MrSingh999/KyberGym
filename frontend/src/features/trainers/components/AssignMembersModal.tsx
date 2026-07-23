@@ -38,17 +38,31 @@ export function AssignMembersModal({ open, onOpenChange, trainerId }: AssignMemb
   const debouncedSearch = useDebounce(search, 250);
 
   useEffect(() => {
-    if (!open || !selectedGymId) return;
+    if (!open || !selectedGymId || !trainerId) return;
     setLoading(true);
     setSelected([]);
-    apiClient.get("/members?limit=500&sort=fullName&order=asc")
-      .then((res) => {
-        const raw = res.data.data?.members || res.data.data || res.data;
-        setMembers(Array.isArray(raw) ? raw.map((m: any) => ({ _id: m._id || m.id, fullName: m.fullName || m.name, email: m.email, memberCode: m.memberCode })) : []);
+    setSearch("");
+
+    Promise.all([
+      apiClient.get("/members?limit=500&sort=fullName&order=asc"),
+      apiClient.get(`/trainers/${trainerId}/members?limit=100`),
+    ])
+      .then(([membersRes, assignedRes]) => {
+        const rawMembers = membersRes.data.data?.members || membersRes.data.data || membersRes.data;
+        const allMembers: MemberBrief[] = Array.isArray(rawMembers)
+          ? rawMembers.map((m: any) => ({ _id: m._id || m.id, fullName: m.fullName || m.name, email: m.email, memberCode: m.memberCode }))
+          : [];
+
+        const rawAssigned = assignedRes.data.data || [];
+        const assignedIds = new Set(
+          Array.isArray(rawAssigned) ? rawAssigned.map((a: any) => a.memberPublicId) : []
+        );
+
+        setMembers(allMembers.filter((m) => !assignedIds.has(m._id)));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [open, selectedGymId]);
+  }, [open, selectedGymId, trainerId]);
 
   const filtered = useMemo(() => {
     if (!debouncedSearch) return members;

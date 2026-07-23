@@ -59,14 +59,18 @@ import { ProfilePage } from "../features/auth/components/ProfilePage";
 import { SessionExpired } from "../features/auth/components/SessionExpired";
 import { RoleGuard } from "../features/auth/guards/RoleGuard";
 import { Unauthorized } from "../features/auth/components/Unauthorized";
-import { TrainerLayout } from "../features/trainers/layout/TrainerLayout";
-import { TrainerDashboardPage } from "../features/trainers/pages/TrainerDashboardPage";
 import { TrainerMyMembersPage } from "../features/trainers/pages/TrainerMyMembersPage";
 import { TrainerProfilePage } from "../features/trainers/pages/TrainerProfilePage";
 import { TrainerManagementPage } from "../features/trainers/pages/TrainerManagementPage";
 import { TrainerWorkoutPlansPage } from "../features/memberWorkoutPlans/pages/TrainerWorkoutPlansPage";
 import { MemberWorkoutPlanEditorPage } from "../features/memberWorkoutPlans/pages/MemberWorkoutPlanEditorPage";
 import { useAuthStore } from "../store/auth.store";
+
+function AdminLayout() {
+  const { user } = useAuthStore();
+  const role = user?.role === "trainer" ? "trainer" : "owner";
+  return <DashboardLayout role={role} />;
+}
 
 const DummyComponent = ({ title }: { title: string }) => (
   <div className="flex h-full flex-col animate-fade-slide-up">
@@ -93,7 +97,7 @@ function RootRedirect() {
     return <Navigate to="/admin/dashboard" replace />;
   }
   if (user.role === "trainer") {
-    return <Navigate to="/trainer/dashboard" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
   return <Navigate to="/member/dashboard" replace />;
 }
@@ -130,8 +134,8 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <TenantGuard>
-              <RoleGuard allowedRoles={["owner", "staff"]}>
-                <DashboardLayout role="owner" />
+              <RoleGuard allowedRoles={["owner", "staff", "trainer"]}>
+                <AdminLayout />
               </RoleGuard>
             </TenantGuard>
           </ProtectedRoute>
@@ -170,24 +174,8 @@ export const router = createBrowserRouter([
           { path: "staff", element: <StaffPage /> },
           { path: "trainers", element: <TrainerManagementPage /> },
           { path: "settings", element: <SettingsPage /> },
-        ],
-      },
-      {
-        path: "trainer",
-        element: (
-          <ProtectedRoute>
-            <TenantGuard>
-              <RoleGuard allowedRoles={["trainer"]}>
-                <TrainerLayout />
-              </RoleGuard>
-            </TenantGuard>
-          </ProtectedRoute>
-        ),
-        children: [
-          { index: true, element: <TrainerDashboardPage /> },
-          { path: "dashboard", element: <TrainerDashboardPage /> },
-          { path: "members", element: <TrainerMyMembersPage /> },
-          { path: "workout-plans", element: <TrainerWorkoutPlansPage /> },
+          { path: "my-members", element: <TrainerMyMembersPage /> },
+          { path: "my-workout-plans", element: <TrainerWorkoutPlansPage /> },
           { path: "workout-plans/:planId/edit", element: <MemberWorkoutPlanEditorPage /> },
           { path: "profile", element: <TrainerProfilePage /> },
         ],

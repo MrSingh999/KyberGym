@@ -176,7 +176,7 @@ export class TrainerRepository {
 
     const [data, total] = await Promise.all([
       TrainerMemberAssignment.find(filter)
-        .populate('memberId', 'fullName email phone memberCode status')
+        .populate('memberId', 'fullName email phone memberCode status publicId')
         .sort({ assignedAt: -1 })
         .skip(skip)
         .limit(limitNum)
@@ -184,7 +184,15 @@ export class TrainerRepository {
       TrainerMemberAssignment.countDocuments(filter),
     ]);
 
-    return { data, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
+    const mapped = data.map((a) => {
+      const memberPublicId = a.memberId && typeof a.memberId === 'object' && a.memberId.publicId
+        ? a.memberId.publicId
+        : a.memberId?.toString();
+      const id = a.publicId || a._id.toString();
+      return { ...a, id, memberPublicId };
+    });
+
+    return { data: mapped, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
   }
 
   static async findAssignmentById(id, gymId) {

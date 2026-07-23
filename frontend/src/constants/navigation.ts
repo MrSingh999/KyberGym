@@ -95,25 +95,25 @@ export const TRAINER_NAVIGATION: NavGroup[] = [
   {
     title: "Overview",
     items: [
-      { name: "Dashboard", href: "/trainer", icon: LayoutDashboard },
+      { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     ],
   },
   {
     title: "Members",
     items: [
-      { name: "My Members", href: "/trainer/members", icon: Users },
+      { name: "My Members", href: "/admin/my-members", icon: Users },
     ],
   },
   {
     title: "Training",
     items: [
-      { name: "My Workout Plans", href: "/trainer/workout-plans", icon: Dumbbell },
+      { name: "My Workout Plans", href: "/admin/my-workout-plans", icon: Dumbbell },
     ],
   },
   {
     title: "Account",
     items: [
-      { name: "My Profile", href: "/trainer/profile", icon: Settings },
+      { name: "My Profile", href: "/admin/profile", icon: Settings },
     ],
   },
 ];

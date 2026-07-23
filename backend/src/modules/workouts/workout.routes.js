@@ -50,7 +50,7 @@ router.patch(
 
 router.delete(
   '/:id',
-  requireRoles(ROLES.GYM_ADMIN),
+  requireRoles(ROLES.GYM_ADMIN, ROLES.TRAINER),
   asyncHandler(WorkoutController.deleteWorkout)
 );
 

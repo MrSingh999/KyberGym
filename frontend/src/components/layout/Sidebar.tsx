@@ -8,7 +8,7 @@ import { Sheet, SheetContent } from "../ui/sheet";
 
 interface SidebarProps {
   groups: NavGroup[];
-  role: "superadmin" | "owner" | "member";
+  role: "superadmin" | "owner" | "staff" | "trainer" | "member";
 }
 
 export function Sidebar({ groups, role }: SidebarProps) {
@@ -17,11 +17,13 @@ export function Sidebar({ groups, role }: SidebarProps) {
   const location = useLocation();
 
   const brandTitle = 
-    role === "superadmin" ? "HEAVEN'S SUPER" :
-    role === "owner" ? "HEAVEN'S ARENA" : "MEMBER PORTAL";
+    role === "superadmin" ? "DECODE GYM" :
+    role === "trainer" ? "DECODE GYM" :
+    role === "owner" ? "DECODE GYM" : "DECODE GYM";
 
   const roleSubtitle = 
     role === "superadmin" ? "Super Admin" :
+    role === "trainer" ? "Trainer Portal" :
     role === "owner" ? "Gym Management" : "Member Workspace";
 
   const renderNavItems = (isMobile = false) => (

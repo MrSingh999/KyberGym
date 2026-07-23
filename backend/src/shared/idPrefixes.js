@@ -23,4 +23,5 @@ export const ENTITY_PREFIXES = {
   TRN: 'TRN',
   MWP: 'MWP',
   MWD: 'MWD',
+  ASN: 'ASN',
 };

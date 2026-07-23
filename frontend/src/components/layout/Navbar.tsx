@@ -106,20 +106,23 @@ export function Navbar() {
   const getProfilePath = () => {
     if (!user) return "/login";
     if (user.role === "superadmin") return "/super-admin/settings";
-    if (user.role === "owner") return "/admin/settings";
+    if (user.role === "owner" || user.role === "staff") return "/admin/settings";
+    if (user.role === "trainer") return "/admin/profile";
     return "/member/profile";
   };
 
   const getDashboardPath = () => {
     if (!user) return "/login";
     if (user.role === "superadmin") return "/super-admin/dashboard";
-    if (user.role === "owner") return "/admin/dashboard";
+    if (user.role === "owner" || user.role === "staff" || user.role === "trainer") return "/admin/dashboard";
     return "/member/dashboard";
   };
 
   const getRoleBadge = () => {
     if (user?.role === "superadmin") return "Super Admin";
     if (user?.role === "owner") return "Gym Owner";
+    if (user?.role === "staff") return "Staff";
+    if (user?.role === "trainer") return "Trainer";
     return "Member";
   };
 

@@ -55,6 +55,8 @@ export function LoginForm() {
         navigate("/super-admin/dashboard", { replace: true });
       } else if (role === "gym_admin" || role === "owner") {
         navigate("/admin/dashboard", { replace: true });
+      } else if (role === "trainer") {
+        navigate("/admin/dashboard", { replace: true });
       } else {
         navigate("/member/dashboard", { replace: true });
       }

@@ -1,13 +1,14 @@
 import createError from 'http-errors';
 import { WorkoutRepository } from './workout.repository.js';
 import { WorkoutDay } from '../workoutDay/models/WorkoutDay.model.js';
+import { assertWorkoutOwnership } from './workout.auth.js';
 
 export class WorkoutService {
-  static async createWorkout(gymId, userId, data) {
+  static async createWorkout(gymId, user, data) {
     const { days = [], ...workoutData } = data;
     const workout = await WorkoutRepository.create({
       gymId,
-      createdBy: userId,
+      createdBy: user._id,
       ...workoutData,
     });
 
@@ -37,12 +38,12 @@ export class WorkoutService {
     return { ...workout.toObject(), days: createdDays };
   }
 
-  static async getWorkouts(gymId, query = {}) {
+  static async getWorkouts(gymId, query = {}, _user) {
     const { search, status, sort, order } = query;
     return WorkoutRepository.findAll(gymId, { search, status, sort, order });
   }
 
-  static async getWorkoutById(id, gymId) {
+  static async getWorkoutById(id, gymId, _user) {
     const workout = await WorkoutRepository.findById(id, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
 
@@ -51,19 +52,29 @@ export class WorkoutService {
     return { ...workout.toObject(), days };
   }
 
-  static async updateWorkout(id, gymId, data) {
-    const workout = await WorkoutRepository.update(id, gymId, data);
+  static async updateWorkout(id, gymId, data, user) {
+    const workout = await WorkoutRepository.findById(id, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
-    return workout;
+
+    assertWorkoutOwnership(workout, user);
+
+    const updated = await WorkoutRepository.update(id, gymId, data);
+    if (!updated) throw createError.NotFound('Workout not found');
+    return updated;
   }
 
-  static async deleteWorkout(id, gymId) {
-    const workout = await WorkoutRepository.softDelete(id, gymId);
+  static async deleteWorkout(id, gymId, user) {
+    const workout = await WorkoutRepository.findById(id, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
-    return workout;
+
+    assertWorkoutOwnership(workout, user);
+
+    const deleted = await WorkoutRepository.softDelete(id, gymId);
+    if (!deleted) throw createError.NotFound('Workout not found');
+    return deleted;
   }
 
-  static async duplicateWorkout(id, gymId) {
+  static async duplicateWorkout(id, gymId, userId, _user) {
     const workout = await WorkoutRepository.findById(id, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
 
@@ -78,8 +89,8 @@ export class WorkoutService {
       goal: workout.goal,
       estimatedDuration: workout.estimatedDuration,
       category: workout.category,
-      status: 'DRAFT',
-      createdBy: workout.createdBy,
+      status: workout.status,
+      createdBy: userId,
     });
 
     const days = await WorkoutDay.find({ workoutId: workout._id }).sort({ orderIndex: 1 });
@@ -109,25 +120,35 @@ export class WorkoutService {
     return { ...duplicated.toObject(), days: newDays };
   }
 
-  static async archiveWorkout(id, gymId) {
-    const workout = await WorkoutRepository.update(id, gymId, { status: 'ARCHIVED' });
+  static async archiveWorkout(id, gymId, user) {
+    const workout = await WorkoutRepository.findById(id, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
-    return workout;
+
+    assertWorkoutOwnership(workout, user);
+
+    const updated = await WorkoutRepository.update(id, gymId, { status: 'ARCHIVED' });
+    if (!updated) throw createError.NotFound('Workout not found');
+    return updated;
   }
 
-  static async saveNested(gymId, workoutId, data) {
+  static async saveNested(gymId, workoutId, data, user) {
     const { days: incomingDays, ...workoutData } = data;
 
-    const workout = await WorkoutRepository.update(workoutId, gymId, workoutData);
+    const workout = await WorkoutRepository.findById(workoutId, gymId);
     if (!workout) throw createError.NotFound('Workout not found');
 
-    const existingDays = await WorkoutDay.find({ workoutId: workout._id }).select('_id');
+    assertWorkoutOwnership(workout, user);
+
+    const updatedWorkout = await WorkoutRepository.update(workoutId, gymId, workoutData);
+    if (!updatedWorkout) throw createError.NotFound('Workout not found');
+
+    const existingDays = await WorkoutDay.find({ workoutId: updatedWorkout._id }).select('_id');
     const existingIds = existingDays.map(d => d._id.toString());
     const incomingIds = incomingDays.filter(d => d._id).map(d => d._id);
 
     const toDelete = existingIds.filter(id => !incomingIds.includes(id));
     if (toDelete.length > 0) {
-      await WorkoutDay.deleteMany({ _id: { $in: toDelete }, workoutId: workout._id });
+      await WorkoutDay.deleteMany({ _id: { $in: toDelete }, workoutId: updatedWorkout._id });
     }
 
     for (const day of incomingDays) {
@@ -156,13 +177,13 @@ export class WorkoutService {
         const { _id, ...dayData } = day;
         await WorkoutDay.create({
           ...dayData,
-          workoutId: workout._id,
+          workoutId: updatedWorkout._id,
         });
       }
     }
 
-    const days = await WorkoutDay.find({ workoutId: workout._id }).sort({ orderIndex: 1 });
-    return { ...workout.toObject(), days };
+    const days = await WorkoutDay.find({ workoutId: updatedWorkout._id }).sort({ orderIndex: 1 });
+    return { ...updatedWorkout.toObject(), days };
   }
 
   static async getWorkoutsForMember(gymId, memberId) {

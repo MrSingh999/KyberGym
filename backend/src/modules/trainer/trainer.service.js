@@ -1,6 +1,7 @@
 import createError from 'http-errors';
 import { TrainerRepository } from './trainer.repository.js';
 import { Member } from '../member/models/Member.model.js';
+import { User } from '../users/models/User.model.js';
 import { ROLES } from '../../shared/constants.js';
 import { hashData } from '../auth/auth.utils.js';
 
@@ -21,19 +22,24 @@ export class TrainerService {
       status: 'active',
     });
 
-    const profile = await TrainerRepository.createProfile({
-      gymId,
-      userId: user._id,
-      fullName,
-      email,
-      phone,
-      specialization,
-      joiningDate: new Date(),
-      createdBy: userId,
-    });
+    try {
+      const profile = await TrainerRepository.createProfile({
+        gymId,
+        userId: user._id,
+        fullName,
+        email,
+        phone,
+        specialization,
+        joiningDate: new Date(),
+        createdBy: userId,
+      });
 
-    const { password: _, ...userSafe } = user.toObject();
-    return { ...profile, user: userSafe };
+      const { password: _, ...userSafe } = user.toObject();
+      return { ...profile, user: userSafe };
+    } catch (error) {
+      await User.findByIdAndDelete(user._id);
+      throw error;
+    }
   }
 
   static async getTrainers(gymId, query) {
@@ -41,7 +47,6 @@ export class TrainerService {
 
     const enriched = await Promise.all(
       result.data.map(async (t) => {
-        const { User } = require('../users/models/User.model.js');
         const user = await User.findById(t.userId)
           .select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion')
           .lean();
@@ -56,7 +61,6 @@ export class TrainerService {
     const profile = await TrainerRepository.findProfileById(id, gymId);
     if (!profile) throw createError.NotFound('Trainer not found');
 
-    const { User } = require('../users/models/User.model.js');
     const user = await User.findById(profile.userId)
       .select('-password -passwordResetOTP -passwordResetExpires -emailVerificationOTP -emailVerificationExpires -tokenVersion')
       .lean();
@@ -83,7 +87,6 @@ export class TrainerService {
       if (data.email) userUpdate.email = data.email;
       if (data.phone) userUpdate.phone = data.phone;
       if (Object.keys(userUpdate).length > 0) {
-        const { User } = require('../users/models/User.model.js');
         await User.findByIdAndUpdate(profile.userId, { $set: userUpdate });
       }
     }
@@ -97,7 +100,6 @@ export class TrainerService {
 
     const updated = await TrainerRepository.updateProfile(id, gymId, { status: 'INACTIVE' });
 
-    const { User } = require('../users/models/User.model.js');
     await User.findByIdAndUpdate(profile.userId, { $set: { status: 'inactive' } });
 
     return updated;
@@ -109,7 +111,6 @@ export class TrainerService {
 
     const updated = await TrainerRepository.updateProfile(id, gymId, { status: 'ACTIVE' });
 
-    const { User } = require('../users/models/User.model.js');
     await User.findByIdAndUpdate(profile.userId, { $set: { status: 'active' } });
 
     return updated;
@@ -122,32 +123,40 @@ export class TrainerService {
     if (!profile) throw createError.NotFound('Trainer not found');
     if (profile.status !== 'ACTIVE') throw createError.BadRequest('Trainer is not active');
 
+    const objectIds = memberIds.filter((id) => /^[0-9a-fA-F]{24}$/.test(id));
+    const publicIds = memberIds.filter((id) => /^[A-Z]{2,5}-[A-Z2-9]{8}$/.test(id));
+
     const members = await Member.find({
-      _id: { $in: memberIds },
       gymId,
       status: 'active',
       isDeleted: { $ne: true },
-    }).select('_id').lean();
+      $or: [
+        { _id: { $in: objectIds } },
+        { publicId: { $in: publicIds } },
+      ],
+    }).select('_id publicId').lean();
 
     if (members.length !== memberIds.length) {
       throw createError.BadRequest('One or more members not found or not active');
     }
 
-    const existing = await TrainerRepository.findActiveAssignments(gymId, profile._id, memberIds);
+    const memberObjectIds = members.map((m) => m._id);
+
+    const existing = await TrainerRepository.findActiveAssignments(gymId, profile._id, memberObjectIds);
     const assignedSet = new Set(existing.map((a) => a.memberId.toString()));
 
     const toCreate = [];
     let skipped = 0;
 
-    for (const mId of memberIds) {
-      const mid = typeof mId === 'string' ? mId : mId.toString();
+    for (const mId of memberObjectIds) {
+      const mid = mId.toString();
       if (assignedSet.has(mid)) {
         skipped++;
       } else {
         toCreate.push({
           gymId,
           trainerId: profile._id,
-          memberId: mid,
+          memberId: mId,
           assignedBy: userId,
           assignedAt: new Date(),
           status: 'ACTIVE',
@@ -193,7 +202,6 @@ export class TrainerService {
     const updated = await TrainerRepository.updateProfile(profile._id, gymId, allowed);
 
     if (data.phone) {
-      const { User } = require('../users/models/User.model.js');
       await User.findByIdAndUpdate(profile.userId, { $set: { phone: data.phone } });
     }
 
