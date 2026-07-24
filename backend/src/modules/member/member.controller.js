@@ -9,8 +9,11 @@ export class MemberController {
   static async createMember(req, res) {
     const gymId = req.gym._id;
     const userId = req.user._id;
-    const member = await MemberService.createMember(gymId, userId, req.body);
-    return ApiSuccess.send(res, httpStatus.CREATED, 'Member created successfully', member);
+    const result = await MemberService.createMember(gymId, userId, req.body);
+    const memberObj = result.member.toObject ? result.member.toObject() : result.member;
+    memberObj.defaultPassword = result.defaultPassword;
+    memberObj.hasLogin = !!result.user;
+    return ApiSuccess.send(res, httpStatus.CREATED, 'Member created successfully', memberObj);
   }
 
   static async getMembers(req, res) {

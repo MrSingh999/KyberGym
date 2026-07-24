@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     phone: { type: String, trim: true },
     avatar: { type: String, default: '' },
+    memberId: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
     
     // Verification & Status
     isEmailVerified: { type: Boolean, default: false },

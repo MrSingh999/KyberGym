@@ -114,4 +114,39 @@ export class AttendanceService {
     if (!record) throw createError.NotFound('Attendance record not found');
     return record;
   }
+
+  static async getMemberAttendanceSummary(gymId, memberId) {
+    const { Attendance } = await import('./models/Attendance.model.js');
+    const { MemberRepository } = await import('../member/member.repository.js');
+    const member = await MemberRepository.findById(memberId, gymId);
+    if (!member) {
+      return { todayPresent: false, currentStreak: 0, thisMonth: 0 };
+    }
+
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(startOfDay.getTime() + 86400000);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [todayCount, monthCount] = await Promise.all([
+      Attendance.countDocuments({
+        gymId,
+        memberId: member._id,
+        date: { $gte: startOfDay, $lt: endOfDay },
+        status: { $in: ['present', 'PRESENT'] },
+      }),
+      Attendance.countDocuments({
+        gymId,
+        memberId: member._id,
+        date: { $gte: startOfMonth },
+        status: { $in: ['present', 'PRESENT'] },
+      }),
+    ]);
+
+    return {
+      todayPresent: todayCount > 0,
+      currentStreak: todayCount > 0 ? 1 : 0,
+      thisMonth: monthCount,
+    };
+  }
 }

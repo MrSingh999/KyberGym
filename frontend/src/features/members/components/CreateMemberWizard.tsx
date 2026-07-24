@@ -126,6 +126,7 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
 
       const body: Record<string, any> = {
         fullName: step1Data.name,
+        password: step1Data.password || undefined,
         email: step1Data.email || undefined,
         phone: step1Data.phone || undefined,
         gender: step1Data.gender || 'male',
@@ -170,7 +171,16 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
 
       // Clear draft on success
       localStorage.removeItem("kybergym_member_draft");
-      toast.success("Member registered successfully!");
+      const loginPassword = createdMember.defaultPassword || step1Data.password || 'Member@123';
+      const loginEmail = createdMember.email || step1Data.email;
+      if (loginEmail) {
+        toast.success("Member registered successfully!", {
+          description: `Login: ${loginEmail} / Password: ${loginPassword}`,
+          duration: 10000,
+        });
+      } else {
+        toast.success("Member registered successfully!");
+      }
       onSuccess();
     } catch (error: any) {
       const errMsg = error.response?.data?.message || "Failed to register member. Please check details and try again.";
@@ -260,6 +270,21 @@ export function CreateMemberWizard({ onSuccess, onCancel }: CreateMemberWizardPr
                       {...field} 
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={step1Form.control} name="password" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-text-primary">Password</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Leave blank for default (Member@123)" 
+                      type="text" 
+                      className="h-11 border-border-default focus-visible:border-primary focus-visible:ring-primary/20" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <p className="text-xs text-text-muted mt-1">Default: Member@123 if left empty</p>
                   <FormMessage />
                 </FormItem>
               )} />

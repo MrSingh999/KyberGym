@@ -53,7 +53,11 @@ export class MemberSubscriptionRepository {
     return MemberSubscription.findOneAndUpdate(query, updateData, { new: true });
   }
 
-  static async findActiveForMember(memberId, gymId) {
-    return MemberSubscription.findOne({ memberId, gymId, status: 'active' });
+  static async findActiveForMember(memberId, gymId, options = {}) {
+    let query = MemberSubscription.findOne({ memberId, gymId, status: 'active' });
+    if (options.populatePlan) {
+      query = query.populate('membershipPlanId', 'name durationInDays price');
+    }
+    return query;
   }
 }

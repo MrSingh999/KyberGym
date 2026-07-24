@@ -202,6 +202,26 @@ export class WorkoutService {
       days: allDays.filter((d) => d.workoutId.toString() === workout._id.toString()),
     }));
   }
+
+  static async getWorkoutForMemberByDate(gymId, memberId, targetDate = new Date()) {
+    const workouts = await this.getWorkoutsForMember(gymId, memberId);
+    if (!workouts || workouts.length === 0) return null;
+
+    const activeWorkout = workouts[0];
+    const dateObj = new Date(targetDate);
+    const dayOfWeek = dateObj.getDay();
+    
+    const days = activeWorkout.days || [];
+    const activeDay = days.length > 0 ? (days[dayOfWeek % days.length] || days[0]) : null;
+
+    return {
+      workoutId: activeWorkout._id,
+      title: activeWorkout.name,
+      dayName: activeDay?.title || activeDay?.dayName || 'Scheduled Workout',
+      exerciseCount: activeDay?.exercises?.length || 0,
+      exercises: activeDay?.exercises || [],
+    };
+  }
 }
 
 function getCopyName(originalName, existingNames) {

@@ -46,6 +46,10 @@ import { SuperAdminDashboardPage } from "../features/super-admin/pages/SuperAdmi
 import { SuperAdminGymsPage } from "../features/super-admin/pages/SuperAdminGymsPage";
 import { SuperAdminGymDetailPage } from "../features/super-admin/pages/SuperAdminGymDetailPage";
 import { SuperAdminSettingsPage } from "../features/super-admin/pages/SuperAdminSettingsPage";
+import { HomePage as MemberHomePage } from "../features/member-portal/pages/HomePage";
+import { WorkoutPage as MemberWorkoutPage } from "../features/member-portal/pages/WorkoutPage";
+import { AttendancePage as MemberAttendancePortalPage } from "../features/member-portal/pages/AttendancePage";
+import { ProfilePage as MemberProfilePortalPage } from "../features/member-portal/pages/ProfilePage";
 
 import { EmptyState } from "../components/feedback/ErrorState";
 
@@ -99,7 +103,7 @@ function RootRedirect() {
   if (user.role === "trainer") {
     return <Navigate to="/admin/dashboard" replace />;
   }
-  return <Navigate to="/member/dashboard" replace />;
+  return <Navigate to="/member" replace />;
 }
 
 export const router = createBrowserRouter([
@@ -192,17 +196,10 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { index: true, element: <MemberDashboardPage /> },
-          { path: "dashboard", element: <MemberDashboardPage /> },
-          { path: "profile", element: <ProfilePage /> },
-          { path: "membership", element: <DummyComponent title="My Membership" /> },
-          { path: "workout-plan", element: <div className="p-8 text-center text-text-muted"><p className="font-mono text-sm">Workout plan view coming soon.</p></div> },
-          { path: "workouts", element: <div className="p-8 text-center text-text-muted"><p className="font-mono text-sm">Workout plan view coming soon.</p></div> },
-          { path: "qr", element: <MemberQrPage /> },
-          { path: "payments", element: <DummyComponent title="Payment History" /> },
-          { path: "attendance", element: <MyAttendancePage /> },
-          { path: "notifications", element: <NotificationsPage /> },
-          { path: "settings", element: <DummyComponent title="Settings" /> },
+          { index: true, element: <MemberHomePage /> },
+          { path: "workout", element: <MemberWorkoutPage /> },
+          { path: "attendance", element: <MemberAttendancePortalPage /> },
+          { path: "profile", element: <MemberProfilePortalPage /> },
         ],
       },
     ],

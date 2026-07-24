@@ -23,4 +23,10 @@ export class NotificationService {
     await NotificationRepository.markAllAsRead(gymId, userId);
     return { success: true };
   }
+
+  static async getNotificationsForMember(gymId, userId, query = {}) {
+    const { limit = 5 } = query;
+    const result = await NotificationRepository.findPaginated(gymId, userId, {}, 1, Number(limit));
+    return result.data || [];
+  }
 }

@@ -152,4 +152,21 @@ export class MemberSubscriptionService {
     if (!updated) throw createError.NotFound('Subscription not found');
     return updated;
   }
+
+  static async getActiveSubscriptionSummary(gymId, memberId) {
+    const activeSub = await MemberSubscriptionRepository.findActiveForMember(memberId, gymId, { populatePlan: true });
+    if (!activeSub) return null;
+
+    const now = new Date();
+    const expiryDate = new Date(activeSub.endDate);
+    const diffTime = expiryDate.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    return {
+      planName: activeSub.membershipPlanId?.name || 'Active Membership',
+      status: activeSub.status || 'active',
+      expiryDate: activeSub.endDate,
+      daysRemaining,
+    };
+  }
 }

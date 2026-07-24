@@ -36,12 +36,14 @@ import gymSubscriptionPaymentRoutes from '../modules/gymSubscriptionPayment/gymS
 import workoutAssignmentRoutes from '../modules/workoutAssignment/workoutAssignment.routes.js';
 import trainerRoutes from '../modules/trainer/trainer.routes.js';
 import memberWorkoutPlanRoutes from '../modules/memberWorkoutPlan/memberWorkoutPlan.routes.js';
+import memberPortalRoutes from '../modules/member-portal/routes/memberPortal.routes.js';
 
 // ── Route Registration ─────────────────────────────────────────────────────
 router.use('/super-admin',               superAdminRoutes);
 router.use('/gym-subscription-payments', gymSubscriptionPaymentRoutes);
 router.use('/auth',               authRoutes);
 router.use('/members',            memberRoutes);
+router.use('/members',            memberPortalRoutes);
 router.use('/membership-plans',   membershipPlanRoutes);
 router.use('/member-subscriptions', memberSubscriptionRoutes);
 router.use('/member-payments',    memberPaymentRoutes);

@@ -1,6 +1,11 @@
 import { MemberRepository } from './member.repository.js';
+import { User } from '../users/models/User.model.js';
+import { ROLES } from '../../shared/constants.js';
+import { hashData } from '../auth/auth.utils.js';
 import { escapeRegex } from '../../shared/constants.js';
 import createError from 'http-errors';
+
+const DEFAULT_MEMBER_PASSWORD = 'Member@123';
 
 export class MemberService {
   static async createMember(gymId, userId, data) {
@@ -10,16 +15,46 @@ export class MemberService {
       if (exists) {
         throw createError.Conflict('A member with this email already exists in this gym');
       }
+      const userExists = await User.findOne({ gymId, email: data.email });
+      if (userExists) {
+        throw createError.Conflict('A user with this email already exists in this gym');
+      }
     }
 
     // Convert empty strings to undefined for dates
     if (data.dateOfBirth === '') delete data.dateOfBirth;
 
-    return MemberRepository.create({ 
-      ...data, 
+    // Separate login credentials from member data
+    const { password, ...memberData } = data;
+
+    // Create the Member document
+    const member = await MemberRepository.create({ 
+      ...memberData, 
       gymId, 
       createdBy: userId 
     });
+
+    // Create a linked User account for login if email is provided
+    let user = null;
+    if (data.email) {
+      const userPassword = password || DEFAULT_MEMBER_PASSWORD;
+      const hashedPassword = await hashData(userPassword);
+
+      user = await User.create({
+        gymId,
+        role: ROLES.MEMBER,
+        name: data.fullName,
+        email: data.email,
+        password: hashedPassword,
+        memberId: member._id,
+      });
+
+      // Link the User back to the Member
+      member.userId = user._id;
+      await member.save();
+    }
+
+    return { member, user, defaultPassword: password ? undefined : DEFAULT_MEMBER_PASSWORD };
   }
 
   static async getMembers(gymId, query) {

@@ -58,7 +58,7 @@ export function LoginForm() {
       } else if (role === "trainer") {
         navigate("/admin/dashboard", { replace: true });
       } else {
-        navigate("/member/dashboard", { replace: true });
+        navigate("/member", { replace: true });
       }
     } catch (error: any) {
       const message =
